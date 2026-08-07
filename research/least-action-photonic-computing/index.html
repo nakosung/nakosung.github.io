@@ -1,1 +1,722 @@
-<!doctype html><html lang="en" data-theme="dark"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="dark light"><title>Computing by Least Action — Nako Sung</title><meta name="description" content="An interactive research note on programmable photonic first-arrival computing."><style>:root{--bg:#090a0c;--panel:#111319;--panel2:#161922;--text:#f3f5f7;--muted:#98a1ae;--line:#292e38;--accent:#b8ff5a;--cyan:#67e8ff;--red:#ff7080}html[data-theme=light]{--bg:#f8f8f5;--panel:#fff;--panel2:#f0f2f3;--text:#111319;--muted:#5f6874;--line:#d9dde1;--accent:#579900;--cyan:#007c98;--red:#c73d4d}*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR","Apple SD Gothic Neo",sans-serif;line-height:1.68;letter-spacing:-.014em}body:before{content:"";position:fixed;inset:0;z-index:-1;opacity:.2;background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);background-size:52px 52px;mask-image:linear-gradient(to bottom,#000,transparent 70%)}a{color:inherit}.shell{max-width:1120px;margin:auto;padding:0 26px}nav{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 82%,transparent);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}.nav{height:64px;display:flex;justify-content:space-between;align-items:center;gap:16px}.brand{font:750 13px monospace;text-decoration:none}.tools{display:flex;gap:8px}.round{border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:999px;padding:7px 10px}.hero{padding:88px 0 58px;border-bottom:1px solid var(--line)}.meta{font:600 11px monospace;color:var(--accent);text-transform:uppercase;letter-spacing:.08em}.hero h1{font-size:clamp(48px,7.7vw,88px);line-height:.96;letter-spacing:-.065em;margin:20px 0 25px;max-width:1000px}.hero p{font-size:clamp(19px,2.3vw,27px);color:var(--muted);line-height:1.4;max-width:840px;letter-spacing:-.03em}.equation{margin:28px 0;padding:20px 22px;border:1px solid var(--line);border-radius:18px;background:var(--panel);font:500 18px/1.6 monospace;overflow:auto}.accent{color:var(--accent)}section{padding:72px 0;border-bottom:1px solid var(--line)}h2{font-size:clamp(31px,4.7vw,50px);line-height:1.07;letter-spacing:-.05em;margin:0 0 23px}.lead{font-size:20px;color:var(--muted);max-width:810px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin:26px 0}.card{border:1px solid var(--line);background:var(--panel);border-radius:20px;padding:20px}.card b{display:block;margin-bottom:7px}.card span{color:var(--muted);font-size:13px}.demo{border:1px solid var(--line);background:var(--panel);border-radius:24px;overflow:hidden;margin:28px 0}.demoHead{padding:20px 22px;border-bottom:1px solid var(--line)}.demoHead h3{margin:0;font-size:20px}.demoHead p{margin:5px 0 0;color:var(--muted);font-size:13px}.demoBody{padding:22px}.controls{display:grid;grid-template-columns:repeat(4,1fr);gap:13px}.control label{display:block;color:var(--muted);font-size:12px}.control input{width:100%;accent-color:var(--accent)}.control output{font:650 12px monospace}.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:20px 0}.metric{background:var(--panel2);border:1px solid var(--line);border-radius:15px;padding:14px}.metric small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase}.metric b{display:block;margin-top:5px;font:750 17px monospace}.buttons{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:11px;padding:9px 12px}.btn.primary{background:var(--accent);color:#0b0d09;border-color:transparent;font-weight:700}svg{width:100%;height:auto;display:block}.callout{padding:20px 22px;border-left:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 7%,var(--panel));border-radius:0 17px 17px 0;margin:28px 0}.callout.red{border-color:var(--red);background:color-mix(in srgb,var(--red) 7%,var(--panel))}.big{font-size:clamp(29px,4.8vw,52px);line-height:1.12;letter-spacing:-.05em;margin:38px 0}.refs{font-size:13px;color:var(--muted)}.refs a{text-underline-offset:3px}.foot{padding:28px 0 50px;color:var(--muted);font-size:12px}html[lang=ko] body{word-break:keep-all;letter-spacing:-.018em}html[lang=ko] .hero h1{font-size:clamp(41px,6.2vw,70px);line-height:1.09;letter-spacing:-.045em}html[lang=ko] .hero p{font-size:clamp(18px,2vw,23px);line-height:1.62}html[lang=ko] h2{font-size:clamp(29px,4vw,43px);line-height:1.17}html[lang=ko] .lead{font-size:19px;line-height:1.78}@media(max-width:820px){.grid{grid-template-columns:1fr}.controls,.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:560px){.shell{padding:0 17px}.controls,.metrics{grid-template-columns:1fr}.hero{padding-top:64px}}</style></head><body><nav><div class="shell nav"><a class="brand" href="/">NAKO SUNG</a><div class="tools"><a class="round" href="/research/" data-t="archive">Research</a><select id="lang" class="round"><option value="en">English</option><option value="ko">한국어</option></select><button id="theme" class="round">◐</button></div></div></nav><header class="hero"><div class="shell"><div class="meta" data-t="meta">2026.08 · Interactive research note</div><h1 data-t="title">Can causality compute the minimum?</h1><p data-t="sub">Encode local action as physical delay. Let propagation accumulate it. At every state, keep only the first wavefront to arrive. This note asks when such a machine is mathematically valid — and whether it could become physically useful.</p><div class="equation">A[P] = Σₖ a(xₖ→xₖ₊₁)<br>τₖ = τ₀ + αaₖ<br><span class="accent" data-t="eq">earliest arrival = argminₚ A[P]</span></div></div></header><main><section><div class="shell"><h2 data-t="s1t">The idea is not “light is fast.”</h2><p class="lead" data-t="s1p">The interesting part is that arrival order itself can become an arithmetic primitive. Propagation performs addition; causality performs the minimum; a latch remembers the winner.</p><div class="grid"><div class="card"><b data-t="c1t">Action → time</b><span data-t="c1p">A local cost becomes a programmable true-time delay.</span></div><div class="card"><b data-t="c2t">First arrival → minimum</b><span data-t="c2p">The earliest signal at a complete state dominates every later history.</span></div><div class="card"><b data-t="c3t">Winner memory → path</b><span data-t="c3p">Record the predecessor port and recover the final trajectory by backtracking.</span></div></div><div class="callout"><b data-t="scopeT">Scope matters.</b> <span data-t="scopeP">This first architecture solves a global minimum over a discretized additive objective with a Markov-complete state. It is not yet a generic stationary-action solver.</span></div></div></section><section><div class="shell"><h2 data-t="s2t">Why can we prune early?</h2><p class="lead" data-t="s2p">If two histories reach the same complete state and A arrives first, any future continuation adds the same future cost to both. The late history can never recover.</p><div class="equation">Tᴬ(j) &lt; Tᴮ(j)<br>Tᴬ(j)+F(j) &lt; Tᴮ(j)+F(j)</div><div class="big" data-t="big">Exponential histories can collapse into a polynomial frontier — but only when Bellman’s principle is valid for the chosen state.</div></div></section><section><div class="shell"><h2 data-t="s3t">Interactive digital twin</h2><p class="lead" data-t="s3p">Compare exact dynamic programming with a noisy photonic first-arrival model. Increase timing error until physical arrival ordering starts to change the answer.</p><div class="demo"><div class="demoHead"><h3 data-t="dTitle">First-arrival equivalence</h3><p data-t="dSub">Random layered action graph · exact Bellman oracle vs. physical timing model</p></div><div class="demoBody"><div class="controls"><div class="control"><label data-t="wL">States / layer</label><input id="w" type="range" min="3" max="10" value="6"><output id="wO">6</output></div><div class="control"><label data-t="dL">Depth</label><input id="d" type="range" min="3" max="18" value="10"><output id="dO">10</output></div><div class="control"><label data-t="aL">Delay scale α</label><input id="a" type="range" min="25" max="1000" step="25" value="500"><output id="aO">500 ps</output></div><div class="control"><label data-t="nL">Timing error σ</label><input id="n" type="range" min="0" max="10" step=".1" value=".5"><output id="nO">0.5 ps</output></div></div><div class="buttons"><button class="btn primary" id="new" data-t="new">New instance</button><button class="btn" id="noise" data-t="noise">Resample noise</button><button class="btn" id="mc" data-t="mc">Run 1,000 trials</button></div><div class="metrics"><div class="metric"><small data-t="m1">Implicit histories</small><b id="paths">—</b></div><div class="metric"><small data-t="m2">Oracle action</small><b id="oracle">—</b></div><div class="metric"><small data-t="m3">Regret</small><b id="regret">—</b></div><div class="metric"><small data-t="m4">Exact path</small><b id="exact">—</b></div></div><svg id="graph" viewBox="0 0 900 330"></svg><div id="result" class="callout" style="margin-bottom:0"></div></div></div></div></section><section><div class="shell"><h2 data-t="s4t">The exponential number is real — and easy to misuse.</h2><p class="lead" data-t="s4p">With b states per layer and d layers, there are b^d complete histories. First-arrival pruning means only one winner per state needs to survive. But the same optimal-substructure also lets a classical dynamic program avoid exhaustive enumeration.</p><div class="grid"><div class="card"><b>b^d</b><span data-t="r1">implicit complete histories</span></div><div class="card"><b>O(d·b²)</b><span data-t="r2">programmable edges / classical min-plus work</span></div><div class="card"><b>O(d)</b><span data-t="r3">physical critical propagation depth, ideally</span></div></div><div class="callout red"><b data-t="advT">So what would count as an advantage?</b> <span data-t="advP">Not beating brute force. The real benchmark is end-to-end time-to-solution and energy-to-solution against an optimized electronic min-plus implementation at equal accuracy and equivalent I/O accounting.</span></div></div></section><section><div class="shell"><h2 data-t="s5t">What has to be built next</h2><div class="grid"><div class="card"><b data-t="e1t">1. Fiber proof</b><span data-t="e1p">Program action with fiber delay and verify the action-to-arrival mapping and noise model.</span></div><div class="card"><b data-t="e2t">2. First-arrival cell</b><span data-t="e2p">Forward one winner, suppress late pulses, preserve cumulative time, and record the winning input.</span></div><div class="card"><b data-t="e3t">3. Integrated fabric</b><span data-t="e3p">Combine programmable true-time-delay edges and first-arrival cells, then look for a real electronic crossover.</span></div></div><div class="refs"><p data-t="refs">Relevant boundaries include Fermat–Bellman–eikonal connections, NIST temporal/race computing, photonic subset-sum machines, and programmable photonic wave propagation.</p><p><a href="https://opg.optica.org/josa/abstract.cfm?uri=josa-64-3-317">Brandstatter (1974)</a> · <a href="https://www.nist.gov/programs-projects/temporal-computing">NIST Temporal Computing</a> · <a href="https://arxiv.org/abs/2002.05108">Xu et al. (2020)</a> · <a href="https://www.nature.com/articles/s41567-025-03094-2">Nature Physics (2025)</a></p></div></div></section></main><footer class="foot"><div class="shell">Nako Sung · <a href="/research/">Research Notes</a> · <a href="https://github.com/nakosung">GitHub</a></div></footer><script>const T={en:{archive:"Research",meta:"2026.08 · Interactive research note",title:"Can causality compute the minimum?",sub:"Encode local action as physical delay. Let propagation accumulate it. At every state, keep only the first wavefront to arrive. This note asks when such a machine is mathematically valid — and whether it could become physically useful.",eq:"earliest arrival = argminₚ A[P]",s1t:"The idea is not “light is fast.”",s1p:"The interesting part is that arrival order itself can become an arithmetic primitive. Propagation performs addition; causality performs the minimum; a latch remembers the winner.",c1t:"Action → time",c1p:"A local cost becomes a programmable true-time delay.",c2t:"First arrival → minimum",c2p:"The earliest signal at a complete state dominates every later history.",c3t:"Winner memory → path",c3p:"Record the predecessor port and recover the final trajectory by backtracking.",scopeT:"Scope matters.",scopeP:"This first architecture solves a global minimum over a discretized additive objective with a Markov-complete state. It is not yet a generic stationary-action solver.",s2t:"Why can we prune early?",s2p:"If two histories reach the same complete state and A arrives first, any future continuation adds the same future cost to both. The late history can never recover.",big:"Exponential histories can collapse into a polynomial frontier — but only when Bellman’s principle is valid for the chosen state.",s3t:"Interactive digital twin",s3p:"Compare exact dynamic programming with a noisy photonic first-arrival model. Increase timing error until physical arrival ordering starts to change the answer.",dTitle:"First-arrival equivalence",dSub:"Random layered action graph · exact Bellman oracle vs. physical timing model",wL:"States / layer",dL:"Depth",aL:"Delay scale α",nL:"Timing error σ",new:"New instance",noise:"Resample noise",mc:"Run 1,000 trials",m1:"Implicit histories",m2:"Oracle action",m3:"Regret",m4:"Exact path",s4t:"The exponential number is real — and easy to misuse.",s4p:"With b states per layer and d layers, there are b^d complete histories. First-arrival pruning means only one winner per state needs to survive. But the same optimal-substructure also lets a classical dynamic program avoid exhaustive enumeration.",r1:"implicit complete histories",r2:"programmable edges / classical min-plus work",r3:"physical critical propagation depth, ideally",advT:"So what would count as an advantage?",advP:"Not beating brute force. The real benchmark is end-to-end time-to-solution and energy-to-solution against an optimized electronic min-plus implementation at equal accuracy and equivalent I/O accounting.",s5t:"What has to be built next",e1t:"1. Fiber proof",e1p:"Program action with fiber delay and verify the action-to-arrival mapping and noise model.",e2t:"2. First-arrival cell",e2p:"Forward one winner, suppress late pulses, preserve cumulative time, and record the winning input.",e3t:"3. Integrated fabric",e3p:"Combine programmable true-time-delay edges and first-arrival cells, then look for a real electronic crossover.",refs:"Relevant boundaries include Fermat–Bellman–eikonal connections, NIST temporal/race computing, photonic subset-sum machines, and programmable photonic wave propagation.",yes:"YES",no:"NO",mcR:"1,000 trials · exact path {a}% · mean regret {r} · {p} implicit histories"},ko:{archive:"연구 노트",meta:"2026.08 · 인터랙티브 연구 노트",title:"인과성 자체가 최솟값을 계산할 수 있을까?",sub:"구간별 비용에 해당하는 작용을 빛의 지연시간으로 바꾸고, 전파 과정이 이를 누적하게 합니다. 각 상태에는 가장 먼저 도착한 신호 하나만 남깁니다. 이 글에서는 이런 계산이 언제 수학적으로 성립하는지, 그리고 실제 장치로 의미가 있을지 살펴봅니다.",eq:"최초 도착 경로 = argminₚ A[P]",s1t:"핵심은 단순히 빛이 빠르다는 데 있지 않습니다.",s1p:"어떤 신호가 먼저 도착했는가 자체를 계산 규칙으로 쓸 수 있다는 점이 중요합니다. 전파가 비용을 누적하고, 도착 순서가 최솟값을 고르며, 래치가 어느 경로가 이겼는지를 기억합니다.",c1t:"작용 → 시간",c1p:"구간별 비용을 프로그래머블 실제 지연시간으로 바꿉니다.",c2t:"최초 도착 → 최솟값",c2p:"완전한 상태에 가장 먼저 도착한 경로는 뒤늦은 모든 후보보다 항상 유리합니다.",c3t:"승자 기록 → 전체 경로",c3p:"이전 상태를 기록해두면 마지막에 역추적해서 전체 최적 경로를 복원할 수 있습니다.",scopeT:"범위를 분명히 해야 합니다.",scopeP:"첫 구조는 현재 상태가 미래를 결정하기에 충분한 문제에서, 구간별 비용을 더해 얻는 이산 목적함수의 전역 최솟값을 찾습니다. 임의의 정지 작용 문제를 푸는 장치는 아직 아닙니다.",s2t:"왜 앞단에서 후보를 지워도 될까?",s2p:"서로 다른 두 경로가 이후의 미래를 완전히 동일하게 결정하는 상태에 도착했고 A가 먼저 왔다면, 이후에 더해지는 비용은 두 경로에 똑같습니다. 늦게 도착한 경로는 다시 앞지를 수 없습니다.",big:"가능한 경로 이력이 기하급수적으로 늘어나더라도, 선택한 상태 표현에서 Bellman 원리가 성립한다면 각 단계에서 유지해야 할 후보 수는 상태 수 수준으로 줄일 수 있습니다.",s3t:"인터랙티브 디지털 트윈",s3p:"정확한 동적 계획법과 시간 오차가 있는 최초 도착 모델을 비교합니다. 시간 오차를 키우면서 물리적인 도착 순서가 언제 정답을 바꾸기 시작하는지 확인해볼 수 있습니다.",dTitle:"최초 도착 방식과 기준 해 비교",dSub:"무작위 층형 비용 그래프 · 정확한 Bellman 해와 물리적 시간 모델 비교",wL:"단계별 상태 수",dL:"단계 수",aL:"비용 1당 지연시간 α",nL:"시간 오차 σ",new:"새 문제 만들기",noise:"시간 오차 다시 뽑기",mc:"1,000회 검증",m1:"가능한 전체 경로",m2:"최소 비용",m3:"최적 대비 비용 차이",m4:"최적 경로 일치",s4t:"경로 수는 기하급수적으로 늘지만, 이 숫자는 쉽게 과장될 수 있습니다.",s4p:"단계마다 b개의 상태가 있고 단계 수가 d라면 전체 경로 수는 b^d입니다. 최초 도착 방식에서는 각 상태마다 승자 하나만 남기면 됩니다. 하지만 같은 성질을 고전적인 동적 계획법도 활용해 전수 탐색을 피할 수 있습니다.",r1:"암묵적으로 표현되는 전체 경로",r2:"프로그래머블 연결 수 / 고전적인 최소-합 연산량",r3:"이상적인 경우 빛이 실제로 지나야 하는 핵심 단계 수",advT:"그렇다면 무엇을 성능 우위라고 불러야 할까?",advP:"전수 탐색보다 빠른 것만으로는 충분하지 않습니다. 동일한 정확도와 입출력 조건에서 잘 최적화된 전자식 최소-합 연산과 비교해 종단간 계산시간이나 에너지가 실제로 낮아져야 의미가 있습니다.",s5t:"다음에 실제로 만들어야 할 것",e1t:"1. 광섬유 기반 검증",e1p:"광섬유 지연으로 비용을 프로그램하고, 비용과 도착시간의 대응 및 시간 오차 모델을 검증합니다.",e2t:"2. 최초 도착 셀",e2p:"승자 하나만 전달하고 늦은 신호를 차단하며, 누적 도착시간을 유지하고 어느 입력이 이겼는지 기록하는 셀을 만듭니다.",e3t:"3. 집적형 광학 회로망",e3p:"프로그래머블 실제 지연선과 최초 도착 셀을 결합하고, 전자식 구현보다 실제로 앞서는 구간이 존재하는지 측정합니다.",refs:"이 아이디어의 경계에는 Fermat–Bellman–eikonal 연결, NIST의 시간 기반 계산, 광학 subset-sum 장치, 프로그래머블 광학 전파 연구가 있습니다.",yes:"일치",no:"불일치",mcR:"1,000회 검증 · 최적 경로 일치율 {a}% · 평균 비용 차이 {r} · 가능한 전체 경로 {p}"}};let lang=((navigator.languages||[navigator.language]).some(x=>String(x).toLowerCase().startsWith('ko'))?'ko':'en'),seed=20260807,nseed=73,inst;const $=id=>document.getElementById(id);function tr(k){return T[lang][k]}function apply(){document.documentElement.lang=lang;$('lang').value=lang;document.querySelectorAll('[data-t]').forEach(e=>e.textContent=tr(e.dataset.t));render()}$('lang').addEventListener('change',e=>{lang=e.target.value;apply()});$('theme').addEventListener('click',()=>document.documentElement.dataset.theme=document.documentElement.dataset.theme==='light'?'dark':'light');function R(s){return{u(){s=(1664525*s+1013904223)>>>0;return s/4294967296},g(){let u=Math.max(this.u(),1e-12),v=Math.max(this.u(),1e-12);return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}}}function make(b,d,s){let r=R(s);return{b,d,c0:Array.from({length:b},()=>r.u()),t:Array.from({length:d-1},()=>Array.from({length:b},()=>Array.from({length:b},()=>r.u()))),cg:Array.from({length:b},()=>r.u())}}function dp(x){let q=x.c0.slice(),ps=[];for(let k=0;k<x.d-1;k++){let n=Array(x.b).fill(Infinity),p=Array(x.b).fill(-1);for(let j=0;j<x.b;j++)for(let i=0;i<x.b;i++){let v=q[i]+x.t[k][i][j];if(v<n[j]){n[j]=v;p[j]=i}}q=n;ps.push(p)}let j=0,b=Infinity;for(let i=0;i<x.b;i++){let v=q[i]+x.cg[i];if(v<b){b=v;j=i}}let path=[j];for(let k=ps.length-1;k>=0;k--){j=ps[k][j];path.push(j)}path.reverse();return{cost:b,path}}function pc(x,p){let c=x.c0[p[0]];for(let k=0;k<x.d-1;k++)c+=x.t[k][p[k]][p[k+1]];return c+x.cg[p[p.length-1]]}function ph(x,a,n,s){let r=R(s),q=x.c0.map(v=>a*v+n*r.g()),ps=[];for(let k=0;k<x.d-1;k++){let nn=Array(x.b).fill(Infinity),p=Array(x.b).fill(-1);for(let j=0;j<x.b;j++)for(let i=0;i<x.b;i++){let v=q[i]+a*x.t[k][i][j]+n*r.g();if(v<nn[j]){nn[j]=v;p[j]=i}}for(let j=0;j<x.b;j++)nn[j]+=n*r.g();q=nn;ps.push(p)}let j=0,b=Infinity;for(let i=0;i<x.b;i++){let v=q[i]+a*x.cg[i]+n*r.g();if(v<b){b=v;j=i}}let path=[j];for(let k=ps.length-1;k>=0;k--){j=ps[k][j];path.push(j)}path.reverse();return{path,cost:pc(x,path)}}function sci(v){let l=v*Math.log10(+$('w').value);return l<5?Math.round(10**l).toLocaleString():'10^'+l.toFixed(l>30?1:2)}function draw(x,o,p){let W=900,H=330,L=50,Rr=30,Tp=32,B=32,xx=k=>L+k*(W-L-Rr)/(x.d-1),yy=i=>Tp+i*(H-Tp-B)/(x.b-1),s='';for(let k=0;k<x.d;k++)for(let i=0;i<x.b;i++)s+=`<circle cx="${xx(k)}" cy="${yy(i)}" r="3.2" fill="var(--muted)" opacity=".4"/>`;function path(a,c,w,off=0){let d='';for(let k=0;k<a.length;k++)d+=(k?' L ':'M ')+xx(k)+' '+(yy(a[k])+off);return`<path d="${d}" fill="none" stroke="${c}" stroke-width="${w}" stroke-linecap="round"/>`}s+=path(o,'var(--accent)',5);s+=path(p,'var(--cyan)',2.1,o.join(',')===p.join(',')?0:3);$('graph').innerHTML=s}function render(){if(!$('w'))return;$('wO').textContent=$('w').value;$('dO').textContent=$('d').value;$('aO').textContent=$('a').value+' ps';$('nO').textContent=$('n').value+' ps';let b=+$('w').value,d=+$('d').value;if(!inst||inst.b!==b||inst.d!==d)inst=make(b,d,seed);let o=dp(inst),p=ph(inst,+$('a').value,+$('n').value,nseed),ok=o.path.join(',')===p.path.join(',');$('paths').textContent=sci(d);$('oracle').textContent=o.cost.toFixed(4);$('regret').textContent=(p.cost-o.cost).toExponential(2);$('exact').textContent=ok?tr('yes'):tr('no');$('exact').style.color=ok?'var(--accent)':'var(--red)';draw(inst,o.path,p.path);if(!$('result').dataset.mc)$('result').textContent=lang==='ko'?'시간 오차가 0이면 최초 도착 방식은 Bellman 해와 정확히 일치해야 합니다. σ를 높여 실패 경계를 살펴보세요.':'At zero timing error the first-arrival model should exactly match Bellman. Increase σ to explore the failure boundary.'}function mc(){let b=+$('w').value,d=+$('d').value,a=+$('a').value,n=+$('n').value,ok=0,reg=0;for(let z=0;z<1000;z++){let x=make(b,d,9001+z*17),o=dp(x),p=ph(x,a,n,12001+z*101);if(o.path.join(',')===p.path.join(','))ok++;reg+=p.cost-o.cost}let s=tr('mcR').replace('{a}',(ok/10).toFixed(1)).replace('{r}',(reg/1000).toExponential(2)).replace('{p}',sci(d));$('result').textContent=s;$('result').dataset.mc=1}['w','d','a','n'].forEach(id=>$(id).addEventListener('input',()=>{if(id==='w'||id==='d')inst=null;delete $('result').dataset.mc;render()}));$('new').addEventListener('click',()=>{seed+=7919;inst=null;delete $('result').dataset.mc;render()});$('noise').addEventListener('click',()=>{nseed+=104729;render()});$('mc').addEventListener('click',mc);apply();</script></body></html>
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="color-scheme" content="dark light" />
+<title>Computing by Least Action — Nako Sung</title>
+<meta name="description" content="Nako Sung — an interactive research note on computing minimum-action trajectories with programmable photonic first-arrival dynamics." />
+<meta name="author" content="Nako Sung" />
+<meta property="og:title" content="Computing by Least Action — Nako Sung" />
+<meta property="og:description" content="Can action become time, propagation become addition, and causality perform the minimum? An interactive research note and digital twin." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="https://nakosung.github.io/research/least-action-photonic-computing/" />
+<style>
+:root{
+  --bg:#090a0c; --panel:#111319; --panel2:#161922; --text:#f3f5f7; --muted:#98a1ae;
+  --line:#292e38; --accent:#b8ff5a; --cyan:#67e8ff; --amber:#ffc766; --red:#ff7080;
+  --blue:#8aa9ff; --shadow:0 24px 90px rgba(0,0,0,.32); --radius:22px;
+}
+[data-theme="light"]{
+  --bg:#f8f8f5; --panel:#fff; --panel2:#f0f2f3; --text:#111319; --muted:#5f6874;
+  --line:#d9dde1; --accent:#579900; --cyan:#007c98; --amber:#a56500; --red:#c73d4d; --blue:#315cc5;
+  --shadow:0 22px 70px rgba(20,28,40,.09);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR","Apple SD Gothic Neo",sans-serif;
+  line-height:1.68;letter-spacing:-.014em;
+}
+body:before{
+  content:"";position:fixed;inset:0;z-index:-2;pointer-events:none;opacity:.23;
+  background-image:linear-gradient(var(--line) 1px,transparent 1px),linear-gradient(90deg,var(--line) 1px,transparent 1px);
+  background-size:52px 52px;mask-image:linear-gradient(to bottom,black,transparent 74%);
+}
+body:after{
+  content:"";position:fixed;width:640px;height:640px;border-radius:50%;z-index:-1;pointer-events:none;
+  right:-220px;top:-220px;background:radial-gradient(circle,color-mix(in srgb,var(--accent) 13%,transparent),transparent 67%);
+}
+a{color:inherit}
+button,input,select{font:inherit}
+code,.mono{font-family:"SFMono-Regular",Consolas,"Liberation Mono",monospace}
+.progress{position:fixed;left:0;top:0;height:2px;background:var(--accent);z-index:100;width:0}
+.shell{max-width:1190px;margin:auto;padding:0 26px}
+nav{
+  position:sticky;top:0;z-index:30;backdrop-filter:blur(18px);
+  background:color-mix(in srgb,var(--bg) 80%,transparent);border-bottom:1px solid var(--line)
+}
+.navin{height:66px;display:flex;align-items:center;justify-content:space-between;gap:18px}
+.brand{font-size:13px;font-weight:750;letter-spacing:.065em;text-transform:uppercase;white-space:nowrap;text-decoration:none;color:var(--text)}
+.navlinks{display:flex;gap:17px;align-items:center;color:var(--muted);font-size:13px}
+.navlinks a{text-decoration:none}.navlinks a:hover{color:var(--text)}
+.toolbar{display:flex;align-items:center;gap:8px}
+.iconbtn,.select{
+  border:1px solid var(--line);background:var(--panel);color:var(--text);border-radius:999px;padding:7px 10px;cursor:pointer
+}
+.select{padding-right:28px}
+.hero{padding:92px 0 58px;border-bottom:1px solid var(--line)}
+.meta{display:flex;gap:12px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-bottom:26px}
+.pill{border:1px solid var(--line);border-radius:999px;padding:5px 9px;background:var(--panel)}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;color:var(--accent);font:650 12px/1.2 "SFMono-Regular",monospace;text-transform:uppercase;letter-spacing:.1em}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--accent);box-shadow:0 0 18px var(--accent)}
+h1{font-size:clamp(48px,7.7vw,92px);line-height:.95;letter-spacing:-.065em;margin:20px 0 26px;max-width:1080px}
+.hero p{font-size:clamp(19px,2.35vw,28px);line-height:1.38;max-width:860px;color:var(--muted);letter-spacing:-.03em}
+.heroquote{margin-top:42px;padding:23px 0;border-top:1px solid var(--line);display:flex;gap:22px;flex-wrap:wrap}
+.heroquote span{font:600 12px/1.4 "SFMono-Regular",monospace;color:var(--muted)}
+.heroquote strong{display:block;color:var(--text);font-size:18px;margin-top:6px}
+.hookgrid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;margin-top:40px}
+.hookbox,.racebox{background:var(--panel);border:1px solid var(--line);border-radius:26px;padding:24px;box-shadow:var(--shadow)}
+.hookbox h2{font-size:26px;margin:0 0 13px;letter-spacing:-.04em}.hookbox p{font-size:16px;line-height:1.55;margin:0;color:var(--muted)}
+.hookstats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:20px}
+.hookstat{padding:14px;border-radius:15px;background:var(--panel2);border:1px solid var(--line)}
+.hookstat small{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.07em}
+.hookstat b{font:750 17px/1.3 monospace;display:block;margin-top:5px}
+.racebox h3{margin:0 0 5px;font-size:17px}.racebox p{font-size:13px;color:var(--muted);margin:0 0 12px}
+.racetrack{position:relative;height:136px;border:1px solid var(--line);border-radius:17px;background:var(--panel2);overflow:hidden}
+.track{position:absolute;left:24px;right:56px;height:2px;background:var(--line)}
+.track:nth-child(1){top:31px}.track:nth-child(2){top:67px}.track:nth-child(3){top:103px}
+.pulse{position:absolute;left:24px;width:12px;height:12px;border-radius:50%;background:var(--cyan);transform:translate(-6px,-5px)}
+.p1{top:31px}.p2{top:67px}.p3{top:103px}
+.finish{position:absolute;right:42px;top:15px;bottom:15px;width:2px;background:var(--accent)}
+.racelabel{position:absolute;left:8px;color:var(--muted);font:10px monospace;transform:translateY(-50%)}
+.rl1{top:31px}.rl2{top:67px}.rl3{top:103px}
+.racewinner{position:absolute;right:7px;top:50%;transform:translateY(-50%);font:700 10px monospace;color:var(--accent)}
+.raceactions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:11px}
+.btn{border:1px solid var(--line);background:var(--panel2);color:var(--text);border-radius:12px;padding:9px 13px;cursor:pointer}
+.btn.primary{background:var(--accent);color:#0c0e09;border-color:transparent;font-weight:760}
+.btn:hover{filter:brightness(1.07)}
+.layout{display:grid;grid-template-columns:192px minmax(0,1fr);gap:62px}
+aside{padding-top:76px}
+.toc{position:sticky;top:92px;font-size:13px;color:var(--muted)}
+.toc b{display:block;color:var(--text);margin-bottom:12px}.toc a{display:block;text-decoration:none;padding:5px 0}.toc a:hover{color:var(--accent)}
+article{min-width:0;padding-bottom:120px}
+section{padding:76px 0;border-bottom:1px solid var(--line)}
+section:last-child{border-bottom:0}
+.kicker{font:650 12px/1.2 "SFMono-Regular",monospace;color:var(--accent);letter-spacing:.08em;text-transform:uppercase}
+h2{font-size:clamp(32px,5vw,55px);line-height:1.04;letter-spacing:-.05em;margin:12px 0 25px}
+h3{font-size:23px;letter-spacing:-.03em;margin:34px 0 12px}
+.lead{font-size:21px;color:var(--muted);max-width:820px}
+p{max-width:800px}
+.math{margin:28px 0;padding:22px 24px;border:1px solid var(--line);border-radius:18px;background:var(--panel);font:500 clamp(16px,2vw,21px)/1.58 "SFMono-Regular",monospace;overflow:auto}
+.math .accent{color:var(--accent)}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:28px 0}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:28px 0}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--radius);padding:22px;box-shadow:var(--shadow)}
+.card h3{margin:0 0 8px;font-size:18px}.card p{margin:0;color:var(--muted);font-size:14px}
+.callout{margin:30px 0;padding:22px 24px;border-left:3px solid var(--accent);background:color-mix(in srgb,var(--accent) 7%,var(--panel));border-radius:0 18px 18px 0}
+.callout.warning{border-color:var(--amber);background:color-mix(in srgb,var(--amber) 7%,var(--panel))}
+.callout.red{border-color:var(--red);background:color-mix(in srgb,var(--red) 7%,var(--panel))}
+.callout b{display:block;margin-bottom:5px}
+.pipeline{display:flex;align-items:stretch;gap:8px;flex-wrap:wrap;margin:28px 0}
+.pipe{flex:1 1 145px;padding:17px;border:1px solid var(--line);background:var(--panel);border-radius:16px;min-height:110px}
+.pipe small{color:var(--muted);font-family:monospace}.pipe b{display:block;margin-top:7px}.arrow{display:flex;align-items:center;color:var(--accent);font-size:22px}
+.demo{margin:30px 0;background:var(--panel);border:1px solid var(--line);border-radius:26px;overflow:hidden;box-shadow:var(--shadow)}
+.demohead{padding:21px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:18px;align-items:flex-start}
+.demohead h3{margin:0;font-size:20px}.demohead p{margin:5px 0 0;color:var(--muted);font-size:14px}
+.badge{font:650 11px/1 monospace;padding:8px 9px;border:1px solid var(--line);border-radius:999px;color:var(--accent);white-space:nowrap}
+.demobody{padding:24px}
+.controls{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin-bottom:22px}
+.control label{display:block;font-size:12px;color:var(--muted);margin-bottom:6px}
+.control input[type=range]{width:100%;accent-color:var(--accent)}
+.control output{font:650 13px/1.2 monospace}
+.actions{display:flex;gap:10px;flex-wrap:wrap;margin:16px 0}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:20px 0}
+.metric{padding:15px;border:1px solid var(--line);border-radius:15px;background:var(--panel2)}
+.metric span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.065em}
+.metric b{font:750 18px/1.35 monospace;display:block;margin-top:5px;overflow-wrap:anywhere}
+svg{display:block;width:100%;height:auto}
+.legend{display:flex;gap:16px;flex-wrap:wrap;color:var(--muted);font-size:12px;margin-top:10px}
+.sw{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:5px}
+.resultline{padding:14px 16px;border-radius:14px;background:var(--panel2);border:1px solid var(--line);font-size:14px;margin-top:14px}
+.tablewrap{overflow:auto;border:1px solid var(--line);border-radius:18px;margin:24px 0}
+table{border-collapse:collapse;width:100%;min-width:670px;font-size:13px}
+th,td{padding:13px 15px;border-bottom:1px solid var(--line);text-align:left}
+th{color:var(--muted);font-weight:650;background:var(--panel2)}
+tr:last-child td{border-bottom:0}
+.bigclaim{font-size:clamp(31px,5vw,58px);line-height:1.06;letter-spacing:-.05em;margin:38px 0}
+.strike{text-decoration:line-through;color:var(--muted)}
+.refs{counter-reset:ref}.ref{display:grid;grid-template-columns:36px 1fr;gap:12px;padding:14px 0;border-bottom:1px solid var(--line);font-size:14px}.ref:before{counter-increment:ref;content:"[" counter(ref) "]";font-family:monospace;color:var(--accent)}.ref a{text-decoration-color:var(--line);text-underline-offset:3px}
+.foot{padding:34px 0 60px;color:var(--muted);font-size:12px;border-top:1px solid var(--line)}
+@media(max-width:900px){.hookgrid{grid-template-columns:1fr}.layout{grid-template-columns:1fr}.toc,aside{display:none}.controls{grid-template-columns:repeat(2,1fr)}.metrics{grid-template-columns:repeat(2,1fr)}.grid3{grid-template-columns:1fr}.navlinks a{display:none}}
+@media(max-width:620px){.shell{padding:0 17px}.hero{padding-top:64px}.grid2{grid-template-columns:1fr}.controls{grid-template-columns:1fr}.metrics{grid-template-columns:1fr}.hookstats{grid-template-columns:1fr}section{padding:56px 0}.brand{font-size:11px}.select{max-width:108px}}
+
+/* Korean editorial tuning: Korean glyphs need less display scaling and looser rhythm than Latin. */
+html[lang="ko"] body{
+  font-family:"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",system-ui,sans-serif;
+  letter-spacing:-.018em;
+  word-break:keep-all;
+}
+html[lang="ko"] h1{
+  font-size:clamp(42px,6.45vw,76px);
+  line-height:1.08;
+  letter-spacing:-.045em;
+  max-width:1040px;
+}
+html[lang="ko"] .hero p{
+  font-size:clamp(18px,2.05vw,24px);
+  line-height:1.58;
+  letter-spacing:-.025em;
+  max-width:900px;
+}
+html[lang="ko"] h2{
+  font-size:clamp(30px,4.25vw,46px);
+  line-height:1.16;
+  letter-spacing:-.04em;
+}
+html[lang="ko"] h3{
+  letter-spacing:-.025em;
+  line-height:1.38;
+}
+html[lang="ko"] .lead{
+  font-size:19px;
+  line-height:1.72;
+}
+html[lang="ko"] .bigclaim{
+  font-size:clamp(27px,4.2vw,46px);
+  line-height:1.3;
+  letter-spacing:-.04em;
+}
+html[lang="ko"] .hookbox h2{
+  font-size:23px;
+  line-height:1.35;
+}
+html[lang="ko"] .hookbox p,
+html[lang="ko"] p{
+  line-height:1.78;
+}
+html[lang="ko"] .card p,
+html[lang="ko"] .demohead p,
+html[lang="ko"] .resultline{
+  line-height:1.68;
+}
+html[lang="ko"] .kicker,
+html[lang="ko"] .eyebrow{
+  letter-spacing:.035em;
+}
+html[lang="ko"] th,
+html[lang="ko"] td{
+  line-height:1.58;
+}
+
+</style>
+</head>
+<body>
+<div class="progress" id="progress"></div>
+<nav>
+  <div class="shell navin">
+    <a class="brand" href="/" data-i18n="brand">Physical Computing / Note 01</a>
+    <div class="navlinks">
+      <a href="/research/" data-i18n="navArchive">Research Notes</a>
+      <a href="#claim" data-i18n="navClaim">Claim</a>
+      <a href="#primitive" data-i18n="navPrimitive">Primitive</a>
+      <a href="#twin" data-i18n="navTwin">Digital twin</a>
+      <a href="#scaling" data-i18n="navScaling">Scaling</a>
+      <a href="#experiment" data-i18n="navExperiment">Experiment</a>
+      <div class="toolbar">
+        <select id="langSelect" class="select" aria-label="Language">
+          <option value="en">English</option>
+          <option value="ko">한국어</option>
+        </select>
+        <button class="iconbtn" id="themeBtn" aria-label="Toggle theme">◐</button>
+      </div>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="shell">
+    <div class="meta">
+      <span class="pill" data-i18n="metaResearch">Research note</span>
+      <span data-i18n="metaRead">Interactive · ~12 min read</span>
+      <span>2026.08</span><span>Nako Sung · 성낙호</span>
+    </div>
+    <div class="eyebrow"><span class="dot"></span><span data-i18n="eyebrow">programmable photonic variational computing</span></div>
+    <h1 data-i18n="heroTitle">What if causality<br/>could compute the minimum?</h1>
+    <p data-i18n="heroSub">Encode action as physical delay. Let propagation perform addition. Keep only the first wavefront that reaches each state. The result is a machine where an enormous space of histories can collapse as fast as light moves through the fabric.</p>
+
+    <div class="heroquote">
+      <span><span data-i18n="rep">Representation</span><strong data-i18n="repV">Action → time</strong></span>
+      <span><span data-i18n="arith">Arithmetic</span><strong data-i18n="arithV">Propagation → add</strong></span>
+      <span><span data-i18n="comp">Comparison</span><strong data-i18n="compV">Causality → min</strong></span>
+      <span><span data-i18n="mem">Memory</span><strong data-i18n="memV">Winner → predecessor</strong></span>
+    </div>
+
+    <div class="hookgrid">
+      <div class="hookbox">
+        <h2 data-i18n="hookTitle">The interesting part is not that light is fast.</h2>
+        <p data-i18n="hookText">It is that the <em>ordering of arrival itself</em> can become an arithmetic primitive. If the first arrival at a state is guaranteed to dominate every later history, the hardware can prune locally without ever enumerating the complete trajectories.</p>
+        <div class="hookstats">
+          <div class="hookstat"><small data-i18n="statHist">Implicit histories</small><b>16³⁰ ≈ 10³⁶</b></div>
+          <div class="hookstat"><small data-i18n="statFront">Active frontier</small><b data-i18n="statFrontV">16 states</b></div>
+          <div class="hookstat"><small data-i18n="statDepth">Critical depth</small><b data-i18n="statDepthV">30 stages</b></div>
+        </div>
+      </div>
+      <div class="racebox">
+        <h3 data-i18n="raceTitle">See causality choose</h3>
+        <p data-i18n="raceText">Three histories race toward the same state. Only the first is allowed to survive.</p>
+        <div class="racetrack">
+          <div class="track"></div><div class="track"></div><div class="track"></div>
+          <span class="racelabel rl1">A</span><span class="racelabel rl2">B</span><span class="racelabel rl3">C</span>
+          <span class="pulse p1" id="rp1"></span><span class="pulse p2" id="rp2"></span><span class="pulse p3" id="rp3"></span>
+          <span class="finish"></span><span class="racewinner" id="raceWinner">A</span>
+        </div>
+        <div class="raceactions">
+          <span class="mono" style="font-size:11px;color:var(--muted)" id="raceTimes">A 92ps · B 128ps · C 171ps</span>
+          <button class="btn primary" id="raceBtn" data-i18n="raceAgain">Race again</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<div class="shell layout">
+<aside>
+  <div class="toc">
+    <b data-i18n="tocTitle">In this note</b>
+    <a href="#claim" data-i18n="toc1">01. The precise claim</a>
+    <a href="#primitive" data-i18n="toc2">02. The physical primitive</a>
+    <a href="#proof" data-i18n="toc3">03. Why pruning is safe</a>
+    <a href="#twin" data-i18n="toc4">04. Digital twin</a>
+    <a href="#scaling" data-i18n="toc5">05. Exponential histories</a>
+    <a href="#supremacy" data-i18n="toc6">06. What advantage means</a>
+    <a href="#experiment" data-i18n="toc7">07. Lab setup</a>
+    <a href="#falsify" data-i18n="toc8">08. Falsification</a>
+  </div>
+</aside>
+
+<article>
+<section id="claim">
+  <div class="kicker" data-i18n="k1">01 / Scope before spectacle</div>
+  <h2 data-i18n="claimTitle">A claim small enough to be wrong</h2>
+  <p class="lead" data-i18n="claimLead">The first machine is not a universal solver for every stationary-action problem. It targets a narrower class that is clean enough to falsify: discretized additive action over a Markov-complete state.</p>
+  <div class="math">
+    A[P] = Σₖ a(xₖ → xₖ₊₁)<br/>
+    τₖ = τ<sub>base</sub> + α · aₖ<br/>
+    <span class="accent" data-i18n="mathEarliest">earliest arrival = argminₚ A[P]</span>
+  </div>
+  <p data-i18n="claimP">If a local action increment is negative, add the same per-layer baseline delay to all alternatives. Every candidate crosses the same number of layers, so the baseline shifts absolute arrival time without changing the winner.</p>
+  <div class="callout warning">
+    <b data-i18n="warnLeastTitle">Least action, not arbitrary stationary action.</b>
+    <span data-i18n="warnLeast">This machine returns a global minimum of the discretized objective it is programmed with. A physical Lagrangian trajectory can be a stationary point rather than a minimum; that broader class requires a different construction.</span>
+  </div>
+  <div class="grid3">
+    <div class="card"><h3 data-i18n="knownMathT">Known mathematics</h3><p data-i18n="knownMath">Fermat, Bellman optimality and the eikonal equation are mathematically connected. That connection itself is not the novelty.</p></div>
+    <div class="card"><h3 data-i18n="knownHwT">Known hardware idea</h3><p data-i18n="knownHw">Race logic already encodes values as arrival time and uses temporal primitives for graph and dynamic-programming workloads.</p></div>
+    <div class="card"><h3 data-i18n="proposedT">Proposed contribution</h3><p data-i18n="proposed">Compile local action into programmable photonic delay, preserve cumulative action in time, and prune with a first-arrival photonic state element.</p></div>
+  </div>
+</section>
+
+<section id="primitive">
+  <div class="kicker" data-i18n="k2">02 / The machine in one line</div>
+  <h2 data-i18n="primitiveTitle">Delay + race + latch</h2>
+  <div class="pipeline">
+    <div class="pipe"><small data-i18n="pipeStep1">01 / encode</small><b data-i18n="pipe1">Local action</b><div class="mono">aᵢⱼ</div></div>
+    <div class="arrow">→</div>
+    <div class="pipe"><small data-i18n="pipeStep2">02 / propagate</small><b data-i18n="pipe2">True time delay</b><div class="mono">τᵢⱼ = αaᵢⱼ</div></div>
+    <div class="arrow">→</div>
+    <div class="pipe"><small data-i18n="pipeStep3">03 / compare</small><b data-i18n="pipe3">First arrival</b><div class="mono">minᵢ(Tᵢ+τᵢⱼ)</div></div>
+    <div class="arrow">→</div>
+    <div class="pipe"><small data-i18n="pipeStep4">04 / remember</small><b data-i18n="pipe4">Latch winner</b><div class="mono">pred[j] = i*</div></div>
+  </div>
+  <p data-i18n="primitiveP">The critical device is not a passive beam combiner. A passive junction preserves late pulses. We need an active <strong>first-arrival cell</strong>: the first valid pulse fires the output after a fixed latency, records the winning input, and suppresses later arrivals until reset.</p>
+  <div class="math">
+    Tₖ₊₁(j) = g + minᵢ [ Tₖ(i) + τₖ(i,j) ]<br/>
+    predₖ₊₁(j) = argminᵢ [ Tₖ(i) + τₖ(i,j) ]
+  </div>
+  <div class="grid2">
+    <div class="card"><h3 data-i18n="timestampT">Timestamp must survive</h3><p data-i18n="timestampP">The cell may add a fixed gate latency g, but must not re-clock the winner to a new global time origin. Physical time is the accumulated action.</p></div>
+    <div class="card"><h3 data-i18n="stateT">State must be complete</h3><p data-i18n="stateP">If future cost depends on velocity or momentum, position alone is insufficient. A node may need to represent phase-space state such as (q,p).</p></div>
+  </div>
+</section>
+
+<section id="proof">
+  <div class="kicker" data-i18n="k3">03 / The reason exponential histories can disappear</div>
+  <h2 data-i18n="proofTitle">Why early pruning does not change the optimum</h2>
+  <p data-i18n="proofP1">Suppose two different histories reach exactly the same Markov state j. History A arrives first:</p>
+  <div class="math">Tᴬ(j) &lt; Tᴮ(j)</div>
+  <p data-i18n="proofP2">Every future continuation from that complete state is identical for the two histories. For any future action F(j):</p>
+  <div class="math">Tᴬ(j) + F(j) &lt; Tᴮ(j) + F(j)</div>
+  <p data-i18n="proofP3">The late history can never recover. The earliest arrival is therefore a sufficient statistic for every history that collapses into the same state.</p>
+  <div class="bigclaim" data-i18n="bigClaim">Exponential <span class="strike">paths</span> histories can collapse into a polynomial frontier — <em>but only when the state representation makes Bellman’s principle valid.</em></div>
+</section>
+
+<section id="twin">
+  <div class="kicker" data-i18n="k4">04 / Interactive digital twin</div>
+  <h2 data-i18n="twinTitle">Make it fail before building it</h2>
+  <p class="lead" data-i18n="twinLead">The simulator builds random layered action graphs. “Oracle” is exact dynamic programming. “Photonic” propagates physical arrival times, prunes every state to its earliest pulse, and optionally adds edge and gate timing noise.</p>
+
+  <div class="demo">
+    <div class="demohead">
+      <div><h3 data-i18n="expAT">Experiment A — first-arrival equivalence</h3><p data-i18n="expAP">Random continuous edge actions; the ideal model almost surely has a unique winner.</p></div>
+      <span class="badge" data-i18n="badgeTwin">LIVE JS TWIN</span>
+    </div>
+    <div class="demobody">
+      <div class="controls">
+        <div class="control"><label for="width" data-i18n="ctlWidth">States / layer</label><input id="width" type="range" min="3" max="10" value="6"><output id="widthO">6</output></div>
+        <div class="control"><label for="depth" data-i18n="ctlDepth">Decision depth</label><input id="depth" type="range" min="3" max="18" value="10"><output id="depthO">10</output></div>
+        <div class="control"><label for="alpha" data-i18n="ctlAlpha">Delay scale α</label><input id="alpha" type="range" min="25" max="1000" step="25" value="500"><output id="alphaO">500 ps</output></div>
+        <div class="control"><label for="sigma" data-i18n="ctlSigma">Edge + gate σ</label><input id="sigma" type="range" min="0" max="10" step=".1" value=".5"><output id="sigmaO">0.5 ps</output></div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" id="newInstance" data-i18n="btnNew">New instance</button>
+        <button class="btn" id="resampleNoise" data-i18n="btnNoise">Resample noise</button>
+        <button class="btn" id="runMC" data-i18n="btnMC">Run 1,000 trials</button>
+      </div>
+      <div class="metrics">
+        <div class="metric"><span data-i18n="mTraj">Virtual trajectories</span><b id="mPaths">—</b></div>
+        <div class="metric"><span data-i18n="mOracleL">Oracle action</span><b id="mOracle">—</b></div>
+        <div class="metric"><span data-i18n="mRegretL">Photonic regret</span><b id="mRegret">—</b></div>
+        <div class="metric"><span data-i18n="mExactL">Exact path</span><b id="mExact">—</b></div>
+      </div>
+      <svg id="pathSvg" viewBox="0 0 900 340" aria-label="Layered graph with oracle and photonic winning paths"></svg>
+      <div class="legend">
+        <span><i class="sw" style="background:var(--accent)"></i><span data-i18n="legOracle">Oracle path</span></span>
+        <span><i class="sw" style="background:var(--cyan)"></i><span data-i18n="legPhoto">Photonic first-arrival path</span></span>
+        <span data-i18n="legOverlap">overlap appears as one path</span>
+      </div>
+      <div class="resultline" id="mcResult"></div>
+    </div>
+  </div>
+
+  <div class="callout">
+    <b data-i18n="zeroNoiseT">What the zero-noise result means.</b>
+    <span data-i18n="zeroNoiseP">It does not show a speedup. It verifies a more basic architectural invariant: first-arrival pruning is mathematically equivalent to Bellman pruning for this workload class.</span>
+  </div>
+
+  <div class="demo">
+    <div class="demohead">
+      <div><h3 data-i18n="expBT">Experiment B — noise boundary</h3><p data-i18n="expBP">Sweep timing error and watch exact-path accuracy fall as physical arrival ordering becomes ambiguous.</p></div>
+      <span class="badge" data-i18n="badgeMC">MONTE CARLO</span>
+    </div>
+    <div class="demobody">
+      <svg id="noiseSvg" viewBox="0 0 900 360" aria-label="Monte Carlo accuracy versus timing noise"></svg>
+      <p style="font-size:13px;color:var(--muted)" data-i18n="noiseNote">Model: every programmed edge delay and every node forwarding latency receives independent Gaussian timing error. Static calibration error and dynamic jitter should eventually be separated experimentally.</p>
+    </div>
+  </div>
+</section>
+
+<section id="scaling">
+  <div class="kicker" data-i18n="k5">05 / The exponential number is real — and easy to misuse</div>
+  <h2 data-i18n="scalingTitle">Exponential virtual space, polynomial active frontier</h2>
+  <p data-i18n="scalingP">If each of d decisions has b possible states, the number of complete histories is b^d. With first-arrival pruning, only one winner per state needs to continue.</p>
+
+  <div class="demo">
+    <div class="demohead">
+      <div><h3 data-i18n="scaleExpT">Scaling explorer</h3><p data-i18n="scaleExpP">Compare implicit trajectory count, physical fabric, dynamic-programming work and propagation depth.</p></div>
+      <span class="badge" data-i18n="badgeResource">RESOURCE ACCOUNTING</span>
+    </div>
+    <div class="demobody">
+      <div class="controls">
+        <div class="control"><label for="sb" data-i18n="ctlB">State width b</label><input id="sb" type="range" min="2" max="64" value="16"><output id="sbO">16</output></div>
+        <div class="control"><label for="sd" data-i18n="ctlD">Depth d</label><input id="sd" type="range" min="2" max="100" value="30"><output id="sdO">30</output></div>
+        <div class="control"><label for="gate" data-i18n="ctlGate">First-arrival gate latency</label><input id="gate" type="range" min="1" max="100" value="15"><output id="gateO">15 ps</output></div>
+        <div class="control"><label for="edgebase" data-i18n="ctlEdge">Mean propagation / action delay</label><input id="edgebase" type="range" min="1" max="200" value="50"><output id="edgebaseO">50 ps</output></div>
+      </div>
+      <div class="metrics">
+        <div class="metric"><span data-i18n="sHist">Implicit histories b^d</span><b id="sPaths">—</b></div>
+        <div class="metric"><span data-i18n="sEdgesL">Programmable edges</span><b id="sEdges">—</b></div>
+        <div class="metric"><span data-i18n="sFrontL">Active frontier</span><b id="sFrontier">—</b></div>
+        <div class="metric"><span data-i18n="sLatL">Estimated optical latency</span><b id="sLatency">—</b></div>
+      </div>
+      <svg id="scaleSvg" viewBox="0 0 900 360" aria-label="Resource scaling chart"></svg>
+      <div class="resultline" id="scaleText"></div>
+    </div>
+  </div>
+
+  <div class="callout red">
+    <b data-i18n="noExpT">Do not call this an exponential complexity speedup.</b>
+    <span data-i18n="noExpP">The same optimal-substructure that allows photonic pruning also allows classical dynamic programming. The opportunity is to spatialize the min-plus reductions so wall-clock time follows physical propagation depth — not to claim that P=NP has been bypassed.</span>
+  </div>
+</section>
+
+<section id="supremacy">
+  <div class="kicker" data-i18n="k6">06 / A claim the community can actually test</div>
+  <h2 data-i18n="supTitle">Advantage should mean crossover, not rhetoric</h2>
+  <p class="lead" data-i18n="supLead">The fair comparison is not against exhaustive enumeration. It is against the best optimized electronic algorithm for the same graph, accuracy target and I/O assumptions.</p>
+  <div class="math">
+    TTS<sub>photonic</sub>(accuracy, energy, I/O) &lt; TTS<sub>best-electronic</sub>(same accuracy)<br/>
+    and / or<br/>
+    EDP<sub>photonic</sub> &lt; EDP<sub>best-electronic</sub>
+  </div>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th data-i18n="thQ">Quantity</th><th data-i18n="thP">Photonic architecture</th><th data-i18n="thC">Fair classical baseline</th><th data-i18n="thM">What to measure</th></tr></thead>
+      <tbody>
+        <tr><td data-i18n="tr1a">Candidate histories</td><td data-i18n="tr1b">b^d implicit</td><td data-i18n="tr1c">b^d implicit</td><td data-i18n="tr1d">Do not use as a speed metric alone</td></tr>
+        <tr><td data-i18n="tr2a">Work representation</td><td data-i18n="tr2b">O(d·b²) spatial delays / gates</td><td data-i18n="tr2c">O(d·b²) min-plus ops</td><td data-i18n="tr2d">Area, utilization, memory traffic</td></tr>
+        <tr><td data-i18n="tr3a">Critical depth</td><td data-i18n="tr3b">≈ O(d) propagation</td><td data-i18n="tr3c">O(d log b) ideal parallel reduction</td><td data-i18n="tr3d">Measured end-to-end latency</td></tr>
+        <tr><td data-i18n="tr4a">Precision</td><td data-i18n="tr4b">arrival-time margin / jitter</td><td data-i18n="tr4c">digital numeric precision</td><td data-i18n="tr4d">Exact path + regret</td></tr>
+        <tr><td data-i18n="tr5a">Energy</td><td data-i18n="tr5b">laser + gates + programming + detection</td><td data-i18n="tr5c">compute + SRAM/HBM + control</td><td data-i18n="tr5d">Joules per solved instance</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<section id="experiment">
+  <div class="kicker" data-i18n="k7">07 / A build that can fail honestly</div>
+  <h2 data-i18n="expTitle">From fiber bench to integrated fabric</h2>
+  <div class="grid3">
+    <div class="card"><h3 data-i18n="e0T">0 / Fiber digital-physical twin</h3><p data-i18n="e0P">3 states × 3–8 stages. Fixed fiber delays implement transition cost; switched delay segments implement programmable potentials. Validate action↔arrival calibration and the noise model.</p></div>
+    <div class="card"><h3 data-i18n="e1T">1 / First-arrival cell</h3><p data-i18n="e1P">Characterize one active node: set/reset behavior, latency distribution, late-pulse extinction, fan-out and predecessor recording.</p></div>
+    <div class="card"><h3 data-i18n="e2T">2 / Integrated lattice</h3><p data-i18n="e2P">Combine programmable true-time-delay edges with first-arrival cells. Scale width until electronic min-plus reduction becomes the meaningful adversary.</p></div>
+  </div>
+  <h3 data-i18n="specT">First-arrival cell: what must actually be measured</h3>
+  <div class="tablewrap">
+    <table>
+      <thead><tr><th data-i18n="sp1">Parameter</th><th data-i18n="sp2">Why it matters</th><th data-i18n="sp3">Initial target</th></tr></thead>
+      <tbody>
+        <tr><td data-i18n="sp4">Forwarding latency g</td><td data-i18n="sp5">Adds directly to every stage</td><td data-i18n="sp6">&lt;50 ps aspirational; characterize achievable value first</td></tr>
+        <tr><td data-i18n="sp7">Latency jitter σg</td><td data-i18n="sp8">Can reorder near-tied candidates</td><td data-i18n="sp9">Much smaller than the minimum timing margin</td></tr>
+        <tr><td data-i18n="sp10">Late-pulse extinction</td><td data-i18n="sp11">Determines whether the exponential pulse population is actually pruned</td><td data-i18n="sp12">&gt;20 dB proof-of-principle target</td></tr>
+        <tr><td data-i18n="sp13">Reset / refractory time</td><td data-i18n="sp14">Limits instance throughput, not single-instance latency</td><td data-i18n="sp15">Measure separately</td></tr>
+        <tr><td data-i18n="sp16">Winner-port memory</td><td data-i18n="sp17">Allows full trajectory reconstruction</td><td data-i18n="sp18">One predecessor symbol per state</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="callout warning"><b data-i18n="hardT">The hard device problem is the latch, not the delay.</b><span data-i18n="hardP">Programmable photonic delay is an established direction. The distinctive challenge is an ultrafast state element that forwards one winner, suppresses later pulses, preserves temporal ordering, and resets efficiently.</span></div>
+</section>
+
+<section id="falsify">
+  <div class="kicker" data-i18n="k8">08 / How we should try to kill the idea</div>
+  <h2 data-i18n="falTitle">The experiments that matter most are adversarial</h2>
+  <div class="grid2">
+    <div class="card"><h3 data-i18n="f1T">Near-tie test</h3><p data-i18n="f1P">Sweep ΔA until αΔA approaches total timing uncertainty. The measured failure curve should match the digital twin.</p></div>
+    <div class="card"><h3 data-i18n="f2T">State-aliasing test</h3><p data-i18n="f2P">Merge histories that share position but hide different velocity. If pruning fails, show that a phase-space state restores correctness.</p></div>
+    <div class="card"><h3 data-i18n="f3T">Loss adversary</h3><p data-i18n="f3P">Attenuate the true winner without changing delay. It should still win until detector threshold makes it disappear.</p></div>
+    <div class="card"><h3 data-i18n="f4T">Electronic crossover</h3><p data-i18n="f4P">Benchmark the same Bellman update on CPU, GPU and ideally FPGA/ASIC-like hardware with symmetric I/O accounting.</p></div>
+  </div>
+  <div class="bigclaim" data-i18n="finalClaim">If it only beats brute force, we learned little. If it beats optimized min-plus hardware at equal accuracy with full resource accounting, we have a result.</div>
+</section>
+
+<section id="refs">
+  <div class="kicker" data-i18n="refsK">Selected prior art</div>
+  <h2 data-i18n="refsT">The work that defines the boundary</h2>
+  <div class="refs">
+    <div class="ref"><div><a href="https://opg.optica.org/josa/abstract.cfm?uri=josa-64-3-317" target="_blank" rel="noreferrer">J. J. Brandstatter, “Dynamic programming, Fermat’s principle, and the eikonal equation for anisotropic media,” JOSA 64, 317–318 (1974).</a></div></div>
+    <div class="ref"><div><a href="https://www.nist.gov/programs-projects/temporal-computing" target="_blank" rel="noreferrer">NIST Temporal Computing project — race logic, temporal arithmetic and graph traversal.</a></div></div>
+    <div class="ref"><div><a href="https://www.nist.gov/publications/temporal-state-machines-using-temporal-memory-stitch-time-based-graph-computations" target="_blank" rel="noreferrer">Madhavan, Daniels & Stiles, “Temporal State Machines: Using temporal memory to stitch time-based graph computations” (2021).</a></div></div>
+    <div class="ref"><div><a href="https://arxiv.org/abs/2002.05108" target="_blank" rel="noreferrer">Xu et al., “A Scalable Photonic Computer Solving the Subset Sum Problem” (Science Advances, 2020).</a></div></div>
+    <div class="ref"><div><a href="https://www.nature.com/articles/s41567-025-03094-2" target="_blank" rel="noreferrer">“Arbitrary control over multimode wave propagation for machine learning,” Nature Physics (2025).</a></div></div>
+    <div class="ref"><div><a href="https://www.nature.com/articles/s41467-024-45888-7" target="_blank" rel="noreferrer">Pérez-López et al., “General-purpose programmable photonic processor for advanced radiofrequency applications,” Nature Communications (2024).</a></div></div>
+    <div class="ref"><div><a href="https://arxiv.org/abs/2405.00150" target="_blank" rel="noreferrer">Li et al., “An Invertible All-optical Logic Gate on Chip” (2024).</a></div></div>
+  </div>
+</section>
+</article>
+</div>
+
+<footer class="foot"><div class="shell"><div data-i18n="footer">Exploratory technical note · The digital twin is an architectural simulation, not measured hardware data. Monte Carlo results use the stated independent Gaussian timing-error model.</div><div style="margin-top:8px"><a href="/">Nako Sung</a> · <a href="/research/">Research Notes</a> · <a href="https://github.com/nakosung">GitHub</a></div></div></footer>
+
+<script>
+const I18N={
+en:{
+brand:"Nako Sung / Research Note 01",navArchive:"Research Notes",navClaim:"Claim",navPrimitive:"Primitive",navTwin:"Digital twin",navScaling:"Scaling",navExperiment:"Experiment",
+metaResearch:"Research note",metaRead:"Interactive · ~12 min read",eyebrow:"programmable photonic variational computing",
+heroTitle:"What if causality<br/>could compute the minimum?",heroSub:"Encode action as physical delay. Let propagation perform addition. Keep only the first wavefront that reaches each state. The result is a machine where an enormous space of histories can collapse as fast as light moves through the fabric.",
+rep:"Representation",repV:"Action → time",arith:"Arithmetic",arithV:"Propagation → add",comp:"Comparison",compV:"Causality → min",mem:"Memory",memV:"Winner → predecessor",
+hookTitle:"The interesting part is not that light is fast.",hookText:"It is that the <em>ordering of arrival itself</em> can become an arithmetic primitive. If the first arrival at a state is guaranteed to dominate every later history, the hardware can prune locally without ever enumerating the complete trajectories.",
+statHist:"Implicit histories",statFront:"Active frontier",statFrontV:"16 states",statDepth:"Critical depth",statDepthV:"30 stages",raceTitle:"See causality choose",raceText:"Three histories race toward the same state. Only the first is allowed to survive.",raceAgain:"Race again",
+tocTitle:"In this note",toc1:"01. The precise claim",toc2:"02. The physical primitive",toc3:"03. Why pruning is safe",toc4:"04. Digital twin",toc5:"05. Exponential histories",toc6:"06. What advantage means",toc7:"07. Lab setup",toc8:"08. Falsification",
+k1:"01 / Scope before spectacle",claimTitle:"A claim small enough to be wrong",claimLead:"The first machine is not a universal solver for every stationary-action problem. It targets a narrower class that is clean enough to falsify: discretized additive action over a Markov-complete state.",
+mathEarliest:"earliest arrival = argminₚ A[P]",claimP:"If a local action increment is negative, add the same per-layer baseline delay to all alternatives. Every candidate crosses the same number of layers, so the baseline shifts absolute arrival time without changing the winner.",
+warnLeastTitle:"Least action, not arbitrary stationary action.",warnLeast:"This machine returns a global minimum of the discretized objective it is programmed with. A physical Lagrangian trajectory can be a stationary point rather than a minimum; that broader class requires a different construction.",
+knownMathT:"Known mathematics",knownMath:"Fermat, Bellman optimality and the eikonal equation are mathematically connected. That connection itself is not the novelty.",knownHwT:"Known hardware idea",knownHw:"Race logic already encodes values as arrival time and uses temporal primitives for graph and dynamic-programming workloads.",proposedT:"Proposed contribution",proposed:"Compile local action into programmable photonic delay, preserve cumulative action in time, and prune with a first-arrival photonic state element.",
+k2:"02 / The machine in one line",primitiveTitle:"Delay + race + latch",pipeStep1:"01 / encode",pipeStep2:"02 / propagate",pipeStep3:"03 / compare",pipeStep4:"04 / remember",pipe1:"Local action",pipe2:"True time delay",pipe3:"First arrival",pipe4:"Latch winner",
+primitiveP:"The critical device is not a passive beam combiner. A passive junction preserves late pulses. We need an active <strong>first-arrival cell</strong>: the first valid pulse fires the output after a fixed latency, records the winning input, and suppresses later arrivals until reset.",
+timestampT:"Timestamp must survive",timestampP:"The cell may add a fixed gate latency g, but must not re-clock the winner to a new global time origin. Physical time is the accumulated action.",stateT:"State must be complete",stateP:"If future cost depends on velocity or momentum, position alone is insufficient. A node may need to represent phase-space state such as (q,p).",
+k3:"03 / The reason exponential histories can disappear",proofTitle:"Why early pruning does not change the optimum",proofP1:"Suppose two different histories reach exactly the same Markov state j. History A arrives first:",proofP2:"Every future continuation from that complete state is identical for the two histories. For any future action F(j):",proofP3:"The late history can never recover. The earliest arrival is therefore a sufficient statistic for every history that collapses into the same state.",
+bigClaim:"Exponential <span class='strike'>paths</span> histories can collapse into a polynomial frontier — <em>but only when the state representation makes Bellman’s principle valid.</em>",
+k4:"04 / Interactive digital twin",twinTitle:"Make it fail before building it",twinLead:"The simulator builds random layered action graphs. “Oracle” is exact dynamic programming. “Photonic” propagates physical arrival times, prunes every state to its earliest pulse, and optionally adds edge and gate timing noise.",
+badgeTwin:"LIVE JS TWIN",badgeMC:"MONTE CARLO",badgeResource:"RESOURCE ACCOUNTING",expAT:"Experiment A — first-arrival equivalence",expAP:"Random continuous edge actions; the ideal model almost surely has a unique winner.",ctlWidth:"States / layer",ctlDepth:"Decision depth",ctlAlpha:"Delay scale α",ctlSigma:"Edge + gate σ",btnNew:"New instance",btnNoise:"Resample noise",btnMC:"Run 1,000 trials",
+mTraj:"Virtual trajectories",mOracleL:"Oracle action",mRegretL:"Photonic regret",mExactL:"Exact path",legOracle:"Oracle path",legPhoto:"Photonic first-arrival path",legOverlap:"overlap appears as one path",
+zeroNoiseT:"What the zero-noise result means.",zeroNoiseP:"It does not show a speedup. It verifies a more basic architectural invariant: first-arrival pruning is mathematically equivalent to Bellman pruning for this workload class.",
+expBT:"Experiment B — noise boundary",expBP:"Sweep timing error and watch exact-path accuracy fall as physical arrival ordering becomes ambiguous.",noiseNote:"Model: every programmed edge delay and every node forwarding latency receives independent Gaussian timing error. Static calibration error and dynamic jitter should eventually be separated experimentally.",
+k5:"05 / The exponential number is real — and easy to misuse",scalingTitle:"Exponential virtual space, polynomial active frontier",scalingP:"If each of d decisions has b possible states, the number of complete histories is b^d. With first-arrival pruning, only one winner per state needs to continue.",
+scaleExpT:"Scaling explorer",scaleExpP:"Compare implicit trajectory count, physical fabric, dynamic-programming work and propagation depth.",ctlB:"State width b",ctlD:"Depth d",ctlGate:"First-arrival gate latency",ctlEdge:"Mean propagation / action delay",
+sHist:"Implicit histories b^d",sEdgesL:"Programmable edges",sFrontL:"Active frontier",sLatL:"Estimated optical latency",noExpT:"Do not call this an exponential complexity speedup.",noExpP:"The same optimal-substructure that allows photonic pruning also allows classical dynamic programming. The opportunity is to spatialize the min-plus reductions so wall-clock time follows physical propagation depth — not to claim that P=NP has been bypassed.",
+k6:"06 / A claim the community can actually test",supTitle:"Advantage should mean crossover, not rhetoric",supLead:"The fair comparison is not against exhaustive enumeration. It is against the best optimized electronic algorithm for the same graph, accuracy target and I/O assumptions.",
+thQ:"Quantity",thP:"Photonic architecture",thC:"Fair classical baseline",thM:"What to measure",tr1a:"Candidate histories",tr1b:"b^d implicit",tr1c:"b^d implicit",tr1d:"Do not use as a speed metric alone",tr2a:"Work representation",tr2b:"O(d·b²) spatial delays / gates",tr2c:"O(d·b²) min-plus ops",tr2d:"Area, utilization, memory traffic",tr3a:"Critical depth",tr3b:"≈ O(d) propagation",tr3c:"O(d log b) ideal parallel reduction",tr3d:"Measured end-to-end latency",tr4a:"Precision",tr4b:"arrival-time margin / jitter",tr4c:"digital numeric precision",tr4d:"Exact path + regret",tr5a:"Energy",tr5b:"laser + gates + programming + detection",tr5c:"compute + SRAM/HBM + control",tr5d:"Joules per solved instance",
+k7:"07 / A build that can fail honestly",expTitle:"From fiber bench to integrated fabric",e0T:"0 / Fiber digital-physical twin",e0P:"3 states × 3–8 stages. Fixed fiber delays implement transition cost; switched delay segments implement programmable potentials. Validate action↔arrival calibration and the noise model.",
+e1T:"1 / First-arrival cell",e1P:"Characterize one active node: set/reset behavior, latency distribution, late-pulse extinction, fan-out and predecessor recording.",e2T:"2 / Integrated lattice",e2P:"Combine programmable true-time-delay edges with first-arrival cells. Scale width until electronic min-plus reduction becomes the meaningful adversary.",
+specT:"First-arrival cell: what must actually be measured",sp1:"Parameter",sp2:"Why it matters",sp3:"Initial target",sp4:"Forwarding latency g",sp5:"Adds directly to every stage",sp6:"<50 ps aspirational; characterize achievable value first",sp7:"Latency jitter σg",sp8:"Can reorder near-tied candidates",sp9:"Much smaller than the minimum timing margin",sp10:"Late-pulse extinction",sp11:"Determines whether the exponential pulse population is actually pruned",sp12:">20 dB proof-of-principle target",sp13:"Reset / refractory time",sp14:"Limits instance throughput, not single-instance latency",sp15:"Measure separately",sp16:"Winner-port memory",sp17:"Allows full trajectory reconstruction",sp18:"One predecessor symbol per state",
+hardT:"The hard device problem is the latch, not the delay.",hardP:"Programmable photonic delay is an established direction. The distinctive challenge is an ultrafast state element that forwards one winner, suppresses later pulses, preserves temporal ordering, and resets efficiently.",
+k8:"08 / How we should try to kill the idea",falTitle:"The experiments that matter most are adversarial",f1T:"Near-tie test",f1P:"Sweep ΔA until αΔA approaches total timing uncertainty. The measured failure curve should match the digital twin.",f2T:"State-aliasing test",f2P:"Merge histories that share position but hide different velocity. If pruning fails, show that a phase-space state restores correctness.",f3T:"Loss adversary",f3P:"Attenuate the true winner without changing delay. It should still win until detector threshold makes it disappear.",f4T:"Electronic crossover",f4P:"Benchmark the same Bellman update on CPU, GPU and ideally FPGA/ASIC-like hardware with symmetric I/O accounting.",
+finalClaim:"If it only beats brute force, we learned little. If it beats optimized min-plus hardware at equal accuracy with full resource accounting, we have a result.",refsK:"Selected prior art",refsT:"The work that defines the boundary",
+footer:"Exploratory technical note · The digital twin is an architectural simulation, not measured hardware data. Monte Carlo results use the stated independent Gaussian timing-error model.",
+yes:"YES",no:"NO",mcReference:"Reference run: width 8, depth 20, α=500 ps/action. In 1,000 seeded trials, exact-path accuracy was 100% at zero noise; 98.3% at σ=0.1 ps; 92.8% at 0.5 ps; 73.4% at 2 ps; 44.8% at 5 ps.",
+mcResult:"1,000-trial result: exact path {acc}% · mean regret {regret} · virtual trajectories per instance {paths}.",scaleText:"At b={b}, d={d}, the machine represents {paths} complete histories with {edges} local programmable edges and only {front} surviving state arrivals per layer. The estimated physical critical path is {d} stages.",
+noiseAxis:"σ timing error (ps)",scaleLabels:["implicit histories","physical edges","DP ops","depth"]
+},
+ko:{
+brand:"Nako Sung / 연구 노트 01",navArchive:"연구 노트",navClaim:"핵심 주장",navPrimitive:"계산 원리",navTwin:"디지털 트윈",navScaling:"확장성",navExperiment:"실험",
+metaResearch:"연구 노트",metaRead:"인터랙티브 · 약 12분",eyebrow:"프로그래머블 광학 변분 컴퓨팅",
+heroTitle:"빛의 도착 순서만으로<br/>최솟값을 계산할 수 있을까?",heroSub:"비용에 해당하는 작용(action)을 빛의 지연시간으로 바꾸고, 전파 과정이 덧셈을 하게 합니다. 각 상태에는 가장 먼저 도착한 빛만 남깁니다. 그러면 가능한 경로가 폭발적으로 늘어나더라도, 실제 계산은 각 단계에서 필요한 후보만 남기며 진행할 수 있습니다.",
+rep:"표현 방식",repV:"작용 → 시간",arith:"덧셈",arithV:"전파 → 누적",comp:"최솟값 선택",compV:"먼저 도착한 신호",mem:"경로 기억",memV:"승자 → 이전 상태",
+hookTitle:"핵심은 단순히 빛이 빠르다는 데 있지 않습니다.",hookText:"<em>어떤 신호가 먼저 도착했는가</em> 자체를 계산 규칙으로 쓸 수 있다는 점이 중요합니다. 같은 상태에 도달한 여러 후보 가운데 먼저 온 경로가 이후에도 항상 유리하다는 조건이 성립하면, 전체 경로를 끝까지 펼쳐보지 않고 앞단에서부터 불필요한 후보를 제거할 수 있습니다.",
+statHist:"가능한 경로 이력",statFront:"단계별 활성 상태",statFrontV:"16개 상태",statDepth:"필요한 단계 수",statDepthV:"30단계",raceTitle:"도착 순서가 최솟값을 고르는 모습",raceText:"서로 다른 세 경로가 같은 상태를 향해 진행합니다. 가장 먼저 도착한 경로 하나만 다음 단계로 넘어갑니다.",raceAgain:"다시 실행",
+tocTitle:"이 글의 구성",toc1:"01. 정확히 무엇을 주장하는가",toc2:"02. 물리적으로 어떻게 계산하는가",toc3:"03. 앞단 제거가 안전한 이유",toc4:"04. 디지털 트윈",toc5:"05. 경로 수가 폭발할 때",toc6:"06. 실제 우위는 어떻게 검증할까",toc7:"07. 실험 장치",toc8:"08. 반증 실험",
+k1:"01 / 먼저 범위를 분명히 하자",claimTitle:"검증할 수 있을 만큼 구체적인 주장",claimLead:"첫 번째 장치는 모든 정지 작용(stationary action) 문제를 푸는 범용 컴퓨터가 아닙니다. 우선은 ‘현재 상태가 이후의 비용을 결정하기에 충분하고, 각 구간의 비용을 더할 수 있는 문제’로 범위를 좁힙니다.",
+mathEarliest:"최초 도착 경로 = argminₚ A[P]",claimP:"어떤 구간의 비용이 음수가 될 수 있다면, 같은 단계의 모든 후보에 동일한 기준 지연시간을 더하면 됩니다. 모든 후보가 같은 수의 단계를 지나므로 전체 도착시간만 함께 늦어질 뿐, 가장 먼저 도착하는 경로는 바뀌지 않습니다.",
+warnLeastTitle:"여기서 다루는 것은 ‘최소 작용’입니다.",warnLeast:"이 장치는 입력한 이산 목적함수에서 가장 작은 값을 갖는 경로를 찾습니다. 실제 물리계의 Lagrangian 궤적은 최솟값이 아니라 단지 정지점일 수도 있습니다. 그런 더 일반적인 문제까지 다루려면 별도의 물리적 구성이 필요합니다.",
+knownMathT:"이미 알려진 수학적 연결",knownMath:"Fermat 원리, Bellman 최적성 원리, eikonal 방정식 사이의 연결은 오래전부터 알려져 있습니다. 이 연결 자체를 새로 주장하는 것은 아닙니다.",knownHwT:"이미 알려진 계산 방식",knownHw:"레이스 로직(race logic)은 숫자를 도착시간으로 표현하고, 그래프 탐색이나 동적 계획법에서 시간 순서를 계산에 활용합니다.",proposedT:"이번에 검토하는 구조",proposed:"각 구간의 비용을 프로그래머블 광학 지연으로 바꾸고, 누적 비용을 도착시간에 계속 보존하며, 각 상태에서 최초 도착 신호 하나만 남기는 구조입니다.",
+k2:"02 / 계산 원리는 세 가지면 된다",primitiveTitle:"지연 · 선착 판정 · 래치",pipeStep1:"01 / 비용을 넣는다",pipeStep2:"02 / 빛이 누적한다",pipeStep3:"03 / 먼저 온 신호를 고른다",pipeStep4:"04 / 승자를 기억한다",pipe1:"구간별 비용",pipe2:"실제 지연시간",pipe3:"최초 도착 신호",pipe4:"승자 래치",
+primitiveP:"핵심 소자는 단순한 빔 결합기가 아닙니다. 수동 결합기는 늦게 도착한 신호도 그대로 통과시킵니다. 필요한 것은 <strong>최초 도착 셀(first-arrival cell)</strong>입니다. 첫 번째 유효 신호가 들어오면 일정한 지연 후 출력을 내고, 어느 입력이 이겼는지 기록하며, 재설정될 때까지 뒤늦게 도착하는 신호는 차단해야 합니다.",
+timestampT:"도착시간을 그대로 이어가야 합니다",timestampP:"셀이 일정한 처리 지연 g를 더하는 것은 괜찮습니다. 하지만 매 단계마다 시간을 새 기준으로 다시 맞추면 안 됩니다. 누적된 도착시간 자체가 지금까지 쌓인 비용을 나타내기 때문입니다.",stateT:"상태 정보가 충분해야 합니다",stateP:"이후 비용이 속도나 운동량에 따라 달라지는 문제라면 위치만으로 상태를 표현할 수 없습니다. 이때는 (q,p)처럼 위치와 운동량을 함께 포함한 상태 공간이 필요합니다.",
+k3:"03 / 왜 많은 경로를 중간에서 지워도 되는가",proofTitle:"먼저 도착한 경로만 남겨도 최적해가 바뀌지 않는 조건",proofP1:"서로 다른 두 경로가 이후의 미래를 완전히 동일하게 결정하는 상태 j에 도착했다고 합시다. A가 B보다 먼저 도착했습니다:",proofP2:"그 상태 이후에 더해지는 비용은 두 경로에 똑같습니다. 이후 비용을 F(j)라고 하면:",proofP3:"늦게 도착한 B는 이후에 A를 다시 앞지를 수 없습니다. 따라서 같은 상태에 합쳐지는 여러 경로 가운데 가장 먼저 도착한 하나만 남겨도 충분합니다.",
+bigClaim:"가능한 경로 이력이 기하급수적으로 늘어나더라도, <em>Bellman 원리가 성립하는 문제라면</em> 각 단계에서 유지해야 할 후보 수는 상태 수 수준으로 줄일 수 있습니다.",
+k4:"04 / 인터랙티브 디지털 트윈",twinTitle:"실제 장치를 만들기 전에 성립 조건부터 확인해보자",twinLead:"아래 시뮬레이터는 무작위로 층형 비용 그래프를 만듭니다. ‘기준 해’는 정확한 동적 계획법으로 계산하고, ‘광학 해’는 도착시간을 누적하면서 각 상태에서 가장 먼저 도착한 신호만 남깁니다. 각 연결의 지연시간과 셀 처리시간에 오차를 추가해 실제 소자의 한계도 함께 살펴볼 수 있습니다.",
+badgeTwin:"실시간 디지털 트윈",badgeMC:"몬테카를로 검증",badgeResource:"자원 규모 비교",expAT:"실험 A — 최초 도착 방식이 기준 해와 일치하는가",expAP:"각 구간의 비용을 연속 난수로 만들기 때문에 이상적인 조건에서는 최적 경로가 하나로 정해지는 경우가 대부분입니다.",ctlWidth:"단계별 상태 수",ctlDepth:"단계 수",ctlAlpha:"비용 1당 지연시간 α",ctlSigma:"시간 오차 σ",btnNew:"새 문제 만들기",btnNoise:"시간 오차 다시 뽑기",btnMC:"1,000회 검증",
+mTraj:"가능한 전체 경로",mOracleL:"최소 비용",mRegretL:"최적 대비 비용 차이",mExactL:"최적 경로 일치",legOracle:"기준 최적 경로",legPhoto:"최초 도착 방식의 경로",legOverlap:"두 경로가 같으면 하나처럼 보입니다",
+zeroNoiseT:"시간 오차가 없을 때 확인하는 것.",zeroNoiseP:"이 결과만으로 속도 우위를 증명하는 것은 아닙니다. 먼저 확인해야 할 것은 더 기본적인 성질입니다. 이 문제군에서는 ‘각 상태에서 최초 도착 신호만 남기는 방식’이 동적 계획법과 같은 답을 내야 합니다.",
+expBT:"실험 B — 시간 오차를 얼마나 견딜 수 있는가",expBP:"시간 오차를 점점 키우면서, 두 후보의 도착 순서가 모호해질 때 최적 경로 일치율이 어떻게 떨어지는지 확인합니다.",noiseNote:"현재 모델에서는 각 프로그래머블 지연과 셀의 전달시간에 서로 독립적인 정규분포(Gaussian) 오차를 넣습니다. 실제 실험에서는 보정 가능한 고정 오차와 매번 달라지는 시간 지터를 분리해서 측정해야 합니다.",
+k5:"05 / 경로 수가 폭발할 때 무엇이 실제로 늘어나는가",scalingTitle:"전체 경로는 기하급수적으로 늘지만, 살아남는 후보는 상태 수만큼이다",scalingP:"단계가 d개이고 각 단계에서 가능한 상태가 b개라면 전체 경로 수는 b^d입니다. 하지만 최초 도착 방식으로 가지치기하면, 각 상태에서는 가장 빠른 후보 하나만 다음 단계로 넘기면 됩니다.",
+scaleExpT:"확장성 살펴보기",scaleExpP:"가능한 전체 경로 수와 실제 광학 회로 규모, 동적 계획법의 연산량, 그리고 빛이 지나야 하는 단계 수를 함께 비교합니다.",ctlB:"단계별 상태 수 b",ctlD:"단계 수 d",ctlGate:"최초 도착 셀 처리 지연",ctlEdge:"평균 전파·비용 지연",
+sHist:"가능한 전체 경로 b^d",sEdgesL:"프로그래머블 연결 수",sFrontL:"단계별 활성 상태",sLatL:"예상 광학 지연시간",noExpT:"이 결과를 ‘지수 복잡도 문제를 해결했다’고 표현하면 안 됩니다.",noExpP:"같은 경로를 중간에서 줄일 수 있다는 성질은 고전적인 동적 계획법도 이용합니다. 이 구조의 가능성은 최소-합(min-plus) 연산을 공간적으로 동시에 수행해 실제 지연시간을 전파 단계 수에 가깝게 만드는 데 있습니다. 계산 복잡도 이론의 한계를 우회하는 장치라는 뜻은 아닙니다.",
+k6:"06 / 과학 커뮤니티가 실제로 검증할 수 있는 주장",supTitle:"우위는 숫자가 아니라 실제 교차점으로 증명해야 합니다",supLead:"공정한 비교 대상은 전수 탐색이 아닙니다. 같은 문제, 같은 정확도, 같은 입출력 조건에서 가장 잘 최적화된 전자식 알고리즘과 비교해야 합니다.",
+thQ:"비교 항목",thP:"광학 구조",thC:"공정한 전자식 기준",thM:"실제로 측정할 값",tr1a:"가능한 전체 경로",tr1b:"b^d개를 암묵적으로 표현",tr1c:"b^d개를 암묵적으로 표현",tr1d:"이 숫자만으로 속도 우위를 주장하지 않음",tr2a:"계산 자원",tr2b:"O(d·b²)개의 공간적 지연선·셀",tr2c:"O(d·b²)회의 최소-합 연산",tr2d:"회로 면적, 사용률, 메모리 이동량",tr3a:"필요한 계산 단계",tr3b:"약 O(d)의 물리적 전파",tr3c:"이상적인 병렬화 시 O(d log b) 축약",tr3d:"실측 종단간 지연시간",tr4a:"정확도",tr4b:"도착시간 여유와 시간 지터",tr4c:"디지털 수치 정밀도",tr4d:"최적 경로 일치율과 비용 차이",tr5a:"에너지",tr5b:"레이저·셀·설정·검출",tr5c:"연산·SRAM/HBM·제어",tr5d:"문제 한 건을 푸는 데 필요한 에너지",
+k7:"07 / 정직하게 실패할 수 있는 실험",expTitle:"광섬유 실험대에서 집적형 광학 회로까지",e0T:"0 / 광섬유 기반 검증 장치",e0P:"3개 상태 × 3~8단계로 시작합니다. 고정 광섬유 길이로 상태 전이 비용을 만들고, 스위치형 지연선으로 위치별 비용을 바꿉니다. 먼저 프로그램한 비용이 실제 도착시간에 정확히 반영되는지, 시간 오차 모델이 맞는지 확인합니다.",
+e1T:"1 / 최초 도착 셀",e1P:"활성 셀 하나를 집중적으로 측정합니다. 동작·재설정 방식, 전달 지연의 분포, 늦게 온 신호를 얼마나 잘 차단하는지, 여러 출력으로 신호를 나눌 수 있는지, 어느 입력이 이겼는지 기록할 수 있는지를 확인합니다.",e2T:"2 / 집적형 광학 회로망",e2P:"프로그래머블 실제 지연선과 최초 도착 셀을 한 칩에 결합합니다. 단계별 상태 수를 키우면서 전자식 min-plus 연산과 직접 비교할 수 있는 구간을 찾습니다.",
+specT:"최초 도착 셀에서 반드시 측정해야 할 항목",sp1:"항목",sp2:"왜 중요한가",sp3:"초기 목표",sp4:"전달 지연 g",sp5:"모든 단계의 전체 지연에 누적됨",sp6:"50 ps 미만을 장기 목표로 두되, 먼저 실제 가능한 값을 정확히 측정",sp7:"전달시간 지터 σg",sp8:"비슷한 후보들의 도착 순서를 뒤집을 수 있음",sp9:"최소 도착시간 차이보다 충분히 작게",sp10:"늦은 신호 차단 성능",sp11:"불필요한 후보 신호가 실제로 제거되는지 결정",sp12:"초기 실증 목표로 20 dB 이상",sp13:"재설정 시간",sp14:"한 문제의 계산시간보다 반복 처리량을 제한함",sp15:"계산 지연과 별도로 측정",sp16:"승자 입력 기록",sp17:"최종 경로를 역추적하는 데 필요",sp18:"상태마다 이전 상태 정보 하나",
+hardT:"어려운 부분은 지연선보다 ‘최초 도착 셀’입니다.",hardP:"프로그래머블 광학 지연선은 이미 잘 연구된 분야입니다. 이번 구조에서 새로운 공학적 과제는 첫 신호 하나만 전달하고, 뒤늦은 신호를 충분히 차단하며, 누적된 도착시간을 그대로 보존하고, 빠르게 재설정할 수 있는 초고속 상태 소자를 만드는 것입니다.",
+k8:"08 / 가장 까다로운 조건에서 먼저 검증한다",falTitle:"좋은 실험은 성공 사례보다 실패 조건을 먼저 보여줘야 합니다",f1T:"거의 같은 비용을 갖는 두 경로",f1P:"두 경로의 비용 차이 ΔA를 줄여 αΔA가 전체 시간 오차와 비슷해지도록 합니다. 실제 실패율 곡선이 디지털 트윈의 예측과 맞는지 봅니다.",f2T:"상태 정보를 일부러 부족하게 만들기",f2P:"위치는 같지만 속도가 다른 두 경로를 같은 상태로 합칩니다. 이때 가지치기가 실패하는지, 위치와 운동량을 함께 넣으면 다시 정확해지는지 확인합니다.",f3T:"신호 세기만 약하게 만들기",f3P:"최적 경로의 지연시간은 그대로 두고 세기만 줄입니다. 검출 한계 아래로 떨어지기 전까지는 여전히 가장 먼저 도착하는지 확인합니다.",f4T:"전자식 구현과 정면 비교",f4P:"동일한 Bellman 갱신을 CPU, GPU, 가능하면 FPGA나 전용 회로에서도 구현합니다. 입출력 비용도 양쪽에 같은 기준으로 포함합니다.",
+finalClaim:"전수 탐색보다 빠르다는 것만으로는 충분하지 않습니다. 같은 정확도에서 잘 최적화된 최소-합(min-plus) 연산 하드웨어보다 종단간 지연시간이나 에너지가 실제로 낮아질 때 의미 있는 결과가 됩니다.",refsK:"주요 선행 연구",refsT:"이 아이디어의 새로움과 한계를 구분해주는 연구",
+footer:"탐색적 기술 노트 · 디지털 트윈은 아키텍처를 검토하기 위한 시뮬레이션이며 실측 하드웨어 데이터가 아닙니다. 몬테카를로 결과는 본문에 설명한 독립 Gaussian 시간 오차 모델을 사용합니다.",
+yes:"일치",no:"불일치",mcReference:"기준 실험: 상태 수 8, 단계 수 20, α=500 ps/비용 단위. 1,000개 seeded trial에서 exact-path accuracy는 zero noise 100%, σ=0.1 ps 98.3%, 0.5 ps 92.8%, 2 ps 73.4%, 5 ps 44.8%였습니다.",
+mcResult:"1,000회 검증 결과: 최적 경로 일치율 {acc}% · 평균 비용 차이 {regret} · 문제 하나의 가능한 전체 경로 수 {paths}.",scaleText:"b={b}, d={d}일 때 가능한 전체 경로는 {paths}개입니다. 이를 {edges}개의 프로그래머블 연결과 단계당 {front}개의 활성 상태로 표현하며, 빛이 실제로 거쳐야 하는 핵심 계산 깊이는 {d}단계입니다.",
+noiseAxis:"시간 오차 σ (ps)",scaleLabels:["가능한 전체 경로","광학 연결 수","동적 계획 연산","단계 수"]
+}};
+
+let currentLang="en";
+function tr(k){return (I18N[currentLang]&&I18N[currentLang][k])||I18N.en[k]||k}
+function applyLang(lang){
+  currentLang=I18N[lang]?lang:"en";
+  document.documentElement.lang=currentLang;
+  document.getElementById("langSelect").value=currentLang;
+  document.querySelectorAll("[data-i18n]").forEach(el=>{
+    const key=el.dataset.i18n, val=tr(key);
+    if(val!==undefined) el.innerHTML=val;
+  });
+  document.title=currentLang==="ko"?"Least Action으로 계산하기 — Interactive Photonic Computing Note":"Computing by Least Action — Interactive Photonic Computing Note";
+  document.querySelector('meta[name="description"]').content=currentLang==="ko"?"programmable photonic first-arrival dynamics가 minimum-action trajectory를 계산할 수 있는지 탐구하는 interactive research note.":"An interactive research note exploring whether programmable photonic first-arrival dynamics can compute minimum-action trajectories.";
+  renderInstance(); drawNoise(); renderScale();
+}
+function detectLang(){
+  const q=new URLSearchParams(location.search).get("lang");
+  if(q&&I18N[q])return q;
+  const langs=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||"en"]).map(x=>x.toLowerCase());
+  return langs.some(x=>x.startsWith("ko"))?"ko":"en";
+}
+document.getElementById("langSelect").addEventListener("change",e=>applyLang(e.target.value));
+
+document.getElementById('themeBtn').addEventListener('click',()=>{
+  const next=document.documentElement.getAttribute('data-theme')==='light'?'dark':'light';
+  document.documentElement.setAttribute('data-theme',next);
+});
+window.addEventListener("scroll",()=>{
+  const h=document.documentElement.scrollHeight-innerHeight;
+  document.getElementById("progress").style.width=(h>0?scrollY/h*100:0)+"%";
+});
+
+// hero race
+function runRace(){
+  const r=[80+Math.random()*90,80+Math.random()*90,80+Math.random()*90];
+  const min=Math.min(...r), winner=["A","B","C"][r.indexOf(min)];
+  document.getElementById("raceTimes").textContent=`A ${Math.round(r[0])}ps · B ${Math.round(r[1])}ps · C ${Math.round(r[2])}ps`;
+  document.getElementById("raceWinner").textContent=winner;
+  ["rp1","rp2","rp3"].forEach((id,i)=>{
+    const p=document.getElementById(id); p.style.transition="none";p.style.transform="translate(-6px,-5px)";
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      p.style.transition=`transform ${Math.max(.35,r[i]/140)}s cubic-bezier(.2,.8,.2,1)`;
+      const rel=min/r[i], px=rel*100;
+      p.style.transform=`translate(calc(${px}% * 5.2),-5px)`;
+    }));
+  });
+}
+document.getElementById("raceBtn").addEventListener("click",runRace);
+
+// ---------- deterministic digital twin ----------
+function RNG(seed){
+  let s=seed>>>0;
+  return {u(){s=(1664525*s+1013904223)>>>0;return s/4294967296},g(){let u=Math.max(this.u(),1e-12),v=Math.max(this.u(),1e-12);return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v)}}
+}
+let baseSeed=20260807,noiseSeed=73,instance=null;
+function makeInstance(b,d,seed){
+  const r=RNG(seed),c0=Array.from({length:b},()=>r.u()),trans=Array.from({length:Math.max(0,d-1)},()=>Array.from({length:b},()=>Array.from({length:b},()=>r.u()))),cg=Array.from({length:b},()=>r.u());
+  return {b,d,c0,trans,cg};
+}
+function solveDP(inst){
+  const {b,d,c0,trans,cg}=inst;let T=c0.slice(),preds=[];
+  for(let k=0;k<d-1;k++){let nt=Array(b).fill(Infinity),pr=Array(b).fill(-1);for(let j=0;j<b;j++)for(let i=0;i<b;i++){const v=T[i]+trans[k][i][j];if(v<nt[j]){nt[j]=v;pr[j]=i}}T=nt;preds.push(pr)}
+  let j=0,best=Infinity;for(let i=0;i<b;i++){const v=T[i]+cg[i];if(v<best){best=v;j=i}}
+  const path=[j];for(let k=preds.length-1;k>=0;k--){j=preds[k][j];path.push(j)}path.reverse();return {cost:best,path};
+}
+function pathCost(inst,path){let c=inst.c0[path[0]];for(let k=0;k<inst.d-1;k++)c+=inst.trans[k][path[k]][path[k+1]];return c+inst.cg[path[path.length-1]]}
+function solvePhotonic(inst,alpha,sigma,seed){
+  const r=RNG(seed),{b,d,c0,trans,cg}=inst;let T=c0.map(v=>alpha*v+sigma*r.g()+sigma*r.g()),preds=[];
+  for(let k=0;k<d-1;k++){let nt=Array(b).fill(Infinity),pr=Array(b).fill(-1);for(let j=0;j<b;j++)for(let i=0;i<b;i++){const v=T[i]+alpha*trans[k][i][j]+sigma*r.g();if(v<nt[j]){nt[j]=v;pr[j]=i}}for(let j=0;j<b;j++)nt[j]+=sigma*r.g();T=nt;preds.push(pr)}
+  let j=0,best=Infinity;for(let i=0;i<b;i++){const v=T[i]+alpha*cg[i]+sigma*r.g();if(v<best){best=v;j=i}}
+  const path=[j];for(let k=preds.length-1;k>=0;k--){j=preds[k][j];path.push(j)}path.reverse();return {time:best,path,cost:pathCost(inst,path)};
+}
+function sciLog10(logv){if(logv<5)return Math.round(10**logv).toLocaleString();return "10^"+logv.toFixed(logv>30?1:2)}
+function pathCountText(b,d){return sciLog10(d*Math.log10(b))}
+function getA(){return +document.getElementById("alpha").value}
+function getS(){return +document.getElementById("sigma").value}
+function syncControls(){
+  [["width",""],["depth",""],["alpha"," ps"],["sigma"," ps"],["sb",""],["sd",""],["gate"," ps"],["edgebase"," ps"]].forEach(([id,suffix])=>{const x=document.getElementById(id),o=document.getElementById(id+"O");if(o)o.textContent=x.value+suffix})
+}
+function renderInstance(){
+  if(!document.getElementById("width"))return;
+  const b=+document.getElementById("width").value,d=+document.getElementById("depth").value;
+  if(!instance||instance.b!==b||instance.d!==d)instance=makeInstance(b,d,baseSeed);
+  const oracle=solveDP(instance),photo=solvePhotonic(instance,getA(),getS(),noiseSeed),exact=oracle.path.join(",")===photo.path.join(","),regret=photo.cost-oracle.cost;
+  document.getElementById("mPaths").textContent=pathCountText(b,d);document.getElementById("mOracle").textContent=oracle.cost.toFixed(4);document.getElementById("mRegret").textContent=regret.toExponential(2);
+  document.getElementById("mExact").textContent=exact?tr("yes"):tr("no");document.getElementById("mExact").style.color=exact?"var(--accent)":"var(--red)";
+  drawPaths(instance,oracle.path,photo.path);
+  if(!document.getElementById("mcResult").dataset.custom)document.getElementById("mcResult").textContent=tr("mcReference");
+}
+function drawPaths(inst,op,pp){
+  const svg=document.getElementById("pathSvg"),W=900,H=340,marginX=55,marginY=35,d=inst.d,b=inst.b,x=k=>marginX+k*(W-2*marginX)/Math.max(1,d-1),y=i=>b===1?H/2:marginY+i*(H-2*marginY)/(b-1);let s="";
+  for(let k=0;k<d;k++)for(let i=0;i<b;i++)s+=`<circle cx="${x(k)}" cy="${y(i)}" r="3.4" fill="var(--muted)" opacity=".42"/>`;
+  function line(path,color,width,offset=0){let p="";for(let k=0;k<d;k++)p+=(k?" L ":"M ")+x(k)+" "+(y(path[k])+offset);return `<path d="${p}" fill="none" stroke="${color}" stroke-width="${width}" stroke-linecap="round" stroke-linejoin="round"/>`}
+  s+=line(op,"var(--accent)",5,0);s+=line(pp,"var(--cyan)",2.2,op.join(",")===pp.join(",")?0:2.8);
+  for(let k=0;k<d;k++)s+=`<text x="${x(k)}" y="${H-7}" text-anchor="middle" fill="var(--muted)" font-size="10">${k+1}</text>`;svg.innerHTML=s;
+}
+function monteCarlo(b,d,alpha,sigma,trials,seed){let exact=0,regret=0;for(let t=0;t<trials;t++){const inst=makeInstance(b,d,seed+t*17+1),o=solveDP(inst),p=solvePhotonic(inst,alpha,sigma,seed+t*101+9);if(o.path.join(",")===p.path.join(","))exact++;regret+=p.cost-o.cost}return {acc:exact/trials,regret:regret/trials}}
+function runMC(){
+  const b=+document.getElementById("width").value,d=+document.getElementById("depth").value,a=getA(),s=getS(),r=monteCarlo(b,d,a,s,1000,9941),el=document.getElementById("mcResult");
+  el.dataset.custom="1";el.textContent=tr("mcResult").replace("{acc}",(100*r.acc).toFixed(1)).replace("{regret}",r.regret.toExponential(2)).replace("{paths}",pathCountText(b,d));drawNoise();
+}
+function drawNoise(){
+  if(!document.getElementById("noiseSvg"))return;
+  const b=+document.getElementById("width").value,d=+document.getElementById("depth").value,a=getA(),sigmas=[0,.1,.25,.5,1,2,5,10],rows=sigmas.map((s,i)=>({s,...monteCarlo(b,d,a,s,220,4300+i*10000)}));
+  const svg=document.getElementById("noiseSvg"),W=900,H=360,L=60,R=24,T=25,B=48,xmax=10,x=v=>L+v/xmax*(W-L-R),y=v=>T+(1-v)*(H-T-B);let z=`<line x1="${L}" y1="${H-B}" x2="${W-R}" y2="${H-B}" stroke="var(--line)"/><line x1="${L}" y1="${T}" x2="${L}" y2="${H-B}" stroke="var(--line)"/>`;
+  for(let q=0;q<=4;q++){const v=q/4,yy=y(v);z+=`<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="var(--line)" opacity=".5"/><text x="${L-10}" y="${yy+4}" text-anchor="end" fill="var(--muted)" font-size="11">${Math.round(v*100)}%</text>`}
+  let p="";rows.forEach((r,i)=>{p+=(i?" L ":"M ")+x(r.s)+" "+y(r.acc);z+=`<circle cx="${x(r.s)}" cy="${y(r.acc)}" r="4" fill="var(--accent)"/><text x="${x(r.s)}" y="${H-18}" text-anchor="middle" fill="var(--muted)" font-size="10">${r.s}</text>`});
+  z+=`<path d="${p}" fill="none" stroke="var(--accent)" stroke-width="3"/><text x="${(L+W-R)/2}" y="${H-3}" text-anchor="middle" fill="var(--muted)" font-size="11">${tr("noiseAxis")}</text>`;svg.innerHTML=z;
+}
+function renderScale(){
+  if(!document.getElementById("sb"))return;
+  const b=+document.getElementById("sb").value,d=+document.getElementById("sd").value,g=+document.getElementById("gate").value,e=+document.getElementById("edgebase").value,lp=d*Math.log10(b),edges=2*b+Math.max(0,d-1)*b*b,front=b,lat=d*(g+e);
+  document.getElementById("sPaths").textContent=sciLog10(lp);document.getElementById("sEdges").textContent=edges.toLocaleString();document.getElementById("sFrontier").textContent=front.toLocaleString();document.getElementById("sLatency").textContent=lat>=1000?(lat/1000).toFixed(2)+" ns":lat+" ps";
+  document.getElementById("scaleText").textContent=tr("scaleText").replace("{b}",b).replaceAll("{d}",d).replace("{paths}",sciLog10(lp)).replace("{edges}",edges.toLocaleString()).replace("{front}",front);
+  drawScale(lp,Math.log10(Math.max(1,edges)),Math.log10(Math.max(1,edges)),Math.log10(Math.max(1,d)));
+}
+function drawScale(lp,le,ldp,ld){
+  const vals=[lp,le,ldp,ld],labels=tr("scaleLabels"),svg=document.getElementById("scaleSvg"),W=900,H=360,L=70,R=30,T=25,B=55,mx=Math.max(...vals,1),y=v=>H-B-v/mx*(H-T-B),xs=[150,350,550,750];let z="";
+  for(let q=0;q<=4;q++){const v=mx*q/4,yy=y(v);z+=`<line x1="${L}" y1="${yy}" x2="${W-R}" y2="${yy}" stroke="var(--line)" opacity=".45"/><text x="${L-8}" y="${yy+4}" text-anchor="end" fill="var(--muted)" font-size="11">10^${v.toFixed(0)}</text>`}
+  vals.forEach((v,i)=>{const yy=y(v),h=H-B-yy;z+=`<rect x="${xs[i]-43}" y="${yy}" width="86" height="${Math.max(2,h)}" rx="10" fill="${i===0?"var(--accent)":"var(--cyan)"}" opacity="${i===0?1:.55}"/><text x="${xs[i]}" y="${Math.max(16,yy-8)}" text-anchor="middle" fill="var(--text)" font-size="11">10^${v.toFixed(1)}</text><text x="${xs[i]}" y="${H-20}" text-anchor="middle" fill="var(--muted)" font-size="11">${labels[i]}</text>`});
+  svg.innerHTML=z;
+}
+["width","depth","alpha","sigma"].forEach(id=>document.getElementById(id).addEventListener("input",()=>{syncControls();if(id==="width"||id==="depth")instance=null;renderInstance();drawNoise()}));
+["sb","sd","gate","edgebase"].forEach(id=>document.getElementById(id).addEventListener("input",()=>{syncControls();renderScale()}));
+document.getElementById("newInstance").addEventListener("click",()=>{baseSeed=(baseSeed+7919)>>>0;instance=null;renderInstance()});
+document.getElementById("resampleNoise").addEventListener("click",()=>{noiseSeed=(noiseSeed+104729)>>>0;renderInstance()});
+document.getElementById("runMC").addEventListener("click",runMC);
+
+syncControls();
+applyLang(detectLang());
+runRace();
+</script>
+</body>
+</html>
