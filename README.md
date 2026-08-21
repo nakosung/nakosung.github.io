@@ -23,4 +23,5 @@ Personal research site for Nako Sung / 성낙호.
 
 ## Current note
 
+- [Generative Holograms and Delayed Token Commitment](./research/generative-hologram-token-commitment/)
 - [Computing by Least Action](./research/least-action-photonic-computing/)
