@@ -50,7 +50,9 @@
   \vspace{0.7em}
   {\normalsize Position Paper and Research Proposal\par}
   \vspace{0.35em}
-  {\normalsize Nako Sung - August 2026\par}
+  {\normalsize Nako Sung\par}
+  {\small NAVER Cloud, Hyperscale AI\par}
+  {\normalsize August 2026\par}
 \end{center}
 
 \begin{minipage}{0.94\textwidth}
@@ -129,6 +131,24 @@ The physics analogy needs one qualification. \emph{Proper time} belongs to a clo
 
 \callout{\textbf{Invariant precedence, declared chronology.} Causal order is preserved when it exists. Otherwise the system records whose frame defines ``earlier'' and ``later.''}
 
+\subsection{Causal masking is not a world clock}
+
+For a causal decoder, the training interface factorizes a sequence as
+\begin{equation}
+  p_\theta(x_{1:T}) = \prod_{t=1}^{T} p_\theta(x_t \mid x_{<t}),
+\end{equation}
+and applies an attention mask $M_{ij}=-\infty$ for $j>i$. A position therefore cannot read subsequent token positions in that forward pass \cite{vaswani2017attention}. This is an externally supplied information-flow constraint over the chosen serialization, not a learned physical causal order among the events represented by those tokens.
+
+The distinction is not that learned weights are order-neutral. Gradients shape them under the causal factorization, positional scheme, and data distribution, so they can encode order-sensitive regularities. The narrower claim is that the mask itself is not stored as a model parameter, and no explicit observer frame or world-event ordering follows from the weights alone.
+
+At inference time, a frame specification $c_{\mathcal F}$ can condition a readout without changing the weights, just as natural-language instructions and demonstrations can condition model behavior without gradient updates \cite{brown2020language,xie2021incontext}:
+\begin{equation}
+  y_{\mathcal F} = D_\theta\!\left(Z; c_{\mathcal F}\right).
+\end{equation}
+If $Z$ retains information compatible with several viewpoints, $c_{\mathcal F}$ may select a frame-consistent serialization. A useful but deliberately non-mechanistic metaphor is \emph{holographic restoration}: the prompt acts like a boundary condition for reconstructing one view from distributed state. The academic claim is only \emph{frame-conditioned latent readout}. It does not imply that the weights literally implement a hologram, contain a complete frame-independent world, or will preserve invariants without targeted training and evaluation.
+
+\callout{\textbf{Architectural constraint versus learned consequence.} Causal masking enforces token-position access order. Training under that constraint shapes the weights. A frame prompt then conditions a readout; whether the underlying state supports faithful cross-frame reconstruction is an empirical question.}
+
 \section{Persistent Multi-Stream Latent State}
 
 At ordered event $e_n$, let the model maintain
@@ -196,6 +216,8 @@ The defensible advantage is not that a continuous vector contains unlimited info
 
 \textbf{Stage I - conventional pretraining.} Initialize useful representations and modality adapters through language or multimodal predictive training.
 
+Causal masking at this stage enforces left-to-right access in each serialized training example. It should not be treated as supervision for a unique physical chronology. Frame labels, causal graphs, or multi-frame renderings must be supplied if the system is expected to separate causal invariants from observer-dependent order.
+
 \textbf{Stage II - latent-state bootstrapping.} Introduce recurrence, persistent slots, and routing using next-state prediction, entity tracking, masked-state reconstruction, cross-modal prediction, or distillation.
 
 \textbf{Stage III - outcome-driven optimization.} Reinforcement learning is a natural candidate because many internal trajectories may solve a task. Hybrid latent reasoning establishes RL over latent and discrete policies \cite{yue2025hybrid}; here the target policy controls persistent asynchronous state.
@@ -228,6 +250,9 @@ Generate scenes with two or more actors whose lines overlap, alternate, or are i
 \subsection{Frame and receipt-order ablation}
 Compare three schedulers: arrival order only, chosen-frame coordinate time only, and the causal-consistent key $K_O$. Measure replay stability, stale-state writes, causal inversions, and sensitivity to transport jitter. Repeat under alternative declared frames to distinguish invariant causal predictions from frame-dependent chronology.
 
+\subsection{Frame-conditioned reconstruction}
+Serialize the same causal event graph under two or more declared frames, then prompt the model with $c_{\mathcal F}$ to reconstruct each view. Hold causal ancestry, entity identity, and outcomes fixed while allowing only the coordinate order of unrelated events to change. Measure invariant accuracy, frame-dependent chronology, and round-trip consistency under $\mathcal F_1 \rightarrow \mathcal F_2 \rightarrow \mathcal F_1$. Ablate the frame prompt, explicit frame supervision, causal mask, and the order of unrelated training events. Failure to preserve invariants would indicate prompt-conditioned narration rather than restoration of a coherent latent event structure.
+
 \callout{\textbf{Killer ablation.} If asynchronous structured state does not outperform simpler sequential or parallel baselines under matched compute on tasks designed around independent clocks, interruption, and event-order perturbation, the additional architecture is not justified.}
 
 \section{Failure Modes and Falsification}
@@ -239,6 +264,7 @@ Compare three schedulers: arrival order only, chosen-frame coordinate time only,
   \item \textbf{Scheduling overhead:} routing costs more than selective updates save.
   \item \textbf{False concurrency:} parallel slots cosmetically separate one serial computation.
   \item \textbf{Frame leakage:} model predictions that should be causal invariants change when only the declared coordinate frame changes.
+  \item \textbf{Prompted confabulation:} a plausible frame-specific narrative is generated without a cross-frame-consistent latent event structure.
   \item \textbf{Order overclaim:} chronological order is misinterpreted as evidence of causation.
 \end{itemize}
 
@@ -262,7 +288,7 @@ Continuous latent reasoning shows that models need not verbalize every internal 
   \large\bfseries Tokens are interfaces. Events move the world.
 \end{center}
 
-\begin{thebibliography}{9}
+\begin{thebibliography}{11}
 \small
 
 \bibitem{hao2024coconut}
@@ -309,6 +335,21 @@ arXiv:2505.22647, 2025.
 OpenAI,
 ``Sora 2 System Card,''
 September 2025.
+
+\bibitem{vaswani2017attention}
+A. Vaswani, N. Shazeer, N. Parmar, et al.,
+``Attention Is All You Need,''
+NeurIPS, 2017.
+
+\bibitem{brown2020language}
+T. Brown, B. Mann, N. Ryder, et al.,
+``Language Models are Few-Shot Learners,''
+NeurIPS, 2020.
+
+\bibitem{xie2021incontext}
+S. M. Xie, A. Raghunathan, P. Liang, and T. Ma,
+``An Explanation of In-Context Learning as Implicit Bayesian Inference,''
+ICLR, 2022.
 
 \end{thebibliography}
 
