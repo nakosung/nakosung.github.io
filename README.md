@@ -7,6 +7,8 @@ Personal research site for Nako Sung / 성낙호.
 - `/` — profile, current research interests, featured notes
 - `/research/` — research-note archive
 - `/research/<slug>/` — standalone research notes and interactive experiments
+- `/work/` — selected past systems and engineering work
+- `/work/<slug>/` — bilingual historical record and retrospective
 
 ## Publishing a new research note
 
