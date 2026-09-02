@@ -2,6 +2,13 @@
 
 The web note and position paper share the same version number. Git history is the source of truth; this file records the conceptual changes that define each published revision.
 
+## Published paper snapshots
+
+- **v1.1 (2026-09-02):** [paper-v1.1.pdf](./paper-v1.1.pdf) · [paper-v1.1.tex](./paper-v1.1.tex)
+- **v1.0 (2026-08-21):** [paper-v1.0.pdf](./paper-v1.0.pdf) · [paper-v1.0.tex](./paper-v1.0.tex)
+- `paper.pdf` and `paper.tex` remain aliases for the latest version (currently v1.1).
+- A compact version index is available at [paper-versions.html](./paper-versions.html).
+
 ## v1.1 — 2026-09-02
 
 - Added the proposed **null-token + gated continuous-vector recurrence** mechanism.
@@ -13,9 +20,7 @@ The web note and position paper share the same version number. Git history is th
 - Added a monitorability section: once reasoning can proceed without serialization, human-readable traces are no longer structurally guaranteed and monitoring must be deliberately preserved or reconstructed.
 - Added a clearly labeled comparison with public reporting about OpenAI Astra. The paper **does not claim** that Astra uses this null-token mechanism; it treats it as one minimal candidate implementation that may be functionally related to reported recurrent depth.
 - Added recurrent-depth / looped-transformer prior work and new compute-matched ablations.
-- Added an inline null-token recurrence diagram to both the web note and the paper source.
-- Korean copy avoids first-person/meta-writing such as “내가 정리했다”; technical claims are stated directly.
-- `paper.pdf` is generated from `paper.tex` by the repository workflow so the rendered paper stays synchronized with the source.
+- Regenerated `paper.pdf` from the v1.1 LaTeX source.
 
 ## v1.0 — 2026-08-21
 
