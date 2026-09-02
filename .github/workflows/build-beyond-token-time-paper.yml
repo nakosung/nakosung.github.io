@@ -23,15 +23,17 @@ jobs:
           sudo apt-get install -y latexmk texlive-latex-base texlive-latex-extra texlive-fonts-recommended
       - name: Build PDF
         working-directory: research/beyond-token-time
-        run: latexmk -pdf -interaction=nonstopmode -halt-on-error paper.tex
-      - name: Commit generated PDF
+        run: |
+          latexmk -pdf -interaction=nonstopmode -halt-on-error paper.tex
+          cp paper.pdf paper-v1.2.pdf
+      - name: Commit generated PDFs
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add research/beyond-token-time/paper.pdf
+          git add research/beyond-token-time/paper.pdf research/beyond-token-time/paper-v1.2.pdf
           if git diff --cached --quiet; then
-            echo 'paper.pdf already up to date'
+            echo 'PDFs already up to date'
           else
-            git commit -m 'Build Beyond Token Time v1.1 PDF'
+            git commit -m 'Build Beyond Token Time v1.2 PDF'
             git push
           fi
