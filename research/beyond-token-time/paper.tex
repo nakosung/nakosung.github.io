@@ -14,15 +14,16 @@
 \definecolor{soft}{HTML}{F3F7ED}
 \definecolor{rulegray}{HTML}{D4D8D0}
 \definecolor{textgray}{HTML}{424742}
+\definecolor{latent}{HTML}{6F57A8}
 
 \hypersetup{
   colorlinks=true,
   linkcolor=accentdark,
   citecolor=accentdark,
   urlcolor=accentdark,
-  pdftitle={Beyond Token Time},
+  pdftitle={Beyond Token Time v1.1},
   pdfauthor={Nako Sung},
-  pdfsubject={Persistent Multi-Stream Latent World States for Modality-Agnostic Intelligence}
+  pdfsubject={Persistent Multi-Stream Latent World States and Null-Token Continuous Recurrence}
 }
 
 \pagestyle{plain}
@@ -38,6 +39,7 @@
   \vspace{0.35em}}
 
 \newcommand{\streambox}[1]{\fcolorbox{rulegray}{white}{\parbox[c][1.65em][c]{0.19\linewidth}{\centering\scriptsize\textsf{#1}}}}
+\newcommand{\stepbox}[2][rulegray]{\fcolorbox{#1}{white}{\parbox[c][1.75em][c]{0.14\textwidth}{\centering\scriptsize\textsf{#2}}}}
 
 \begin{document}
 
@@ -47,18 +49,19 @@
   \vspace{0.35em}
   {\Large Persistent Multi-Stream Latent World States\\
   for Modality-Agnostic Intelligence\par}
-  \vspace{0.7em}
+  \vspace{0.55em}
   {\normalsize Position Paper and Research Proposal\par}
-  \vspace{0.35em}
+  \vspace{0.25em}
   {\normalsize Nako Sung\par}
   {\small NAVER Cloud, Hyperscale AI\par}
-  {\normalsize August 2026\par}
+  \vspace{0.2em}
+  {\small \textbf{Version 1.1} -- revised September 2, 2026\par}
 \end{center}
 
 \begin{minipage}{0.94\textwidth}
 \small
 \textbf{Abstract.}
-Modern language models maintain rich continuous hidden states, yet their prevailing operating regime repeatedly projects those states through a discrete token interface and advances on a single token clock. Continuous latent reasoning, multi-stream language modeling, and multimodal architectures each relax part of this constraint: intermediate states need not always be verbalized, several token streams can coexist, and heterogeneous observations can share latent computation. Building on these results, this paper advances a broader architectural hypothesis: intelligent computation can be organized around persistent structured state, selective event-triggered updates, and modality-specific readout rather than a single global token sequence. A Latent Event Bus coordinates a Persistent Multi-Stream Latent World State. Its event order respects causal precedence and imposes an explicitly declared observer-relative chronology only where no causal relation exists. The hypothesis is situated against prior work and paired with compute-matched experiments designed to falsify it.
+Modern language models maintain rich continuous hidden states, yet their prevailing operating regime repeatedly projects those states through a discrete token interface and advances on a single token clock. Continuous latent reasoning, multi-stream language modeling, and recurrent-depth transformers each relax part of this constraint. This revision adds a concrete bridge from token reasoning to continuous recurrence: reserve a silent null token; when it is selected, suppress external serialization and feed the next transformer pass with the null-token embedding plus a gated continuous vector from the previous state. Repeated null emissions create variable unrolled depth along the ordinary autoregressive decode loop, without requiring a separate vertical recurrent stack. We then place this primitive inside a broader architectural hypothesis: intelligent computation can be organized around persistent structured state, selective event-triggered updates, and modality-specific readout rather than a single global token sequence. Public reporting about OpenAI's Astra motivates a comparison with recurrent depth, but the null-token mechanism proposed here is an independent architectural hypothesis, not an attribution of Astra's implementation. The paper closes with compute-matched experiments designed to falsify both the recurrence mechanism and the broader Persistent Multi-Stream Latent World State proposal.
 \end{minipage}
 \vspace{0.85em}
 \hrule
@@ -69,16 +72,112 @@ Modern language models maintain rich continuous hidden states, yet their prevail
 
 Autoregressive language models follow a simple rhythm. Given a token prefix $x_{\leq t}$, a transformer computes a continuous hidden representation $h_t$, maps it to a vocabulary distribution, selects a discrete symbol, and repeats:
 \begin{equation}
-  h_t \longrightarrow x_{t+1} \longrightarrow h_{t+1}.
+  h_t \longrightarrow y_t \longrightarrow E(y_t) \longrightarrow h_{t+1}.
 \end{equation}
 
-This rhythm is well suited to language generation. Whether internal computation must follow the same rhythm is less clear. Coconut weakens that coupling by feeding a hidden state back as a subsequent input embedding rather than decoding every intermediate state into a token \cite{hao2024coconut}. Removing intermediate tokens, however, addresses only one constraint. Computation is still commonly framed as a single sequence advancing under a global step index.
+This rhythm is well suited to language generation. Whether internal computation must follow the same rhythm is less clear. Coconut weakens that coupling by feeding a hidden state back as a subsequent input embedding rather than decoding every intermediate state into a token \cite{hao2024coconut}. Removing intermediate text, however, addresses only one constraint. Computation is still commonly framed as a single sequence advancing under a global step index.
 
 Interactive environments are not synchronized this way. A conversational agent may listen, update beliefs, plan, speak, and detect interruptions concurrently. A robot may update control at high frequency while invoking planning only when needed. A scene contains many entities whose states evolve at different rates.
 
-\callout{\textbf{Central question.} What if the fundamental unit of intelligent computation were not the next token, but the next relevant event?}
+\callout{\textbf{Central question.} What if a token were only an interface action, while additional computation could continue in continuous state until an event or interface requires commitment?}
 
-The contribution lies not in latent reasoning, parallel streams, multimodality, or reinforcement learning alone, but in their architectural combination: a general agent maintains persistent, structured, asynchronous latent processes and updates them in response to events rather than token production.
+The contribution lies not in latent reasoning, recurrent depth, parallel streams, multimodality, or reinforcement learning alone, but in a concrete interface primitive and its architectural combination with persistent event-driven state.
+
+\section{Chain-of-Thought as Discrete Recurrence}
+
+Explicit chain-of-thought (CoT) can be viewed as a stable form of adaptive recurrent computation. The model emits an intermediate reasoning token, re-embeds that token, invokes the same transformer again, and continues for a variable number of steps. The recurrent loop is therefore externalized through a discrete semantic channel:
+\begin{equation}
+ h_t \rightarrow y_t^{\mathrm{reason}} \rightarrow E(y_t^{\mathrm{reason}}) \rightarrow h_{t+1}.
+\end{equation}
+
+This perspective helps explain why CoT was such an effective route to adaptive computation. Supervised expert traces provide a variable-length training target without requiring the model to invent an unobserved halting policy from scratch. The cost is a discrete bottleneck: every intermediate state that participates in the loop must be compressed into a token or short textual fragment before being fed back.
+
+\callout{\textbf{Interpretation.} CoT is a recurrent loop whose state transition is forced through a human-readable discrete bottleneck.}
+
+Once a model already possesses strong reasoning behavior, a natural next step is not necessarily to discard the autoregressive loop. It is to relax the bottleneck inside that loop.
+
+\section{Null-Token Continuous Recurrence}
+
+Introduce a reserved internal action $\varnothing$ (a silent or null token). Let $y_t$ be the action selected by the language-model head, $E(y_t)$ its token embedding, and let a projection of the current hidden state define a continuous carry vector
+\begin{equation}
+ z_t = P(h_t), \qquad g_t = \sigma(W_g h_t).
+\end{equation}
+The next input embedding is
+\begin{equation}
+ x_{t+1} = E(y_t) + \mathbf{1}[y_t=\varnothing]\, g_t \odot z_t.
+ \label{eq:nullmix}
+\end{equation}
+
+If $y_t$ is an ordinary token, the model behaves conventionally. If $y_t=\varnothing$, the runtime suppresses that action from the user-visible stream and performs another transformer pass using the null embedding plus gated continuous carry. The language-model head then chooses again between another silent step and a visible token.
+
+\begin{figure*}[t]
+\centering
+\small
+\textbf{Standard token step}\par
+\vspace{0.35em}
+\stepbox{token $y_t$}\ $\rightarrow$ \stepbox{embedding $E(y_t)$}\ $\rightarrow$ \stepbox{Transformer}\ $\rightarrow$ \stepbox[latent]{$h_t$}\ $\rightarrow$ \stepbox{LM head}\ $\rightarrow$ \stepbox{visible token}
+
+\vspace{0.8em}
+\textbf{Silent null step}\par
+\vspace{0.35em}
+\stepbox[accent]{$\varnothing$}\ $\rightarrow$ \stepbox{$E(\varnothing)$}\ $+$ \stepbox[accent]{$g_t \odot z_t$}\ $\rightarrow$ \stepbox{Transformer}\ $\rightarrow$ \stepbox{LM head}\ $\rightarrow$ \stepbox[accent]{$\varnothing$ or token}
+
+\vspace{0.5em}
+\fcolorbox{accent}{soft}{\parbox{0.88\textwidth}{\centering\small
+The recurrence lives in the ordinary decode loop, not in a separately drawn vertical stack. A trajectory such as \texttt{Q $\rightarrow$ NULL $\rightarrow$ NULL $\rightarrow$ NULL $\rightarrow$ A} spends several full transformer passes before committing to the answer token.}}
+\caption{Proposed null-token continuous recurrence. The null action advances compute time while visible token time need not advance.}
+\label{fig:nullrecurrence}
+\end{figure*}
+
+Repeated null emissions increase \emph{unrolled} computation depth along the generation axis. A fixed number of silent passes is functionally close to a tied-weight depth expansion. The more interesting regime is variable recurrence, in which the model learns how much additional computation a particular state requires. Loop count becomes a policy decision, resembling adaptive computation time but implemented through the existing autoregressive scheduler.
+
+\subsection{Always-on gated carry}
+
+Equation~\ref{eq:nullmix} is the minimal design because continuous carry is activated only after a null action. A more general form keeps the side channel available at every step:
+\begin{equation}
+ x_{t+1} = E(y_t) + g_t \odot z_t,
+ \label{eq:alwayson}
+\end{equation}
+with training free to drive $g_t$ toward zero when the discrete token is sufficient. The token then serves as a semantic anchor and interface action rather than the sole carrier of recurrent state.
+
+\subsection{From one carry vector to many streams}
+
+Let persistent state contain $K$ components $Z_t=[z_t^{(1)},\ldots,z_t^{(K)}]$. A controller may mix them into the next computation:
+\begin{equation}
+ x_{t+1}=E(y_t)+\sum_{k=1}^{K}g_t^{(k)}\odot P_k(z_t^{(k)}).
+ \label{eq:multimix}
+\end{equation}
+This is the bridge from continuous recurrence to the broader multi-stream proposal. A single textual CoT serializes one sequence of commitments. Multiple continuous components can simultaneously preserve a visual hypothesis, linguistic interpretation, plan, candidate explanations, sensor state, or other internal processes before any one of them must become text.
+
+\subsection{Training the halting policy}
+
+Reinforcement learning is a natural stage for variable recurrence because there is generally no unique target latent trajectory or correct number of silent passes. One can reward task success while charging for excess recurrent compute:
+\begin{equation}
+ R = R_{\mathrm{task}} - \lambda_n N_{\varnothing} - \lambda_s C_{\mathrm{stability}} - \lambda_m C_{\mathrm{monitor}}.
+\end{equation}
+This does not imply that RL is mathematically required. Distillation, latent supervision, or curriculum methods can be used when targets for intermediate states are available. The practical attraction of outcome-driven optimization is that it avoids labeling an invisible trace.
+
+\subsection{Serving implications}
+
+The API surface can be small: a reserved internal action and an option enabling continuous carry. The runtime change is more substantial. Each active sequence must retain latent side state; the decode loop must accept dynamically constructed input embeddings; silent steps must still update KV cache consistently; batching and scheduling must account for variable numbers of internal passes; and the sampler must prevent null actions from entering the user-visible output stream. Conceptual simplicity should therefore not be confused with a one-line inference-engine patch.
+
+\section{Astra as a Comparison, Not an Attribution}
+
+The Information reported that OpenAI's Astra uses ``recurrent depth'' or a ``looped transformer'' and can repeatedly process information before emitting the next word; the report also states that OpenAI limits the technique so a legible CoT remains available \cite{palazzolo2026astra}. OpenAI's own public material states that Astra will be deployed with additional chain-of-thought monitoring, but does not disclose the null-token mechanism proposed here \cite{openai2026astra}.
+
+OpenAI Chief Scientist Jakub Pachocki subsequently stated that the computation-graph depth of OpenAI's present frontier models, including Astra, is within a factor of two of GPT-4, and that the negative trend in CoT monitorability is driven by reasons not contingent on architecture changes \cite{pachocki2026monitorability}. This is important evidence against treating architecture reporting as a complete explanation of monitorability.
+
+\callout{\textbf{Boundary of the claim.} The null-token plus gated-latent recurrence in this paper is our proposed mechanism. It is one minimal way to realize functionally similar unrolled recurrent computation while preserving the ordinary token-generation loop. Public information does not establish that Astra uses this exact mechanism.}
+
+Looped and recurrent-depth transformers are themselves an active research direction. Recent studies show that repeated tied-depth computation can support implicit compositional reasoning, depth extrapolation, and parameter-efficient depth scaling \cite{kohli2026loop,li2026deeploop}; LOTUS further studies looped transformers as a bridge between latent and explicit reasoning \cite{fan2026lotus}. The proposed null action differs primarily in \emph{where the recurrence is controlled}: the decode policy itself decides whether to spend another continuous step before serialization.
+
+\section{Monitorability after the Discrete Bottleneck}
+
+Text CoT is unusual because computation and a human-readable trace are partially aligned: extra reasoning steps tend to leave extra visible symbols. Once multiple transformer passes can occur behind null actions or continuous side state, that alignment is no longer structural. A visible answer may expose only sparse checkpoints of a richer latent trajectory.
+
+This does not imply that latent recurrence is the sole cause of declining monitorability. The public OpenAI statement explicitly warns against that conclusion \cite{pachocki2026monitorability}. The narrower implication is architectural: \emph{readability is no longer an automatic by-product of the computation loop}. If oversight matters, it must become an explicit research objective through auxiliary decoders, probes, sparse verbal checkpoints, causal interventions on latent state, or other monitoring methods.
+
+\callout{\textbf{From explainability by serialization to monitorability by design.} A model that can think without speaking may still be monitorable, but the monitoring channel has to be deliberately preserved or reconstructed.}
 
 \section{Modalities as Lenses}
 
@@ -100,12 +199,12 @@ At the behavioral level, this capability demonstrates that one generator can coo
 
 \section{From Token Time to Event Time}
 
-At generation time, a standard autoregressive model couples each increment to a token position. Call this cadence \emph{token time}. A general agent may instead maintain audio, vision, planning, memory, and motor processes with different update schedules:
+At generation time, a standard autoregressive model couples each visible increment to a token position. Call this cadence \emph{token time}. Null-token recurrence separates this clock from the number of model evaluations: several silent passes can advance compute while visible token time remains unchanged. A general agent may further maintain audio, vision, planning, memory, and motor processes with different update schedules:
 \begin{equation}
   t_{\mathrm{token}} \neq t_{\mathrm{compute}} \neq t_{\mathrm{world}}.
 \end{equation}
 
-Computation may instead be scheduled by events $e_1,e_2,\ldots$ that activate only the relevant state components. A new acoustic observation may update speaker and semantic state; a sudden obstacle may activate vision, planning, and control. If no verbal response is needed, no language token need be produced.
+Computation may be scheduled by events $e_1,e_2,\ldots$ that activate only relevant state components. A new acoustic observation may update speaker and semantic state; a sudden obstacle may activate vision, planning, and control; an internal null action may request another reasoning pass. If no external response is needed, no visible language token need be produced.
 
 \subsection{Observer-relative event order}
 
@@ -147,8 +246,6 @@ By analogy with in-context conditioning, a frame specification $c_{\mathcal F}$ 
 \end{equation}
 If $Z$ retains information compatible with several viewpoints, $c_{\mathcal F}$ may induce a frame-consistent serialization. This possibility is termed \emph{frame-conditioned latent readout}. As an intuition rather than a mechanism claim, it resembles \emph{holographic restoration}: the prompt acts like a boundary condition that reconstructs one view from distributed state. The metaphor does not imply that the weights literally implement a hologram, contain a complete frame-independent world, or preserve invariants without targeted training and evaluation.
 
-\callout{\textbf{Architectural constraint versus learned consequence.} Causal masking enforces access order over token positions, and training under that constraint shapes the weights. Whether a frame prompt can recover faithful cross-frame views from the resulting state is an empirical question.}
-
 \section{Persistent Multi-Stream Latent State}
 
 At event $e_n$ in the declared order, let the model maintain
@@ -188,9 +285,7 @@ $\downarrow$ serialize only when needed $\downarrow$
 \streambox{SPEECH}\hfill\streambox{ACTION}\hfill\streambox{IMAGE}\hfill\streambox{TOKENS}
 \end{center}
 
-The Latent Event Bus is a shared representational and routing layer that connects persistent latent streams to observations and outputs. Modality-specific encoders and decoders provide interfaces without prescribing the internal reasoning format.
-
-Latent continuation offers one implementation primitive: an internal action bypasses vocabulary decoding and feeds a projected hidden state back into computation. This mechanism is closely related to Coconut \cite{hao2024coconut} and is not the primary novelty claimed here.
+The Latent Event Bus is a shared representational and routing layer that connects persistent latent streams to observations and outputs. Modality-specific encoders and decoders provide interfaces without prescribing the internal reasoning format. Null-token recurrence is one candidate mechanism for asking this state to spend additional compute without forcing an external serialization step.
 
 \section{Delayed Commitment}
 
@@ -200,17 +295,19 @@ The argument does not depend on a continuous vector containing unlimited informa
 
 \section{Relation to Prior Work}
 
-\textbf{Coconut.} Continuous hidden-state reasoning and latent alternatives are established \cite{hao2024coconut}. The present proposal extends that state across perception, reasoning, and action.
+\textbf{Coconut.} Continuous hidden-state reasoning and latent alternatives are established \cite{hao2024coconut}. The present proposal turns continuous carry into an action inside the existing decode loop and extends state across perception, reasoning, and action.
 
 \textbf{Perceiver IO.} General latent processing across heterogeneous inputs and outputs is established \cite{jaegle2021perceiver}. The present proposal adds recurrent persistence and selective event-triggered updates.
 
-\textbf{Hybrid latent reasoning.} Reinforcement learning can optimize latent and discrete reasoning policies \cite{yue2025hybrid}. Here it would train update and scheduling policies; RL itself is not the claimed novelty.
+\textbf{Hybrid latent reasoning.} Reinforcement learning can optimize latent and discrete reasoning policies \cite{yue2025hybrid}. Here it would train the null-step policy, latent carry, routing, and scheduling; RL itself is not the claimed novelty.
 
 \textbf{Parallel latent test-time scaling.} Multiple latent trajectories can be sampled and ranked \cite{you2026parallel}. Here, by contrast, streams may represent entities, goals, modalities, or hypotheses within one state.
 
 \textbf{Multi-Stream LLMs.} Several token streams can read and write in parallel \cite{su2026multistream}. Here internal streams need be neither tokenized nor synchronized to one update clock.
 
-\callout{\textbf{Intended novelty.} The proposed combination is persistent structured latent multiplicity, event-driven scheduling, and explicit observer-relative event order.}
+\textbf{Looped / recurrent-depth Transformers.} Reusing shared blocks can increase effective depth and enable reasoning gains or depth extrapolation \cite{kohli2026loop,li2026deeploop,fan2026lotus}. The null-token proposal controls recurrence through a generation action and mixes a continuous side state into the next ordinary input path.
+
+\callout{\textbf{Intended novelty.} The proposed combination is a null-controlled continuous recurrence primitive plus persistent structured latent multiplicity, event-driven scheduling, and explicit observer-relative event order.}
 
 \section{Training}
 
@@ -218,19 +315,30 @@ The argument does not depend on a continuous vector containing unlimited informa
 
 Causal masking at this stage enforces left-to-right access within each serialized example; it does not supervise a unique physical chronology. Separating causal invariants from observer-dependent order therefore requires additional training signals, such as frame labels, causal graphs, or multi-frame renderings.
 
-\textbf{Stage II - latent-state bootstrapping.} Recurrence, persistent slots, and routing are introduced through next-state prediction, entity tracking, masked-state reconstruction, cross-modal prediction, or distillation.
+\textbf{Stage II - explicit reasoning bootstrap.} Existing supervised or reinforced CoT provides a stable reasoning policy. This stage is valuable precisely because it teaches variable-length computation through a readable discrete trace.
 
-\textbf{Stage III - outcome-driven optimization.} Reinforcement learning is a natural candidate because many internal trajectories may solve the same task. Hybrid latent reasoning establishes RL over latent and discrete policies \cite{yue2025hybrid}; here the target policy would control persistent asynchronous state.
+\textbf{Stage III - continuous recurrence.} Introduce the null action, latent carry projection, and gate. Distill from explicit CoT if desired, then optimize outcome quality under a recurrence budget. The model learns when a visible token is useful and when another continuous step is worth its compute.
 
-A generic objective can reward task success while penalizing unnecessary computation, unnecessary serialization, unstable recurrent dynamics, and violations of the declared event order:
+\textbf{Stage IV - persistent multi-stream state.} Add recurrent slots and event routing through next-state prediction, entity tracking, masked-state reconstruction, cross-modal prediction, or distillation. Outcome-driven optimization can then learn which components to update and when.
+
+A generic objective can combine task success with penalties for unnecessary computation, unnecessary serialization, unstable recurrence, monitoring loss, and violations of declared event order:
 \begin{equation}
 \mathcal L = \mathcal L_{\mathrm{task}} +
-\lambda_c C + \lambda_s S + \lambda_d D + \lambda_o O.
+\lambda_c C + \lambda_s S + \lambda_d D + \lambda_m M + \lambda_o O.
 \end{equation}
 
 \section{Experimental Program}
 
-An initial study should be deliberately small and compare four compute-matched systems: (A) sequential discrete reasoning, (B) parallel token streams, (C) sequential latent recurrence, and (D) asynchronous multi-stream latent state.
+The recurrence mechanism should first be tested independently of the larger architecture. A compute-matched study can compare (A) explicit text CoT, (B) fixed tied recurrent depth, (C) learned variable null-token recurrence, and (D) variable recurrence with persistent multi-stream state.
+
+\subsection{Null recurrence under matched compute}
+Hold total transformer FLOPs approximately constant. Compare accuracy, visible reasoning-token count, silent-step count, latency, and calibration. Sweep the maximum null-step budget and the penalty $\lambda_n$. If variable recurrence merely spends more compute without improving the frontier, it is not useful.
+
+\subsection{Gate and carry ablation}
+Compare token-only input, a null embedding without continuous carry, ungated carry, gated carry as in Eq.~\ref{eq:nullmix}, and always-on gated carry as in Eq.~\ref{eq:alwayson}. This separates the benefit of extra repeated depth from the benefit of carrying continuous state between passes.
+
+\subsection{Monitorability probe}
+Train auxiliary decoders or probes that reconstruct intermediate reasoning concepts, task subgoals, or predicted next visible CoT checkpoints from silent states. Measure decodability as the null budget increases. Test sparse explicit checkpoints as a compromise between full textual reasoning and completely latent recurrence.
 
 \subsection{Asynchronous multi-entity world}
 Construct an environment with independently evolving entities and heterogeneous update rates. As entity count increases, measure entity-state accuracy, retention, cross-stream interference, FLOPs, latency, and memory. Permute the delivery order of causally unrelated events while retaining frame timestamps; a correct implementation should reproduce the same observer-relative state trajectory.
@@ -239,7 +347,7 @@ Construct an environment with independently evolving entities and heterogeneous 
 Early observations support several hypotheses; later evidence resolves them. Measure hypothesis diversity, contradiction recovery, and revision cost.
 
 \subsection{Interruption}
-Begin an output or action and inject new information before completion. Measure reaction latency, reusable computation, consistency, and unnecessary recomputation.
+Begin an output or action and inject new information before completion. Measure reaction latency, reusable computation, consistency, and unnecessary recomputation. Compare whether silent latent steps can be reused more effectively than already-serialized CoT.
 
 \subsection{Cross-modal action without text}
 Provide vision and audio and require a non-linguistic action. Compare explicit text-mediated pipelines against direct latent-state-to-action behavior.
@@ -248,19 +356,23 @@ Provide vision and audio and require a non-linguistic action. Compare explicit t
 Generate scenes with two or more actors whose lines overlap, alternate, or are interrupted. Measure identity persistence, speaker-to-voice binding, lip synchronization, turn-order accuracy, cross-actor leakage, and recovery from an unscripted event. Under matched compute, compare an entangled baseline with explicit actor-indexed persistent streams.
 
 \subsection{Frame and receipt-order ablation}
-Compare three schedulers: arrival order alone, chosen-frame coordinate time alone, and the causal-consistent key $K_O$. Measure replay stability, stale-state writes, causal inversions, and sensitivity to transport jitter. Repeat the experiment under alternative declared frames to distinguish invariant causal predictions from frame-dependent chronology.
+Compare three schedulers: arrival order alone, chosen-frame coordinate time alone, and the causal-consistent key $K_O$. Measure replay stability, stale-state writes, causal inversions, and sensitivity to transport jitter. Repeat under alternative declared frames to distinguish invariant causal predictions from frame-dependent chronology.
 
 \subsection{Frame-conditioned reconstruction}
-Serialize the same causal event graph under two or more declared frames, then condition the model on $c_{\mathcal F}$ to reconstruct each view. Hold causal ancestry, entity identity, and outcomes fixed; vary only the coordinate order of unrelated events. Measure invariant accuracy, frame-dependent chronology, and round-trip consistency under $\mathcal F_1 \rightarrow \mathcal F_2 \rightarrow \mathcal F_1$. Ablate the frame prompt, explicit frame supervision, causal mask, and the order of unrelated training events. Failure to preserve invariants would indicate prompt-conditioned narration rather than reconstruction from a coherent latent event structure.
+Serialize the same causal event graph under two or more declared frames, then condition the model on $c_{\mathcal F}$ to reconstruct each view. Hold causal ancestry, entity identity, and outcomes fixed; vary only the coordinate order of unrelated events. Measure invariant accuracy, frame-dependent chronology, and round-trip consistency under $\mathcal F_1 \rightarrow \mathcal F_2 \rightarrow \mathcal F_1$.
 
-\callout{\textbf{Killer ablation.} If asynchronous structured state does not outperform simpler sequential or parallel baselines under matched compute on tasks designed around independent clocks, interruption, and event-order perturbation, the additional architecture is not justified.}
+\callout{\textbf{Killer ablation.} If variable null-token recurrence does not beat compute-matched explicit CoT and fixed-depth baselines, or if the continuous carry can be removed without loss, the recurrence primitive is not justified. If asynchronous structured state then fails to beat simpler sequential or parallel baselines on independent-clock and interruption tasks, the broader architecture is not justified either.}
 
 \section{Failure Modes and Falsification}
 
 \begin{itemize}
+  \item \textbf{Overthinking:} excessive null recurrence degrades an otherwise correct state.
+  \item \textbf{Null collapse:} the model emits too many or too few silent steps regardless of task difficulty.
+  \item \textbf{Carry bypass:} the continuous side channel is ignored, so gains come only from extra repeated depth.
+  \item \textbf{Latent drift:} recurrent updates push state outside the pretrained distribution.
+  \item \textbf{Monitorability collapse:} useful reasoning moves into states that available probes cannot recover or audit.
   \item \textbf{Stream collapse:} multiple slots converge to effectively identical representations.
   \item \textbf{Fragmentation:} isolated streams fail to maintain global consistency.
-  \item \textbf{Latent drift:} recurrent updates push state outside the pretrained distribution.
   \item \textbf{Scheduling overhead:} routing costs exceed the savings from selective updates.
   \item \textbf{False concurrency:} parallel slots merely disguise a serial computation.
   \item \textbf{Frame leakage:} changing only the declared frame alters predictions that should remain invariant.
@@ -270,25 +382,30 @@ Serialize the same causal event graph under two or more declared frames, then co
 
 \section{Discussion}
 
-Because text is abundant and next-token prediction scales well, language models encourage communication, reasoning, memory, and scheduling to be organized around one sequence. Yet the architecture through which a capability is discovered need not be the architecture through which it is best organized.
+Because text is abundant and next-token prediction scales well, language models encourage communication, reasoning, memory, and scheduling to be organized around one sequence. CoT made this constraint productive by turning token generation itself into a robust adaptive-compute loop. The same success now suggests a minimal relaxation: keep the loop, but stop requiring every recurrent state transition to pass through a semantic token.
 
-The world does not arrive as a sentence. A room contains many entities at once. Perception need not pause during action, and planning need not stop when new evidence arrives. One hypothesis need not become a sentence before another can coexist with it.
+The world does not arrive as a sentence. A room contains many entities at once. Perception need not pause during action, and planning need not stop when new evidence arrives. One hypothesis need not become a sentence before another can coexist with it. A silent null action can separate visible token time from compute time; persistent streams can further separate compute time from world time.
+
+The price is that human readability can no longer be assumed from the existence of a reasoning loop. Once internal computation is allowed to proceed without serialization, monitorability has to be preserved deliberately rather than inherited accidentally from the token bottleneck.
 
 Event time should not become another hidden global counter. The event bus instead requires a declared perspective: preserve causal precedence, identify the observer and reference frame that determine chronology, and distinguish local receipt time from modeled occurrence time.
 
-\callout{\textbf{Question for architecture.} Why should language simultaneously serve as interface, reasoning trace, memory representation, scheduler, and computational clock?}
+\callout{\textbf{Question for architecture.} Why should language simultaneously serve as interface, reasoning trace, recurrent state carrier, memory representation, scheduler, and computational clock?}
 
 \section{Conclusion}
 
-Continuous latent reasoning removes the need to verbalize every internal step. Parallel-stream models relax the assumption of a single message stream, while multimodal architectures allow heterogeneous observations to share latent computation. The proposed primitive combines these directions: persistent asynchronous state updated in the order of relevant events.
+Chain-of-thought can be understood as a discrete recurrent loop whose variable length provides adaptive compute. Continuous latent reasoning shows that intermediate computation need not always be verbalized. Looped transformers show that tied recurrent depth can buy additional computation without additional stored parameters. The proposed null-token primitive combines these observations: when more computation is needed, emit an internal null action and carry a gated continuous state into the next ordinary transformer pass; when commitment is useful, return to a visible token.
 
-\callout{\textbf{Compute when an event requires computation. Update the state that the event affects. Preserve causal precedence. Declare the frame used for everything else. Serialize only when interaction requires it.}}
+This primitive fits naturally inside a Persistent Multi-Stream Latent World State: compute when an event requires computation, update the state that the event affects, preserve causal precedence, and serialize only when interaction requires it.
 
-\begin{center}
-  \large\bfseries Tokens are interfaces. Events move the world.
-\end{center}
+\callout{\textbf{Tokens are interfaces. Null can be compute. Events move the world.}}
 
-\begin{thebibliography}{11}
+\section*{Revision History}
+\textbf{v1.1 -- September 2, 2026.} Added null-token plus gated continuous recurrence; reframed CoT as discrete recurrence; separated fixed and variable recurrence; added continuous-RL and serving discussion; added monitorability analysis; added an explicitly speculative comparison with public reporting about Astra; expanded recurrent-depth prior work and falsification experiments.
+
+\textbf{v1.0 -- August 21, 2026.} Initial position paper covering persistent multi-stream latent world state, modalities as lenses, the Latent Event Bus, token/compute/world time, observer-relative event ordering, frame-conditioned readout, and compute-matched falsification tests. The last pre-v1.1 manuscript commit is \href{https://github.com/nakosung/nakosung.github.io/commit/948318f47134a9f3f2a890e798443c63c27c7d57}{948318f}.
+
+\begin{thebibliography}{18}
 \small
 
 \bibitem{hao2024coconut}
@@ -316,15 +433,46 @@ G. Su, Y. Yang, X. Li, and J. Geiping,
 ``Multi-Stream LLMs: Unblocking Language Models with Parallel Streams of Thoughts, Inputs and Outputs,''
 arXiv:2605.12460, 2026.
 
+\bibitem{kohli2026loop}
+H. Kohli, S. Parthasarathy, H. Sun, and Y. Yao,
+``Loop, Think, \& Generalize: Implicit Reasoning in Recurrent-Depth Transformers,''
+arXiv:2604.07822, 2026.
+
+\bibitem{li2026deeploop}
+S. Li, Y. Zhang, J. Guo, Q. Gu, and M. Wang,
+``DeepLoop: Depth Scaling for Looped Transformers,''
+arXiv:2607.13491, 2026.
+
+\bibitem{fan2026lotus}
+Y. Fan, A. Svete, and K. Lee,
+``Bridging the Gap Between Latent and Explicit Reasoning with Looped Transformers,''
+arXiv:2606.31779, 2026.
+
+\bibitem{palazzolo2026astra}
+S. Palazzolo, A. Efrati, and R. Drew,
+``OpenAI Technique in `Astra' Model Sparks Security Concerns,''
+The Information, September 1, 2026.
+
+\bibitem{openai2026astra}
+OpenAI,
+``Path to Astra: Critical Capabilities and Frontier Safeguards,''
+September 1, 2026.
+
+\bibitem{pachocki2026monitorability}
+J. Pachocki,
+``I want to prevent a race into unmonitorability...,''
+public post, September 2, 2026,
+\url{https://x.com/merettm/status/2095023204993490967}.
+
 \bibitem{lamport1978time}
 L. Lamport,
 ``Time, Clocks, and the Ordering of Events in a Distributed System,''
-Communications of the ACM, vol. 21, no. 7, pp. 558-565, 1978.
+Communications of the ACM, vol. 21, no. 7, pp. 558--565, 1978.
 
 \bibitem{einstein1905electrodynamics}
 A. Einstein,
 ``On the Electrodynamics of Moving Bodies,''
-Annalen der Physik, vol. 17, pp. 891-921, 1905.
+Annalen der Physik, vol. 17, pp. 891--921, 1905.
 
 \bibitem{kong2025multitalk}
 Z. Kong, F. Gao, Y. Zhang, et al.,
