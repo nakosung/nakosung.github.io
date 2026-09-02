@@ -1,4 +1,356 @@
 % Build with: latexmk -pdf -interaction=nonstopmode -halt-on-error paper.tex
-% Historical v1.0 source is preserved in Git history at commit 948318f47134a9f3f2a890e798443c63c27c7d57.
-% This file is intentionally kept as a pointer; the exact archived source is available at:
-% https://github.com/nakosung/nakosung.github.io/blob/948318f47134a9f3f2a890e798443c63c27c7d57/research/beyond-token-time/paper.tex
+\documentclass[10pt,twocolumn]{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath,amssymb}
+\usepackage{booktabs}
+\usepackage[letterpaper,margin=0.68in,columnsep=0.28in]{geometry}
+\usepackage{xcolor}
+\usepackage{hyperref}
+
+\definecolor{accent}{HTML}{5A8F16}
+\definecolor{accentdark}{HTML}{35590A}
+\definecolor{soft}{HTML}{F3F7ED}
+\definecolor{rulegray}{HTML}{D4D8D0}
+\definecolor{textgray}{HTML}{424742}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=accentdark,
+  citecolor=accentdark,
+  urlcolor=accentdark,
+  pdftitle={Beyond Token Time},
+  pdfauthor={Nako Sung},
+  pdfsubject={Persistent Multi-Stream Latent World States for Modality-Agnostic Intelligence}
+}
+
+\pagestyle{plain}
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{0.48em}
+\setlength{\columnsep}{0.28in}
+\setlength{\itemsep}{0.22em}
+\emergencystretch=1.5em
+
+\newcommand{\callout}[1]{%
+  \vspace{0.35em}\noindent
+  \fcolorbox{accent}{soft}{\begin{minipage}{0.92\linewidth}\small #1\end{minipage}}
+  \vspace{0.35em}}
+
+\newcommand{\streambox}[1]{\fcolorbox{rulegray}{white}{\parbox[c][1.65em][c]{0.19\linewidth}{\centering\scriptsize\textsf{#1}}}}
+
+\begin{document}
+
+\twocolumn[
+\begin{center}
+  {\LARGE\bfseries Beyond Token Time\par}
+  \vspace{0.35em}
+  {\Large Persistent Multi-Stream Latent World States\\
+  for Modality-Agnostic Intelligence\par}
+  \vspace{0.7em}
+  {\normalsize Position Paper and Research Proposal\par}
+  \vspace{0.35em}
+  {\normalsize Nako Sung\par}
+  {\small NAVER Cloud, Hyperscale AI\par}
+  {\normalsize August 2026\par}
+\end{center}
+
+\begin{minipage}{0.94\textwidth}
+\small
+\textbf{Abstract.}
+Modern language models maintain rich continuous hidden states, yet their prevailing operating regime repeatedly projects those states through a discrete token interface and advances on a single token clock. Continuous latent reasoning, multi-stream language modeling, and multimodal architectures each relax part of this constraint: intermediate states need not always be verbalized, several token streams can coexist, and heterogeneous observations can share latent computation. Building on these results, this paper advances a broader architectural hypothesis: intelligent computation can be organized around persistent structured state, selective event-triggered updates, and modality-specific readout rather than a single global token sequence. A Latent Event Bus coordinates a Persistent Multi-Stream Latent World State. Its event order respects causal precedence and imposes an explicitly declared observer-relative chronology only where no causal relation exists. The hypothesis is situated against prior work and paired with compute-matched experiments designed to falsify it.
+\end{minipage}
+\vspace{0.85em}
+\hrule
+\vspace{0.55em}
+]
+
+\section{Introduction}
+
+Autoregressive language models follow a simple rhythm. Given a token prefix $x_{\leq t}$, a transformer computes a continuous hidden representation $h_t$, maps it to a vocabulary distribution, selects a discrete symbol, and repeats:
+\begin{equation}
+  h_t \longrightarrow x_{t+1} \longrightarrow h_{t+1}.
+\end{equation}
+
+This rhythm is well suited to language generation. Whether internal computation must follow the same rhythm is less clear. Coconut weakens that coupling by feeding a hidden state back as a subsequent input embedding rather than decoding every intermediate state into a token \cite{hao2024coconut}. Removing intermediate tokens, however, addresses only one constraint. Computation is still commonly framed as a single sequence advancing under a global step index.
+
+Interactive environments are not synchronized this way. A conversational agent may listen, update beliefs, plan, speak, and detect interruptions concurrently. A robot may update control at high frequency while invoking planning only when needed. A scene contains many entities whose states evolve at different rates.
+
+\callout{\textbf{Central question.} What if the fundamental unit of intelligent computation were not the next token, but the next relevant event?}
+
+The contribution lies not in latent reasoning, parallel streams, multimodality, or reinforcement learning alone, but in their architectural combination: a general agent maintains persistent, structured, asynchronous latent processes and updates them in response to events rather than token production.
+
+\section{Modalities as Lenses}
+
+Let $s$ denote an underlying world state. Observing it through modality $m$ yields
+\begin{equation}
+  o^{(m)} = g_m(s) + \epsilon^{(m)},
+\end{equation}
+where $g_m$ is a modality-specific measurement or projection and $\epsilon^{(m)}$ captures noise and information loss. An RGB image, speech waveform, text description, depth map, or motor signal is not the world itself; each is a partial lens on it.
+
+Shared latent spaces are not new. Perceiver IO demonstrated a general latent-processing architecture for heterogeneous structured inputs and outputs \cite{jaegle2021perceiver}. The proposal here is more operational: the shared representation persists across interactions, evolves recurrently, and contains multiple processes with distinct update schedules.
+
+\callout{\textbf{Design principle.} A modality is an interface to internal state, not necessarily the format of thought.}
+
+\subsection{Video generation is multi-stream}
+
+Video generation makes the multi-stream requirement concrete. A model rendering two actors in conversation must preserve actor identity, per-actor pose and motion, turn-taking, voice-to-character binding, lip synchronization, camera motion, shared scene state, and ambient audio along one evolving timeline. Multi-person conversational video research exposes the binding problem directly: several audio streams must remain attached to the correct visible people over time \cite{kong2025multitalk}. Native audio-video generators with synchronized dialogue provide a broader system-level example \cite{openai2025sora2}.
+
+At the behavioral level, this capability demonstrates that one generator can coordinate several concurrently evolving processes. It does not establish that the implementation contains explicit or independently addressable latent stream slots; the internal representation may remain entangled. The architectural question is whether making those processes persistent, selective, and schedulable would improve control, efficiency, interruption handling, and consistency.
+
+\section{From Token Time to Event Time}
+
+At generation time, a standard autoregressive model couples each increment to a token position. Call this cadence \emph{token time}. A general agent may instead maintain audio, vision, planning, memory, and motor processes with different update schedules:
+\begin{equation}
+  t_{\mathrm{token}} \neq t_{\mathrm{compute}} \neq t_{\mathrm{world}}.
+\end{equation}
+
+Computation may instead be scheduled by events $e_1,e_2,\ldots$ that activate only the relevant state components. A new acoustic observation may update speaker and semantic state; a sudden obstacle may activate vision, planning, and control. If no verbal response is needed, no language token need be produced.
+
+\subsection{Observer-relative event order}
+
+Deterministic event processing still requires a reproducible order, but that order must not be confused with causation. Let $e_i \prec_c e_j$ mean that $e_i$ can causally influence $e_j$. The relation is a partial order: some event pairs remain unrelated.
+
+A declared observer $O$ and reference frame $\mathcal F_O$ assign each modeled world event a coordinate time $t_{\mathcal F_O}(e)$. The event bus can then use the lexicographic key
+\begin{equation}
+  K_O(e) = \bigl(t_{\mathcal F_O}(e),\, \tau_O(r_e),\, \iota(e)\bigr),
+\end{equation}
+where $r_e$ is the local receipt event, $\tau_O(r_e)$ is the observer's monotonic local clock at receipt, and $\iota(e)$ is a stable final tie-breaker. The induced order is
+\begin{equation}
+  e_i \prec_O e_j \quad \Longleftrightarrow \quad
+  K_O(e_i) <_{\mathrm{lex}} K_O(e_j).
+\end{equation}
+
+The frame and clock are admissible only when they preserve causal precedence:
+\begin{equation}
+  e_i \prec_c e_j \;\Longrightarrow\; e_i \prec_O e_j.
+\end{equation}
+For causally unrelated events, $\prec_O$ records chronology in the selected frame without implying that one event caused the other. The result is a deterministic total extension of the causal partial order, conceptually related to the distinction between causal order and logical clock order in distributed systems \cite{lamport1978time}.
+
+The physics analogy requires one qualification. \emph{Proper time} is measured by a clock along a single worldline. It can order the receipt events $r_e$ observed locally by one agent, but it cannot by itself order remote events at different locations. That broader ordering requires coordinate time in a declared reference frame, including its convention for simultaneity \cite{einstein1905electrodynamics}.
+
+\callout{\textbf{Invariant precedence, declared chronology.} Causal order is preserved when it exists. Otherwise the system records whose frame defines ``earlier'' and ``later.''}
+
+\subsection{Causal masking is not a world clock}
+
+For a causal decoder, the autoregressive objective factorizes a sequence as
+\begin{equation}
+  p_\theta(x_{1:T}) = \prod_{t=1}^{T} p_\theta(x_t \mid x_{<t}),
+\end{equation}
+while the decoder applies an attention mask $M_{ij}=-\infty$ for $j>i$. Position $i$ therefore cannot read subsequent token positions during that forward pass \cite{vaswani2017attention}. The mask is an externally supplied information-flow constraint over the chosen serialization, not a learned physical causal order among the events represented by the tokens.
+
+This does not make the learned weights order-neutral. Training shapes them under the causal factorization, positional scheme, and data distribution, so they may encode order-sensitive regularities. The narrower point is that the mask itself is not a learned parameter; neither an explicit observer frame nor a world-event order follows from the weights alone.
+
+By analogy with in-context conditioning, a frame specification $c_{\mathcal F}$ could select a readout without changing the weights \cite{brown2020language,xie2021incontext}:
+\begin{equation}
+  y_{\mathcal F} = D_\theta\!\left(Z; c_{\mathcal F}\right).
+\end{equation}
+If $Z$ retains information compatible with several viewpoints, $c_{\mathcal F}$ may induce a frame-consistent serialization. This possibility is termed \emph{frame-conditioned latent readout}. As an intuition rather than a mechanism claim, it resembles \emph{holographic restoration}: the prompt acts like a boundary condition that reconstructs one view from distributed state. The metaphor does not imply that the weights literally implement a hologram, contain a complete frame-independent world, or preserve invariants without targeted training and evaluation.
+
+\callout{\textbf{Architectural constraint versus learned consequence.} Causal masking enforces access order over token positions, and training under that constraint shapes the weights. Whether a frame prompt can recover faithful cross-frame views from the resulting state is an empirical question.}
+
+\section{Persistent Multi-Stream Latent State}
+
+At event $e_n$ in the declared order, let the model maintain
+\begin{equation}
+  Z_n = \left[z_n^{(1)},z_n^{(2)},\ldots,z_n^{(K)}\right].
+\end{equation}
+Persistent streams may represent physical entities, goals, memory elements, candidate hypotheses, predicted futures, perceptual processes, or control processes. A routing policy produces an activity mask
+\begin{equation}
+  a_n = \pi_{\mathrm{route}}(Z_n,e_n), \qquad
+  a_n \in \{0,1\}^{K},
+\end{equation}
+and updates only selected components:
+\begin{equation}
+z_{n+1}^{(k)} =
+\begin{cases}
+F_k\!\left(z_n^{(k)},e_n,Z_n\right), & a_n^{(k)}=1,\\
+z_n^{(k)}, & a_n^{(k)}=0.
+\end{cases}
+\end{equation}
+
+\begin{center}
+\streambox{VISION}\hfill\streambox{AUDIO}\hfill\streambox{TEXT}\hfill\streambox{SENSORS}
+
+\vspace{0.35em}
+$\downarrow$ modality adapters $\downarrow$
+
+\vspace{0.25em}
+\fcolorbox{accent}{soft}{\parbox[c][2.2em][c]{0.88\linewidth}{\centering\small\bfseries LATENT EVENT BUS}}
+
+\vspace{0.35em}
+\streambox{ENTITY}\hfill\streambox{HYPOTHESIS}\hfill\streambox{PLAN}\hfill\streambox{DIALOGUE}
+
+\vspace{0.35em}
+$\downarrow$ serialize only when needed $\downarrow$
+
+\vspace{0.25em}
+\streambox{SPEECH}\hfill\streambox{ACTION}\hfill\streambox{IMAGE}\hfill\streambox{TOKENS}
+\end{center}
+
+The Latent Event Bus is a shared representational and routing layer that connects persistent latent streams to observations and outputs. Modality-specific encoders and decoders provide interfaces without prescribing the internal reasoning format.
+
+Latent continuation offers one implementation primitive: an internal action bypasses vocabulary decoding and feeds a projected hidden state back into computation. This mechanism is closely related to Coconut \cite{hao2024coconut} and is not the primary novelty claimed here.
+
+\section{Delayed Commitment}
+
+When several hypotheses remain plausible, they can remain components of one persistent state rather than becoming complete, independent textual trajectories. Recent work also scales latent reasoning through parallel stochastic trajectories and latent reward models \cite{you2026parallel}. Continuous representations do not uniquely enable alternatives; the narrower proposal is to maintain unresolved alternatives as coordinated components of a persistent world model.
+
+The argument does not depend on a continuous vector containing unlimited information. Discrete output imposes a particular quantization and semantic commitment; delaying that commitment may preserve distinctions that matter to later decisions.
+
+\section{Relation to Prior Work}
+
+\textbf{Coconut.} Continuous hidden-state reasoning and latent alternatives are established \cite{hao2024coconut}. The present proposal extends that state across perception, reasoning, and action.
+
+\textbf{Perceiver IO.} General latent processing across heterogeneous inputs and outputs is established \cite{jaegle2021perceiver}. The present proposal adds recurrent persistence and selective event-triggered updates.
+
+\textbf{Hybrid latent reasoning.} Reinforcement learning can optimize latent and discrete reasoning policies \cite{yue2025hybrid}. Here it would train update and scheduling policies; RL itself is not the claimed novelty.
+
+\textbf{Parallel latent test-time scaling.} Multiple latent trajectories can be sampled and ranked \cite{you2026parallel}. Here, by contrast, streams may represent entities, goals, modalities, or hypotheses within one state.
+
+\textbf{Multi-Stream LLMs.} Several token streams can read and write in parallel \cite{su2026multistream}. Here internal streams need be neither tokenized nor synchronized to one update clock.
+
+\callout{\textbf{Intended novelty.} The proposed combination is persistent structured latent multiplicity, event-driven scheduling, and explicit observer-relative event order.}
+
+\section{Training}
+
+\textbf{Stage I - conventional pretraining.} Language or multimodal predictive training initializes useful representations and modality adapters.
+
+Causal masking at this stage enforces left-to-right access within each serialized example; it does not supervise a unique physical chronology. Separating causal invariants from observer-dependent order therefore requires additional training signals, such as frame labels, causal graphs, or multi-frame renderings.
+
+\textbf{Stage II - latent-state bootstrapping.} Recurrence, persistent slots, and routing are introduced through next-state prediction, entity tracking, masked-state reconstruction, cross-modal prediction, or distillation.
+
+\textbf{Stage III - outcome-driven optimization.} Reinforcement learning is a natural candidate because many internal trajectories may solve the same task. Hybrid latent reasoning establishes RL over latent and discrete policies \cite{yue2025hybrid}; here the target policy would control persistent asynchronous state.
+
+A generic objective can reward task success while penalizing unnecessary computation, unnecessary serialization, unstable recurrent dynamics, and violations of the declared event order:
+\begin{equation}
+\mathcal L = \mathcal L_{\mathrm{task}} +
+\lambda_c C + \lambda_s S + \lambda_d D + \lambda_o O.
+\end{equation}
+
+\section{Experimental Program}
+
+An initial study should be deliberately small and compare four compute-matched systems: (A) sequential discrete reasoning, (B) parallel token streams, (C) sequential latent recurrence, and (D) asynchronous multi-stream latent state.
+
+\subsection{Asynchronous multi-entity world}
+Construct an environment with independently evolving entities and heterogeneous update rates. As entity count increases, measure entity-state accuracy, retention, cross-stream interference, FLOPs, latency, and memory. Permute the delivery order of causally unrelated events while retaining frame timestamps; a correct implementation should reproduce the same observer-relative state trajectory.
+
+\subsection{Delayed evidence}
+Early observations support several hypotheses; later evidence resolves them. Measure hypothesis diversity, contradiction recovery, and revision cost.
+
+\subsection{Interruption}
+Begin an output or action and inject new information before completion. Measure reaction latency, reusable computation, consistency, and unnecessary recomputation.
+
+\subsection{Cross-modal action without text}
+Provide vision and audio and require a non-linguistic action. Compare explicit text-mediated pipelines against direct latent-state-to-action behavior.
+
+\subsection{Multi-actor dialogue generation}
+Generate scenes with two or more actors whose lines overlap, alternate, or are interrupted. Measure identity persistence, speaker-to-voice binding, lip synchronization, turn-order accuracy, cross-actor leakage, and recovery from an unscripted event. Under matched compute, compare an entangled baseline with explicit actor-indexed persistent streams.
+
+\subsection{Frame and receipt-order ablation}
+Compare three schedulers: arrival order alone, chosen-frame coordinate time alone, and the causal-consistent key $K_O$. Measure replay stability, stale-state writes, causal inversions, and sensitivity to transport jitter. Repeat the experiment under alternative declared frames to distinguish invariant causal predictions from frame-dependent chronology.
+
+\subsection{Frame-conditioned reconstruction}
+Serialize the same causal event graph under two or more declared frames, then condition the model on $c_{\mathcal F}$ to reconstruct each view. Hold causal ancestry, entity identity, and outcomes fixed; vary only the coordinate order of unrelated events. Measure invariant accuracy, frame-dependent chronology, and round-trip consistency under $\mathcal F_1 \rightarrow \mathcal F_2 \rightarrow \mathcal F_1$. Ablate the frame prompt, explicit frame supervision, causal mask, and the order of unrelated training events. Failure to preserve invariants would indicate prompt-conditioned narration rather than reconstruction from a coherent latent event structure.
+
+\callout{\textbf{Killer ablation.} If asynchronous structured state does not outperform simpler sequential or parallel baselines under matched compute on tasks designed around independent clocks, interruption, and event-order perturbation, the additional architecture is not justified.}
+
+\section{Failure Modes and Falsification}
+
+\begin{itemize}
+  \item \textbf{Stream collapse:} multiple slots converge to effectively identical representations.
+  \item \textbf{Fragmentation:} isolated streams fail to maintain global consistency.
+  \item \textbf{Latent drift:} recurrent updates push state outside the pretrained distribution.
+  \item \textbf{Scheduling overhead:} routing costs exceed the savings from selective updates.
+  \item \textbf{False concurrency:} parallel slots merely disguise a serial computation.
+  \item \textbf{Frame leakage:} changing only the declared frame alters predictions that should remain invariant.
+  \item \textbf{Prompted confabulation:} the model produces a plausible frame-specific narrative without a cross-frame-consistent latent event structure.
+  \item \textbf{Order overclaim:} chronological order is misread as evidence of causation.
+\end{itemize}
+
+\section{Discussion}
+
+Because text is abundant and next-token prediction scales well, language models encourage communication, reasoning, memory, and scheduling to be organized around one sequence. Yet the architecture through which a capability is discovered need not be the architecture through which it is best organized.
+
+The world does not arrive as a sentence. A room contains many entities at once. Perception need not pause during action, and planning need not stop when new evidence arrives. One hypothesis need not become a sentence before another can coexist with it.
+
+Event time should not become another hidden global counter. The event bus instead requires a declared perspective: preserve causal precedence, identify the observer and reference frame that determine chronology, and distinguish local receipt time from modeled occurrence time.
+
+\callout{\textbf{Question for architecture.} Why should language simultaneously serve as interface, reasoning trace, memory representation, scheduler, and computational clock?}
+
+\section{Conclusion}
+
+Continuous latent reasoning removes the need to verbalize every internal step. Parallel-stream models relax the assumption of a single message stream, while multimodal architectures allow heterogeneous observations to share latent computation. The proposed primitive combines these directions: persistent asynchronous state updated in the order of relevant events.
+
+\callout{\textbf{Compute when an event requires computation. Update the state that the event affects. Preserve causal precedence. Declare the frame used for everything else. Serialize only when interaction requires it.}}
+
+\begin{center}
+  \large\bfseries Tokens are interfaces. Events move the world.
+\end{center}
+
+\begin{thebibliography}{11}
+\small
+
+\bibitem{hao2024coconut}
+S. Hao, S. Sukhbaatar, D. Su, X. Li, Z. Hu, J. Weston, and Y. Tian,
+``Training Large Language Models to Reason in a Continuous Latent Space,''
+arXiv:2412.06769, 2024.
+
+\bibitem{jaegle2021perceiver}
+A. Jaegle, S. Borgeaud, J.-B. Alayrac, et al.,
+``Perceiver IO: A General Architecture for Structured Inputs and Outputs,''
+ICLR, 2022.
+
+\bibitem{yue2025hybrid}
+Z. Yue, B. Jin, H. Zeng, et al.,
+``Hybrid Latent Reasoning via Reinforcement Learning,''
+NeurIPS, 2025.
+
+\bibitem{you2026parallel}
+R. You, Y. Li, M. Liu, W. Wang, L. Nie, and W. Li,
+``Parallel Test-Time Scaling for Latent Reasoning Models,''
+ACL, 2026.
+
+\bibitem{su2026multistream}
+G. Su, Y. Yang, X. Li, and J. Geiping,
+``Multi-Stream LLMs: Unblocking Language Models with Parallel Streams of Thoughts, Inputs and Outputs,''
+arXiv:2605.12460, 2026.
+
+\bibitem{lamport1978time}
+L. Lamport,
+``Time, Clocks, and the Ordering of Events in a Distributed System,''
+Communications of the ACM, vol. 21, no. 7, pp. 558-565, 1978.
+
+\bibitem{einstein1905electrodynamics}
+A. Einstein,
+``On the Electrodynamics of Moving Bodies,''
+Annalen der Physik, vol. 17, pp. 891-921, 1905.
+
+\bibitem{kong2025multitalk}
+Z. Kong, F. Gao, Y. Zhang, et al.,
+``Let Them Talk: Audio-Driven Multi-Person Conversational Video Generation,''
+arXiv:2505.22647, 2025.
+
+\bibitem{openai2025sora2}
+OpenAI,
+``Sora 2 System Card,''
+September 2025.
+
+\bibitem{vaswani2017attention}
+A. Vaswani, N. Shazeer, N. Parmar, et al.,
+``Attention Is All You Need,''
+NeurIPS, 2017.
+
+\bibitem{brown2020language}
+T. Brown, B. Mann, N. Ryder, et al.,
+``Language Models are Few-Shot Learners,''
+NeurIPS, 2020.
+
+\bibitem{xie2021incontext}
+S. M. Xie, A. Raghunathan, P. Liang, and T. Ma,
+``An Explanation of In-Context Learning as Implicit Bayesian Inference,''
+ICLR, 2022.
+
+\end{thebibliography}
+
+\end{document}
