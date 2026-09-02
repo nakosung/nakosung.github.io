@@ -27,15 +27,15 @@ jobs:
         run: |
           latexmk -pdf -interaction=nonstopmode -halt-on-error paper.tex
           cp paper.pdf paper-v1.2.pdf
-      - name: Commit generated PDFs
+      - name: Commit and publish generated PDFs
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git pull --rebase origin master
           git add research/beyond-token-time/paper.pdf research/beyond-token-time/paper-v1.2.pdf
           if git diff --cached --quiet; then
             echo 'PDFs already up to date'
           else
             git commit -m 'Build Beyond Token Time v1.2 PDF'
-            git push
+            git pull --rebase origin master
+            git push origin HEAD:master
           fi
