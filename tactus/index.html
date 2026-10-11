@@ -152,8 +152,15 @@ html[lang=ko] body { word-break: keep-all; }
 .built h2 { margin: 0 0 18px; font-size: clamp(28px, 3.4vw, 44px); line-height: 1.2; letter-spacing: -.01em; text-wrap: balance; }
 .built p { margin: 0 0 14px; color: var(--dim); max-width: 36em; }
 .built p a { color: var(--fg); text-underline-offset: 3px; }
-.built .next { margin-top: 22px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); color: var(--fg); }
-.built .next b { color: var(--k-orange); }
+.built .next { margin-top: 22px; padding: 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); display: grid; gap: 12px; }
+.built .next p { margin: 0; color: var(--fg); }
+.built .next small { color: var(--faint); font-size: 12.5px; line-height: 1.5; }
+.built .next a { font-size: 13.5px; color: var(--fg); text-underline-offset: 3px; }
+.bench { display: grid; gap: 7px; }
+.bench .br { display: grid; grid-template-columns: 7.5em minmax(0, 1fr) 3em; align-items: center; gap: 10px; font-size: 13px; color: var(--dim); }
+.bench i { display: block; height: 12px; width: var(--w); border-radius: 3px; background: var(--line); }
+.bench .rust i { background: var(--k-orange); }
+.bench b { font: 600 13px/1 var(--f-code); color: var(--fg); text-align: right; font-variant-numeric: tabular-nums; }
 .steps { list-style: none; margin: 0; padding: 0; counter-reset: s; border-left: 2px solid var(--line); }
 .steps li { counter-increment: s; position: relative; padding: 0 0 18px 26px; }
 .steps li::before { content: counter(s); position: absolute; left: -13px; top: 1px; width: 24px; height: 24px; border-radius: 50%; background: var(--body); border: 2px solid var(--line); font: 600 11px/20px var(--f-code); text-align: center; color: var(--dim); }
@@ -266,9 +273,17 @@ html[lang=ko] body { word-break: keep-all; }
     <div>
       <h2 data-ko="대화 하나로, 라이브로 만든 악기" data-en="An instrument built live, in one conversation">대화 하나로, 라이브로 만든 악기</h2>
       <p data-ko="얼마 전 ArtCraft 프로젝트는 Claude Code 에이전트로 Photoshop, Premiere, Lightroom 같은 Adobe 앱을 Rust로 다시 만들었어요. PhotoCraft는 wgpu로 GPU에서 그림을 그려요. Tactus는 같은 질문을 오디오에 던져 봤어요. 한 순간도 박을 놓치면 안 되는 음악 소프트웨어도 에이전트와 대화하며 만들 수 있을까요?" data-en="ArtCraft recently rebuilt Adobe apps like Photoshop, Premiere and Lightroom in Rust with Claude Code agents, and PhotoCraft draws on the GPU through wgpu. Tactus asks the same question of audio: can music software, which can never miss a beat, be built by talking with an agent?">얼마 전 ArtCraft 프로젝트는 Claude Code 에이전트로 Photoshop, Premiere, Lightroom 같은 Adobe 앱을 Rust로 다시 만들었어요. PhotoCraft는 wgpu로 GPU에서 그림을 그려요. Tactus는 같은 질문을 오디오에 던져 봤어요. 한 순간도 박을 놓치면 안 되는 음악 소프트웨어도 에이전트와 대화하며 만들 수 있을까요?</p>
-      <p data-ko="Strudel의 불편함을 분석하는 데서 시작해 스물다섯 번 남짓한 요청으로 지금 모습이 됐어요. 사람은 원하는 것을 말하고 귀로 판단했고, Claude가 설계와 구현을 하고 헤드리스 브라우저에서 곡을 렌더링해 음량과 스펙트럼을 재며 A/B를 비교했어요. 결과물은 약 5,200줄의 JavaScript와 HTML이에요." data-en="It started from a critique of Strudel and reached this shape in about twenty-five requests. A person said what they wanted and judged by ear; Claude designed and wrote the code, rendered songs in a headless browser and measured loudness and spectrum for A/B comparisons. The result is about 5,200 lines of JavaScript and HTML.">Strudel의 불편함을 분석하는 데서 시작해 스물다섯 번 남짓한 요청으로 지금 모습이 됐어요. 사람은 원하는 것을 말하고 귀로 판단했고, Claude가 설계와 구현을 하고 헤드리스 브라우저에서 곡을 렌더링해 음량과 스펙트럼을 재며 A/B를 비교했어요. 결과물은 약 5,200줄의 JavaScript와 HTML이에요.</p>
+      <p data-ko="Strudel의 불편함을 분석하는 데서 시작해 스물다섯 번 남짓한 요청으로 지금 모습이 됐어요. 사람은 원하는 것을 말하고 귀로 판단했고, Claude가 설계와 구현을 하고 헤드리스 브라우저에서 곡을 렌더링해 음량과 스펙트럼을 재며 A/B를 비교했어요. 결과물은 약 5,200줄의 JavaScript와 HTML, 그리고 오디오 스레드를 맡은 Rust 코드예요." data-en="It started from a critique of Strudel and reached this shape in about twenty-five requests. A person said what they wanted and judged by ear; Claude designed and wrote the code, rendered songs in a headless browser and measured loudness and spectrum for A/B comparisons. The result is about 5,200 lines of JavaScript and HTML, plus the Rust code that runs on the audio thread.">Strudel의 불편함을 분석하는 데서 시작해 스물다섯 번 남짓한 요청으로 지금 모습이 됐어요. 사람은 원하는 것을 말하고 귀로 판단했고, Claude가 설계와 구현을 하고 헤드리스 브라우저에서 곡을 렌더링해 음량과 스펙트럼을 재며 A/B를 비교했어요. 결과물은 약 5,200줄의 JavaScript와 HTML이에요.</p>
       <p><a href="https://www.phoronix.com/news/Photocraft-Filmcraft-AI" target="_blank" rel="noopener" data-ko="ArtCraft 소개 기사 (Phoronix)" data-en="ArtCraft coverage (Phoronix)">ArtCraft 소개 기사 (Phoronix)</a></p>
-      <p class="next" data-ko="다음 단계: 지금은 순수 JavaScript와 Web Audio, AudioWorklet으로 돌아가요. 신스와 이펙트 DSP를 Rust로 옮겨 WebAssembly로 AudioWorklet 안에서 돌리고, 시각화와 오디오 분석을 WebGPU로 옮기는 것이 다음 목표예요." data-en="Next: today it runs on plain JavaScript, Web Audio and AudioWorklet. The next goal is to move the synth and effects DSP to Rust, run it as WebAssembly inside the AudioWorklet, and move visuals and audio analysis to WebGPU.">다음 단계: 지금은 순수 JavaScript와 Web Audio, AudioWorklet으로 돌아가요. 신스와 이펙트 DSP를 Rust로 옮겨 WebAssembly로 AudioWorklet 안에서 돌리고, 시각화와 오디오 분석을 WebGPU로 옮기는 것이 다음 목표예요.</p>
+      <div class="next">
+        <p data-ko="Rust로 옮긴 부분: 현을 튕기는 Karplus-Strong 16음과 303 애시드 보이스를 Rust로 다시 써서, 11.6KB짜리 WebAssembly로 AudioWorklet 안에서 돌려요. 할당이 전혀 없는 no_std 코드라 오디오 스레드에서 가비지 컬렉션이 일어나지 않아요. 같은 부하에서 이전 JavaScript 보이스보다 약 1.6배 빠르고, 애시드 출력은 JS 버전과 피크의 0.2% 안에서 같아요." data-en="What moved to Rust: the 16-voice Karplus-Strong strings and the 303 acid voice, rewritten in Rust and running as an 11.6 KB WebAssembly module inside the AudioWorklet. It is no_std code that never allocates, so the audio thread never waits on garbage collection. On the same load it runs about 1.6× faster than the previous JavaScript voices, and the acid output matches the JS version within 0.2% of peak.">Rust로 옮긴 부분: 현을 튕기는 Karplus-Strong 16음과 303 애시드 보이스를 Rust로 다시 써서, 11.6KB짜리 WebAssembly로 AudioWorklet 안에서 돌려요. 할당이 전혀 없는 no_std 코드라 오디오 스레드에서 가비지 컬렉션이 일어나지 않아요. 같은 부하에서 이전 JavaScript 보이스보다 약 1.6배 빠르고, 애시드 출력은 JS 버전과 피크의 0.2% 안에서 같아요.</p>
+        <div class="bench" role="img" aria-label="JavaScript 30x realtime, Rust WebAssembly 47x realtime">
+          <div class="br"><span>JavaScript</span><i style="--w:63.8%"></i><b>30×</b></div>
+          <div class="br rust"><span>Rust → WASM</span><i style="--w:100%"></i><b>47×</b></div>
+        </div>
+        <small data-ko="실시간 대비 처리 속도. 현 16음과 16분음표 애시드 라인 30초를 128샘플 블록으로 렌더링 (Node 22, 3회 중 최고). 다음은 시각화와 오디오 분석을 WebGPU로 옮기는 거예요." data-en="Speed relative to realtime: 16 strings and a 16th-note acid line, 30 s rendered in 128-sample blocks (Node 22, best of three). Next: visuals and audio analysis on WebGPU.">실시간 대비 처리 속도. 현 16음과 16분음표 애시드 라인 30초를 128샘플 블록으로 렌더링 (Node 22, 3회 중 최고). 다음은 시각화와 오디오 분석을 WebGPU로 옮기는 거예요.</small>
+        <a href="https://github.com/nakosung/nakosung.github.io/tree/master/tactus/dsp" target="_blank" rel="noopener" data-ko="Rust 소스와 벤치마크 보기" data-en="Rust source and benchmark">Rust 소스와 벤치마크 보기</a>
+      </div>
     </div>
     <ol class="steps">
         <li><b data-ko="엔진" data-en="Engine">엔진</b><span data-ko="Strudel의 불편함을 분석하고, 한 줄이 한 트랙인 문법과 마디 단위 반영을 만들었어요" data-en="Took apart Strudel's pain points, then built a one-line-per-track language with bar-quantized edits">Strudel의 불편함을 분석하고, 한 줄이 한 트랙인 문법과 마디 단위 반영을 만들었어요</span></li>
@@ -280,6 +295,7 @@ html[lang=ko] body { word-break: keep-all; }
         <li><b data-ko="음악성" data-en="Musicianship">음악성</b><span data-ko="보이스 리딩, 필인과 전환, 드럼 버스, 폴리미터, 세기별 샘플" data-en="Voice leading, fills and transitions, a drum bus, polymeter, velocity layers">보이스 리딩, 필인과 전환, 드럼 버스, 폴리미터, 세기별 샘플</span></li>
         <li><b data-ko="연주와 작곡" data-en="Perform and compose">연주와 작곡</b><span data-ko="패드를 코드로, 시드 생성기와 자동 작곡, 새 디자인" data-en="Pads as code, seeded generators and one-click composing, a new design">패드를 코드로, 시드 생성기와 자동 작곡, 새 디자인</span></li>
         <li><b data-ko="이름과 이 페이지" data-en="A name and this page">이름과 이 페이지</b><span data-ko="Tactus라는 이름과 지금 보고 있는 소개 페이지" data-en="The name Tactus and the page you are reading">Tactus라는 이름과 지금 보고 있는 소개 페이지</span></li>
+        <li><b data-ko="Rust DSP" data-en="Rust DSP">Rust DSP</b><span data-ko="오디오 스레드의 보이스를 Rust로 옮겨 WebAssembly로 실행" data-en="The audio-thread voices rewritten in Rust and run as WebAssembly">오디오 스레드의 보이스를 Rust로 옮겨 WebAssembly로 실행</span></li>
     </ol>
   </section>
 
