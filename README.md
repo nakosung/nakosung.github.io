@@ -7,6 +7,7 @@ Personal research site for Nako Sung / 성낙호.
 - `/` — profile, current research interests, featured notes
 - `/research/` — research-note archive
 - `/research/<slug>/` — standalone research notes and interactive experiments
+- `/tactus/` — Tactus, a live-coding music instrument (landing page); the instrument itself is at `/tactus/play/`
 - `/work/` — selected past systems and engineering work
 - `/work/<slug>/` — bilingual historical record and retrospective
 
