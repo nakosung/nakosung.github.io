@@ -464,7 +464,7 @@ const I18N = {
     h16d: '녹음한 루프를 코드로: 빈 패턴이면 파라미터만, 패턴을 쓰면 조각을 골라 재생 (x = 제자리 조각)',
     h17d: '루프 슬롯 1–4 녹음/덧입히기',
     reset: '예제로 되돌리기',
-    h27t: '샘플 악기', h27d: 'piano vibes harp sax harpsi marimba kalimba dantranh · 타악기 asnare ahat aohat atom afloor aride acrash handclap conga bongo cajon cajonslap tamb shake claves cowbell woodblock triangle agogo framedrum darbuka gong',
+    h27t: '샘플 악기', h27d: 'piano vibes harp sax harpsi marimba kalimba dantranh · 타악기 asnare ahat aohat atom afloor aride acrash handclap conga bongo cajon cajonslap tamb shake claves cowbell woodblock triangle agogo framedrum darbuka gong · 국악 타악기 kung deok buk buktak jing kkwaeng kkwaengm',
     h28t: '샘플 출처', h28d: 'VCSL (Versilian Community Sample Library), CC0 — 출처 표시 없이 자유롭게 쓸 수 있어요',
     hands: '손 컨트롤 켜기', handsOff: '손 컨트롤 끄기', handLoadingShort: '불러오는 중…',
     handsTitle: '카메라로 손을 추적해 노브와 제스처를 조작해요 (로컬 파일에서만, 인터넷 필요)',
@@ -636,7 +636,7 @@ const I18N = {
     h16d: 'Use a recorded loop in code: empty pattern sets its params, a pattern plays chosen slices (x = slice in place)',
     h17d: 'Record or overdub loop slots 1–4',
     reset: 'Restore example',
-    h27t: 'Sampled instruments', h27d: 'piano vibes harp sax harpsi marimba kalimba dantranh · percussion asnare ahat aohat atom afloor aride acrash handclap conga bongo cajon cajonslap tamb shake claves cowbell woodblock triangle agogo framedrum darbuka gong',
+    h27t: 'Sampled instruments', h27d: 'piano vibes harp sax harpsi marimba kalimba dantranh · percussion asnare ahat aohat atom afloor aride acrash handclap conga bongo cajon cajonslap tamb shake claves cowbell woodblock triangle agogo framedrum darbuka gong · Korean percussion kung deok buk buktak jing kkwaeng kkwaengm',
     h28t: 'Sample credits', h28d: 'VCSL (Versilian Community Sample Library), CC0 — free to use, no attribution required',
     hands: 'Hand control', handsOff: 'Stop hand control', handLoadingShort: 'Loading…',
     handsTitle: 'Tracks your hands with the camera to drive knobs and gestures (local file only, needs internet)',
@@ -1043,17 +1043,20 @@ function atomNotes(raw, root, scale, oct, prog, tr = 0, inv = false) {
 
 // ---------- instruments & params ----------
 const DRUMS = ['kick', 'snare', 'clap', 'hat', 'ohat', 'rim', 'tom', 'ride', 'crash', 'shaker',
-  'asnare', 'ahat', 'aohat', 'atom', 'afloor', 'aride', 'acrash', 'handclap', 'conga', 'bongo', 'cajon', 'cajonslap', 'tamb', 'shake', 'claves', 'cowbell', 'woodblock', 'triangle', 'agogo', 'framedrum', 'darbuka', 'gong'];
+  'asnare', 'ahat', 'aohat', 'atom', 'afloor', 'aride', 'acrash', 'handclap', 'conga', 'bongo', 'cajon', 'cajonslap', 'tamb', 'shake', 'claves', 'cowbell', 'woodblock', 'triangle', 'agogo', 'framedrum', 'darbuka', 'gong',
+  // Korean percussion: janggu low and high heads, buk and its shell, jing, kkwaenggwari open and muted
+  'kung', 'deok', 'buk', 'buktak', 'jing', 'kkwaeng', 'kkwaengm'];
 const LOOPS = ['loop1', 'loop2', 'loop3', 'loop4'];
 const SYNTHS = ['sine', 'tri', 'saw', 'square', 'supersaw', 'pad', 'bass', 'acid', 'pluck', 'bell', 'flute', 'bowed', 'epiano', 'zither', 'piano', 'vibes', 'harp', 'sax', 'dantranh', 'harpsi', 'marimba', 'kalimba', 'swarm', 'choir', 'plate', 'membrane', 'nsax'];
 const NAME_INST = [
+  ['kung', 'kung'], ['deok', 'deok'], ['janggu', 'kung'], ['buktak', 'buktak'], ['buk', 'buk'], ['kkwaengm', 'kkwaengm'], ['kkwaeng', 'kkwaeng'], ['kkwang', 'kkwaeng'],
   ['kick', 'kick'], ['bd', 'kick'], ['snare', 'snare'], ['sd', 'snare'], ['clap', 'clap'], ['cp', 'clap'],
   ['ohat', 'ohat'], ['open', 'ohat'], ['oh', 'ohat'], ['hat', 'hat'], ['hh', 'hat'], ['rim', 'rim'], ['tom', 'tom'],
   ['bass', 'bass'], ['sub', 'sine'], ['acid', 'acid'], ['lead', 'supersaw'], ['pad', 'pad'], ['chord', 'pad'],
   ['arp', 'pluck'], ['pluck', 'pluck'], ['stab', 'pluck'], ['bell', 'bell'],
   ['ride', 'ride'], ['crash', 'crash'], ['cym', 'crash'], ['shaker', 'shaker'], ['shk', 'shaker'],
   ['gayageum', 'zither'], ['zither', 'zither'], ['koto', 'zither'], ['guitar', 'zither'],
-  ['grand', 'piano'], ['vibe', 'vibes'], ['harpsi', 'harpsi'], ['cembalo', 'harpsi'], ['harp', 'harp'], ['sax', 'sax'], ['marimba', 'marimba'], ['kalimba', 'kalimba'], ['dantranh', 'dantranh'], ['jing', 'gong'],
+  ['grand', 'piano'], ['vibe', 'vibes'], ['harpsi', 'harpsi'], ['cembalo', 'harpsi'], ['harp', 'harp'], ['sax', 'sax'], ['marimba', 'marimba'], ['kalimba', 'kalimba'], ['dantranh', 'dantranh'], ['jing', 'jing'],
   ['swarm', 'swarm'], ['choir', 'choir'], ['plate', 'plate'], ['membrane', 'membrane'], ['timp', 'membrane'], ['nsax', 'nsax'], ['daegeum', 'flute'], ['flute', 'flute'], ['haegeum', 'bowed'], ['string', 'bowed'], ['keys', 'epiano'], ['rhodes', 'epiano'], ['piano', 'piano'],
 ];
 const PARAMS = ['gain', 'pan', 'oct', 'cut', 'res', 'env', 'atk', 'dec', 'sus', 'rel', 'len', 'delay', 'verb', 'duck', 'shape', 'detune', 'tune', 'slices', 'hpf', 'low', 'high', 'drive', 'width', 'vib', 'slide', 'acc', 'bright', 'wave', 'vel', 'nudge', 'human', 'swing', 'sgrid', 'comp', 'rate', 'tr', 'range', 'seed', 'dens', 'evolve', 'bars',
