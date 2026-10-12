@@ -6,10 +6,9 @@
 <meta name="description" content="Tactus: a live-coding music instrument for the browser. Write it, play it with pads, compose from a seed, conduct it with your hands.">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="theme-color" content="#17191e">
 <meta property="og:title" content="Tactus">
 <meta property="og:description" content="A live-coding music instrument built live, in one conversation with Claude.">
-<style>body{margin:0}</style>
+<meta name="theme-color" content="#17191e">
 <title>Tactus</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='15' fill='%2317191e'/><path d='M11 13h34v10H33v28H23V23H11z' fill='%23eceef2'/><circle cx='45' cy='44' r='7.5' fill='%23ff7a3c'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -157,6 +156,10 @@ html[lang=ko] body { word-break: keep-all; }
 .name p { margin: 0 0 14px; color: var(--dim); max-width: 36em; }
 .end { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 18px; padding-block: 44px 64px; border-top: 1px solid var(--line); margin-top: 40px; }
 .end h2 { margin: 0; font-size: clamp(24px, 3vw, 34px); line-height: 1.3; text-wrap: balance; max-width: 22em; }
+.nav .gh { color: var(--dim); font-size: 14px; text-decoration: none; }
+.nav .gh:hover { color: var(--fg); }
+.end .oss { flex-basis: 100%; margin: 0; color: var(--faint); font-size: 13.5px; }
+.end .oss a { color: var(--dim); text-underline-offset: 3px; }
 .end small { display: block; color: var(--faint); font-size: 13px; margin-top: 6px; font-weight: 400; }
 
 
@@ -234,6 +237,7 @@ html[lang=ko] body { word-break: keep-all; }
   <nav class="nav">
     <a class="mark" href="#top">TACTUS</a><a class="home" href="/">Nako Sung</a>
     <div class="spacer"></div>
+    <a class="gh" href="https://github.com/nakosung/tactus" target="_blank" rel="noopener">GitHub</a>
     <button class="lang" id="lang" type="button">EN</button>
     <a class="btn small ext" href="./play/" data-ko="Tactus 열기" data-en="Open Tactus">Tactus 열기</a>
   </nav>
@@ -318,7 +322,7 @@ html[lang=ko] body { word-break: keep-all; }
           <div class="br rust"><span>Rust → WASM</span><i style="--w:100%"></i><b>47×</b></div>
         </div>
         <small data-ko="실시간 대비 처리 속도. 현 16음과 16분음표 애시드 라인 30초를 128샘플 블록으로 렌더링 (Node 22, 3회 중 최고)." data-en="Speed relative to realtime: 16 strings and a 16th-note acid line, 30 s rendered in 128-sample blocks (Node 22, best of three).">실시간 대비 처리 속도. 현 16음과 16분음표 애시드 라인 30초를 128샘플 블록으로 렌더링 (Node 22, 3회 중 최고).</small>
-        <a href="https://github.com/nakosung/nakosung.github.io/tree/master/tactus/dsp" target="_blank" rel="noopener" data-ko="Rust 소스와 벤치마크 보기" data-en="Rust source and benchmark">Rust 소스와 벤치마크 보기</a>
+        <a href="https://github.com/nakosung/tactus/tree/main/dsp" target="_blank" rel="noopener" data-ko="Rust 소스와 벤치마크 보기" data-en="Rust source and benchmark">Rust 소스와 벤치마크 보기</a>
       </div>
     </div>
     <ol class="steps">
@@ -375,11 +379,12 @@ html[lang=ko] body { word-break: keep-all; }
   <footer class="end">
     <h2><span data-ko="첫 마디를 바꿔 보세요" data-en="Change the first bar">첫 마디를 바꿔 보세요</span><small data-ko="Chrome·Edge·Safari 최신 버전 · 헤드폰을 권해요" data-en="Latest Chrome, Edge or Safari · headphones recommended">Chrome·Edge·Safari 최신 버전 · 헤드폰을 권해요</small></h2>
     <a class="btn key ext" href="./play/" data-ko="Tactus 열기" data-en="Open Tactus">Tactus 열기</a>
+    <p class="oss"><span data-ko="오픈 소스예요. 코드, 소리, 학습 스크립트까지 모두 공개돼 있고 PR을 환영해요." data-en="Open source: the code, the sounds and the training scripts are all public, and pull requests are welcome.">오픈 소스예요. 코드, 소리, 학습 스크립트까지 모두 공개돼 있고 PR을 환영해요.</span> <a href="https://github.com/nakosung/tactus" target="_blank" rel="noopener">github.com/nakosung/tactus</a> · MIT / Apache-2.0</p>
   </footer>
 </div>
 
 <script>
-// ===================== Pulse i18n =====================
+// ===================== Tactus i18n =====================
 const I18N = {
   ko: {
     // engine errors
@@ -738,7 +743,7 @@ function t(k, v) {
   return s;
 }
 
-// ===================== Pulse pattern engine (pure, no audio) =====================
+// ===================== Tactus pattern engine (pure, no audio) =====================
 const EPS = 1e-9;
 const mod = (a, n) => ((a % n) + n) % n;
 class PErr extends Error { constructor(msg, col) { super(msg); this.col = col; } }
@@ -1510,7 +1515,7 @@ function patValueAt(p, s) {
 
 if (false) module.exports = { ply, rev, polymeter, accentOf, parseChord, progValue, parseMini, parseLine, compile, eventsIn, atomNotes, patValueAt, PErr, tokenize, SCALES };
 
-// ===================== Pulse procedural composition =====================
+// ===================== Tactus procedural composition =====================
 // Generators write ordinary mini-notation from a seed, so everything they make can be read, edited and baked.
 //   kick ~beat four | dens .6 evolve 4      lead ~melody | seed 3 bars 4      prog ~gen 4
 // A global "seed N" line re-rolls the whole piece; a track's own "seed" offsets just that track.
