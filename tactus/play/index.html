@@ -326,7 +326,7 @@ body.recording .editor { border-color: var(--c-err); }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.13 07:34<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.13 07:47<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -2261,11 +2261,11 @@ key A minor
 prog <0 5 2 6>          // Am F C G
 
 kick   x x x x
-hat    [. x]*4                          | gain .45 pan .25 human .2 every 8 ply 2
+hat    [. x]*4                          | gain .45 pan .25 human .2 sometimes .12 ply 2
 ohat   . . . . . . x .                  | gain .3
 clap   . x . x                          | gain .6 verb .25
 bass   [. 0 0 0]*4                      | cut 600 res 5 shape k4(0,.7) duck .8
-arp    [0' 2 4 7 4' 2 0 2]*2             | cut k1(300,6000) res 9 delay .35 duck .5
+arp    [0' 2 4 7 4' 2 0 2]*2             | cut k1(300,6000) res 9 delay .35 duck .5 iter 4   // iter: each bar starts a step further in
 pad    0^                               | gain .35 duck .9 verb k3(.1,.9)
 lead   <[4 . 4 2] [2 . 2 0] [4 _ 7 6] [4 _ 2 _]> | oct 5 cut k2(800,8000) delay .3 verb .4 gain .45
 // acid  [0 0 7 0]*4?.2                | cut 300~1800/8 res 18 delay .2
@@ -2299,7 +2299,7 @@ ohat   . . . . . . . . . . . . . . x .  | gain .25
 reese  0 _ _ _ _ _ . 0 _ _ . . <3 5> _ _ . | supersaw oct 1 cut k1(250,2000) res 3 detune 38 shape .45 gain .7 duck .5
 sub    0 _ _ _ _ _ . 0 _ _ . . <3 5> _ _ . | oct 1 gain .5 duck .5
 pad    0^7                              | gain .22 atk 1.5 rel 2.5 verb k3(.3,.9) duck .3
-bell   [. . 4 .] [. 7 . .] [. . 6 .] [4 . . .] | oct 5 gain .25 delay .45 verb .5 cut k2(1500,9000)
+bell   [. . 4 .] [. 7 . .] [. . 6 .] [4 . . .] | oct 5 gain .16 delay .45 verb .5 cut k2(1500,9000) jux rev   // jux: reversed on the right
 
 scene intro pad bell hat
 scene build hat snare pad bell riser
@@ -2323,9 +2323,9 @@ swing .12
 kick   x x x x
 clap   . x . x                          | gain .5 verb .25 nudge 6 human .2
 hat    [. x]*4                          | gain .5 pan .15 human .15
-shaker x*16                             | gain .3 vel [.35 .95 .55 1]*4 pan -.3 human .3
+shaker x*16                             | gain .3 vel [.35 .95 .55 1]*4 pan -.3 human .3 degrade .1
 bass   [. 0 . 0] [. . 0 4]              | cut k2(300,1500) res 4 duck .6
-stab   [. . 0^7 .] [. 0^7 . .] . [. . 0^7 .] | oct 3 cut k1(500,4000) res 3 env .5 dec .3 delay .3 verb .3 duck .5 gain .5
+stab   [. . 0^7 .] [. 0^7 . .] . [. . 0^7 .] | oct 3 cut k1(500,4000) res 3 env .5 dec .3 verb .3 duck .5 gain .5 echo 3 3/16 .45   // dub echoes of each stab
 pad    0^7                              | gain .2 atk .8 rel 1.5 verb .6 duck .7
 bell   <. [. . 4 .] . [. 6 . 4]>        | oct 5 gain .2 delay .5 verb k3(.2,.8)
 
@@ -2350,9 +2350,9 @@ master loud
 kick   x x x x                          | gain 1.1 dec 1.4 tune .9
 hat    x*16                             | gain [.4 .15 .25 .15]*4
 ohat   [. x]*4                          | gain .3 dec .7
-rim    x(3,8,2)                         | gain .35 delay .35 pan .3 every 8 ply 2
+rim    x(3,8,2)                         | gain .35 delay .35 pan .3 sometimes .2 ply 2
 perc   {x . . x . x . . x . . x .}%16  | tom tune 1.4 gain .3 pan -.3 delay .2
-acid   [0 0 7 0] [3 0 1 0] [0 7 0 10] [0 1 0 3] | cut k1(200,2500) res 14 env .9 dec .14 slide [0 0 1 0 0 1 0 0]*2 acc [1 0 0 1 0 0 1 0]*2 delay .2 duck .3 shape k4(0,.6) every 8 rev
+acid   [0 0 7 0] [3 0 1 0] [0 7 0 10] [0 1 0 3] | cut k1(200,2500) res 14 env .9 dec .14 slide [0 0 1 0 0 1 0 0]*2 acc [1 0 0 1 0 0 1 0]*2 delay .2 duck .3 shape k4(0,.6) every 8 rev chunk 4 +7   // chunk: one quarter an octave up, moving each bar
 drone  0/4                              | pad oct 2 gain .2 cut 600 atk 2 rel 3 verb .8
 // clap . . . x?.3                      | gain .4 verb .4
 
@@ -2378,10 +2378,10 @@ master warm
 kick   x . . . . . . x . . x . . . . .  | gain .9 tune .85 dec .8
 snare  . . . . x . . . . . . . x . . .  | gain .55 tune .85 verb .25 dec 1.3 nudge 14 human .3
 hat    x*16?.2                          | gain [.28 .1 .18 .1]*4 dec .8 pan .3 human .4
-vinyl  x*32?.8                          | hat gain .05 tune .5 dec .4 pan -.4
+vinyl  x*32                             | hat gain .05 tune .5 dec .4 pan rand(-.6,.2) degrade .8
 bass   0 _ . [. 0] . . 4 .              | sine oct 2 gain .85 rel .1
 keys   0^7 _ _ . . . [. 0^7'] _         | oct 3 cut k1(1200,7000) gain .4 verb .3 shape .1 drop2 human .3
-bell   <[4 . . 2] [. . 0 .] [6 . 4 .] .> | oct 5 gain .22 delay .35 verb k3(.2,.8) cut 3000
+bell   <[4 . . 2] [. . 0 .] [6 . 4 .] .> | oct 5 gain .22 delay .35 verb k3(.2,.8) cut 3000 jux rev
 
 scene intro keys vinyl
 scene beat  all -bell pause
@@ -2402,11 +2402,11 @@ prog <0 5 3 4>          // Em C Am Bm
 
 kick   x . x .                          | gain 1
 snare  . x . x                          | gain .7 verb .6 dec 1.5 human .15
-hat    x*8                              | gain .3 vel [1 .55]*4 human .2
+hat    x*8                              | gain .3 vel [1 .55]*4 human .2 sometimes .15 ply 2
 bass   [0 7]*4                          | saw oct 1 cut k2(400,2000) env .5 dec .15 res 3 duck .4
 arp    0^7                              | updown rate 16 oct 4 cut k1(600,5000) delay .3 gain .35
 pad    0^                               | gain .3 verb .6 duck .4
-lead   <[7 _ _ 6] [5 _ 4 _] [4 _ _ 2] [4 _ _ _]> | supersaw oct 4 cut 2600 atk .04 delay .35 verb .5 gain .4
+lead   <[7 _ _ 6] [5 _ 4 _] [4 _ _ 2] [4 _ _ _]> | supersaw oct 4 cut 2600 atk .04 verb .5 gain .4 echo 3 3/16 .4   // echoes instead of a delay send, so they follow the notes
 
 scene intro  pad arp
 scene verse  kick snare hat bass pad fill
@@ -2432,10 +2432,12 @@ hat    [. x]*4                          | gain .4 pan .2 human .15 every 4 ply 2
 ohat   . . . . . . x .                  | gain .28
 crash  <x . . . . . . .>                | gain .35
 bass   [. 0 . 0']*2                     | bass oct 2 cut 900 res 4 duck .8 gain .8
-chip   [0 2 4 7 4 2 0' 2]*2             | square oct 5 cut 5000 gain .17 duck .5 delay .2
+chip   [0 2 4 7 4 2 0' 2]*2             | square oct 5 cut 5000 gain .17 duck .5 delay .2 iter 4
 pad    0^                               | gain .3 duck .9 verb .5
-lead   <[4 . 4 . 2 4 . 7] [6 _ 4 . 1 _ 4 .] [5 . 5 . 2 5 . 7] [8 _ 7 . 5 _ 3 _]> | supersaw fixed oct 4 gain .62 duck .4 verb .3 delay .2
-lead2  <[4 . 4 . 2 4 . 7] [6 _ 4 . 1 _ 4 .] [5 . 5 . 2 5 . 7] [8 _ 7 . 5 _ 3 _]> | square fixed oct 5 gain .16 cut 6000 delay .3
+let hook = <[4 . 4 . 2 4 . 7] [6 _ 4 . 1 _ 4 .] [5 . 5 . 2 5 . 7] [8 _ 7 . 5 _ 3 _]>
+
+lead   $hook | supersaw fixed oct 4 gain .62 duck .4 verb .3 delay .2
+lead2  $hook | square fixed oct 5 gain .16 cut 6000 delay .3
 auto stut <. . . [. . . x]>       | repeat 16      // FX sequence: a stutter on the last beat of every 4 bars
 auto out  <. . . [. . x _]>       | echo           // echo out at the end of each 4 bars of the break
 
@@ -2464,7 +2466,7 @@ ghost  . . . . . . . x . x . . . . . x? | snare gain .2 tune 1.3 pan -.2 human .
 hat    x*16                             | gain .3 vel [1 .4 .7 .4]*4 pan .2 human .2 every 8 ply 2
 reese  0 _ . 0 _ . . . 0 _ . . <2 4> _ . . | supersaw oct 1 cut k1(300,2200) res 3 detune 35 shape .4 gain .65 duck .5
 sub    0 _ . 0 _ . . . 0 _ . . <2 4> _ . . | sine oct 1 gain .36 duck .5
-hook   <[0 . 2 . 4 . 7 . 6 . 4 . 2 _ . .] [4 . 2 . 0 . 2 . 4 _ . . -1 _ . .]> | square oct 5 cut k2(1500,7000) gain .28 delay .25 duck .3
+hook   <[0 . 2 . 4 . 7 . 6 . 4 . 2 _ . .] [4 . 2 . 0 . 2 . 4 _ . . -1 _ . .]> | square oct 5 cut k2(1500,7000) gain .28 duck .3 echo 3 3/16 .45
 arp    [0 4 7 4]*4                      | pluck oct 4 gain .3 cut 3500 delay .3 duck .4
 pad    0^7                              | gain .22 atk 1 rel 2 verb .6 duck .3
 auto rep  <. . . [. . x x]>       | repeat 8       // FX sequence: an eighth-note repeat closing every 4 bars
@@ -2495,7 +2497,7 @@ clap   . . . . . . . . x . . . . . . .  | gain .4
 hat    x*8                              | gain .3 vel [1 .5]*4 pan .2 human .2 every 4 ply 3
 wob    [0 0 0 0 0 0 . 0 0 0 . . <3 5> <3 5> . .] | saw oct 2 cut [250 1800 600 3200]*4 res 8 env .2 shape .7 hpf 90 gain .6 duck .6
 sub    0 _ _ _ _ _ . 0 _ _ . . <3 5> _ . .  | sine oct 1 gain .55 duck .6
-chip   <[7 . 4 . 7 . 9 . 7 . 4 . 2 . 4 .] [7 . 4 . 7 . 9 . 11 _ 9 _ 7 _ . .]> | square oct 4 cut 4500 gain .3 delay .25 duck .3
+chip   <[7 . 4 . 7 . 9 . 7 . 4 . 2 . 4 .] [7 . 4 . 7 . 9 . 11 _ 9 _ 7 _ . .]> | square oct 4 cut 4500 gain .3 delay .25 duck .3 jux rev
 arp    [0 2 4 2]*4                      | pluck oct 4 gain .15 cut 3000 delay .35
 pad    0^                               | gain .26 atk .8 rel 2 verb .6 duck .4
 auto chop <. [. . . . . . x x] . [. . x _]> | gate 16   // FX sequence: the drop is gated in sixteenths here and there
@@ -2520,8 +2522,10 @@ prog <0 5 3 4 0 2 3 4 3 4 2 5 3 4 0 0>     // D Bm G A D F#m G A · G A F#m Bm G
 master warm
 space hall
 
-lead   <[4 _ 2 4 _ 7] [9 _ 7 5 _ _] [7 _ 5 3 _ 4] [4 _ _ 6 _ 5] [4 _ 2 4 _ 7] [8 _ 9 8 _ 6] [7 _ 5 4 _ 3] [6 _ 4 1 _ _] [3 _ 4 5 _ 7] [8 _ 7 6 _ 4] [5 _ 4 2 _ 4] [5@4 6 7] [7 _ 9 10 _ 9] [8 _ 7 6 _ 8] [7 _ _ 4 _ 2] [0@6]> | square fixed oct 4 cut 3200 vib 14 gain .42 delay .25 verb .3 human .1
-bell   <[4 _ 2 4 _ 7] [9 _ 7 5 _ _] [7 _ 5 3 _ 4] [4 _ _ 6 _ 5] [4 _ 2 4 _ 7] [8 _ 9 8 _ 6] [7 _ 5 4 _ 3] [6 _ 4 1 _ _] [3 _ 4 5 _ 7] [8 _ 7 6 _ 4] [5 _ 4 2 _ 4] [5@4 6 7] [7 _ 9 10 _ 9] [8 _ 7 6 _ 8] [7 _ _ 4 _ 2] [0@6]> | bell fixed oct 5 gain .16 delay .3 verb .4
+let tune = <[4 _ 2 4 _ 7] [9 _ 7 5 _ _] [7 _ 5 3 _ 4] [4 _ _ 6 _ 5] [4 _ 2 4 _ 7] [8 _ 9 8 _ 6] [7 _ 5 4 _ 3] [6 _ 4 1 _ _] [3 _ 4 5 _ 7] [8 _ 7 6 _ 4] [5 _ 4 2 _ 4] [5@4 6 7] [7 _ 9 10 _ 9] [8 _ 7 6 _ 8] [7 _ _ 4 _ 2] [0@6]>
+
+lead   $tune | square fixed oct 4 cut 3200 vib 14 gain .42 delay .25 verb .3 human .1
+bell   $tune | bell fixed oct 5 gain .16 delay .3 verb .4
 alto   <[2@6] [4 _ _ 3 _ _] [2@6] [1 _ _ 2 _ _] [2@6] [4 _ _ 6 _ _] [5@6] [4 _ _ . . .] [1@6] [2@6] [0 _ _ . 1 2] [3@6] [5@6] [4 _ _ 6 _ _] [4@6] [2@6]> | flute fixed oct 4 gain .14 verb .4 atk .08
 keys   0^7 _ _ _ _ _                     | epiano oct 3 gain .3 verb .3
 harp   [0 2 4 7 4 2]                     | harp oct 3 gain .36 verb .3 human .15
@@ -2547,9 +2551,12 @@ prog <Cm Ab Bb Cm Cm Ab Fm G>
 master loud
 space chamber
 
-theme  <[g4 _ _ c5 _ _ d5 _ eb5@4 d5 _ c5 _] [eb5@6 c5 _ ab4@4 c5 _ eb5 _] [f5 _ _ eb5 _ _ d5 _ bb4@4 d5 _ f5 _] [g5@8 g5 _ ab5 _ g5 _ f5 _] [eb5 _ _ g5 _ _ c6@6 bb5 _ g5 _] [ab5@4 g5 _ f5 _ eb5@4 c5 _ eb5 _] [f5 _ _ ab5 _ _ c6@4 bb5 _ ab5 _ f5 _] [g5@8 b4 _ d5 _ f5 _ ab5 _]> | saw cut 2600 env .5 dec .3 res 2 detune 8 vib 10 gain .52 delay .2 verb .3
-hero   <[c6 _ _ bb5 _ _ g5@4 eb5 _ g5 _ c6 _] [c6@4 eb6@4 c6 _ ab5@4 g5 _] [f5 _ _ g5 _ _ bb5@4 d6 _ c6 _ bb5 _] [c6@12 g5 _ c6 _] [eb6 _ _ d6 _ _ c6@4 g5 _ c6 _ eb6 _] [f6@4 eb6 _ c6 _ ab5@4 c6 _ eb6 _] [d6 _ _ c6 _ _ ab5@4 f5 _ ab5 _ c6 _] [b5@8 d6@4 f6@4]> | saw cut 3000 env .5 dec .3 res 2 detune 8 vib 12 gain .5 delay .2 verb .35
-echo   <[g4 _ _ c5 _ _ d5 _ eb5@4 d5 _ c5 _] [eb5@6 c5 _ ab4@4 c5 _ eb5 _] [f5 _ _ eb5 _ _ d5 _ bb4@4 d5 _ f5 _] [g5@8 g5 _ ab5 _ g5 _ f5 _] [eb5 _ _ g5 _ _ c6@6 bb5 _ g5 _] [ab5@4 g5 _ f5 _ eb5@4 c5 _ eb5 _] [f5 _ _ ab5 _ _ c6@4 bb5 _ ab5 _ f5 _] [g5@8 b4 _ d5 _ f5 _ ab5 _]> | square cut 4000 gain .12 delay .4 verb .4 nudge 30
+let a = <[g4 _ _ c5 _ _ d5 _ eb5@4 d5 _ c5 _] [eb5@6 c5 _ ab4@4 c5 _ eb5 _] [f5 _ _ eb5 _ _ d5 _ bb4@4 d5 _ f5 _] [g5@8 g5 _ ab5 _ g5 _ f5 _] [eb5 _ _ g5 _ _ c6@6 bb5 _ g5 _] [ab5@4 g5 _ f5 _ eb5@4 c5 _ eb5 _] [f5 _ _ ab5 _ _ c6@4 bb5 _ ab5 _ f5 _] [g5@8 b4 _ d5 _ f5 _ ab5 _]>
+let b = <[c6 _ _ bb5 _ _ g5@4 eb5 _ g5 _ c6 _] [c6@4 eb6@4 c6 _ ab5@4 g5 _] [f5 _ _ g5 _ _ bb5@4 d6 _ c6 _ bb5 _] [c6@12 g5 _ c6 _] [eb6 _ _ d6 _ _ c6@4 g5 _ c6 _ eb6 _] [f6@4 eb6 _ c6 _ ab5@4 c6 _ eb6 _] [d6 _ _ c6 _ _ ab5@4 f5 _ ab5 _ c6 _] [b5@8 d6@4 f6@4]>
+
+theme  $a | saw cut 2600 env .5 dec .3 res 2 detune 8 vib 10 gain .52 delay .2 verb .3
+hero   $b | saw cut 3000 env .5 dec .3 res 2 detune 8 vib 12 gain .5 delay .2 verb .35
+echo   $a | square cut 4000 gain .12 delay .4 verb .4 nudge 30
 arp    [0 2 4 7]*4                         | square oct 5 cut 3800 gain .16 delay .2 duck .3
 brass  [0^ . . 0^' . . 0^ . . . 0^ . 0^' . . .] | saw oct 4 cut 2200 env .4 dec .2 gain .22 duck .3
 pad    0^7                                  | pad gain .22 verb .5 duck .5
@@ -2736,10 +2743,18 @@ key D major
 master open
 space hall
 
-mel     <. . . . [. f#5 a5] [g5 f#5 c#5] [b4 c#5 d5] a4 f#4 . . . [. f#5 a5] [g5 f#5 c#5] [b4 c#5 d5] a4 c#5 f#5 e4 . . [a4 b4 c5] [e5 d5 b4] [d5 c5 b4] d5 [. . d5] [e5 f5 g5] [a5 c5 d5] [e5 d5 b4] d5 [. . d5] g5 f#5 [b4 a4 b4] [c#5 d5 e5] [c#5 d5 e5] f#4 . .> | piano gain .85 len 2 rel 2 verb .35 human .1
-chords  <[. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [g3,b3] _] [. [b3,d4,g4] _] [. [f3,a3,d4] _] [. [a3,c4,e4] _] [. [g3,b3,e4] _] [. [d3,g3,b3,e4] _] [. [c3,e3,a3,d4] _] [. [c3,f#3,a3,d4] _] [. [a3,c4,f4] _] [. [a3,c4,e4] _] [. [d3,g3,b3,e4] _] [. [c3,e3,a3,d4] _] [. [c3,f#3,a3,d4] _] [. [b3,e4,g4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [c#4,e4,a4] _] [. [a3,c#4,f#4,a4] _] [. [a3,d4] [e3,b3,d4,g4]] [g3,c4,e4,a4,c5] [d3,d4,f#4,a4,d5]> | piano gain .46 len 1.2 rel 1.5 verb .3 human .1
+let mel1 = [g5 f#5 c#5]
+let chord1 = [. [b3,d4,f#4] _]
+let chord2 = [. [a3,c#4,f#4] _]
+let chord3 = [. [a3,c4,e4] _]
+let chord4 = [. [d3,g3,b3,e4] _]
+let chord5 = [. [c3,e3,a3,d4] _]
+let chord6 = [. [c3,f#3,a3,d4] _]
+
+mel     <. . . . [. f#5 a5] $mel1 [b4 c#5 d5] a4 f#4 . . . [. f#5 a5] $mel1 [b4 c#5 d5] a4 c#5 f#5 e4 . . [a4 b4 c5] [e5 d5 b4] [d5 c5 b4] d5 [. . d5] [e5 f5 g5] [a5 c5 d5] [e5 d5 b4] d5 [. . d5] g5 f#5 [b4 a4 b4] [c#5 d5 e5] [c#5 d5 e5] f#4 . .> | piano gain .85 len 2 rel 2 verb .35 human .1
+chords  <$chord1 $chord2 $chord1 $chord2 $chord1 $chord2 $chord1 $chord2 $chord1 $chord2 $chord1 $chord2 $chord1 $chord2 $chord1 $chord2 $chord2 $chord1 [. [g3,b3] _] [. [b3,d4,g4] _] [. [f3,a3,d4] _] $chord3 [. [g3,b3,e4] _] $chord4 $chord5 $chord6 [. [a3,c4,f4] _] $chord3 $chord4 $chord5 $chord6 [. [b3,e4,g4] _] $chord2 $chord1 [. [c#4,e4,a4] _] [. [a3,c#4,f#4,a4] _] [. [a3,d4] [e3,b3,d4,g4]] [g3,c4,e4,a4,c5] [d3,d4,f#4,a4,d5]> | piano gain .46 len 1.2 rel 1.5 verb .3 human .1
 bass    <g2 d2 g2 d2 g2 d2 g2 d2 g2 d2 g2 d2 g2 d2 g2 d2 f#2 b1 e2 e2 d2 a1 d2 d2 d2 d2 d2 d2 d2 d2 d2 e2 f#2 b1 e2 e2 [. b2 ., e2] a2 [d2,a2]> | piano gain .68 len 1.1 rel 2 verb .3
-air     <[. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [g3,b3] _] [. [b3,d4,g4] _] [. [f3,a3,d4] _] [. [a3,c4,e4] _] [. [g3,b3,e4] _] [. [d3,g3,b3,e4] _] [. [c3,e3,a3,d4] _] [. [c3,f#3,a3,d4] _] [. [a3,c4,f4] _] [. [a3,c4,e4] _] [. [d3,g3,b3,e4] _] [. [c3,e3,a3,d4] _] [. [c3,f#3,a3,d4] _] [. [b3,e4,g4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [c#4,e4,a4] _] [. [a3,c#4,f#4,a4] _] [. [a3,d4] [e3,b3,d4,g4]] [g3,c4,e4,a4,c5] [d3,d4,f#4,a4,d5]> | choir gain .16 atk 1 rel 2.5 verb .6
+air     <$chord1 $chord2 $chord1 $chord2 $chord1 $chord2 $chord1 $chord2 $chord1 $chord2 $chord1 $chord2 $chord1 $chord2 $chord1 $chord2 $chord2 $chord1 [. [g3,b3] _] [. [b3,d4,g4] _] [. [f3,a3,d4] _] $chord3 [. [g3,b3,e4] _] $chord4 $chord5 $chord6 [. [a3,c4,f4] _] $chord3 $chord4 $chord5 $chord6 [. [b3,e4,g4] _] $chord2 $chord1 [. [c#4,e4,a4] _] [. [a3,c#4,f#4,a4] _] [. [a3,d4] [e3,b3,d4,g4]] [g3,c4,e4,a4,c5] [d3,d4,f#4,a4,d5]> | choir gain .16 atk 1 rel 2.5 verb .6
 sub     <g2 d2 g2 d2 g2 d2 g2 d2 g2 d2 g2 d2 g2 d2 g2 d2 f#2 b1 e2 e2 d2 a1 d2 d2 d2 d2 d2 d2 d2 d2 d2 e2 f#2 b1 e2 e2 [. b2 ., e2] a2 [d2,a2]> | sine gain .3 atk .3 rel 1.5
 
 scene piano mel chords bass
@@ -2846,7 +2861,7 @@ hat      x*7                                      | ahat gain .5 vel [1.25 .6 .8
 crash    <x . . .>                                | acrash gain .35
 tap      [0 4 7 9 7 4 2]*2                        | zither oct 4 bright k1(.4,.95) dec .9 gain .5 pan .3 delay .15 every 4 rev
 tap2     [9 . 7 . 4 . 2 . 4 . 7 . 9 .]            | zither oct 4 bright .7 dec .7 gain .35 pan -.35
-poly     [0 2 4 6 4]*2                            | harp oct 5 gain .35 verb .3 pan -.2
+poly     [0 2 4 6 4]*2                            | harp oct 5 gain .35 verb .3 pan -.2 iter 5
 bass     0 _ _ 4 _ 2 _                            | bass oct 2 cut k2(500,2000) gain .7 duck .3
 
 scene intro  tap hat
@@ -2896,10 +2911,10 @@ master warm
 
 kick     x . . . . . . x . . x . . . . .          | gain 1 tune .85 dec 1.1 drive .2
 snare    . . . . x . . . . . . . x . . .          | asnare gain .8 nudge 12 human .2
-hat      x*8                                      | ahat gain .5 vel [1 .6]*4 human .3
+hat      x*8                                      | ahat gain .5 vel [1 .6]*4 human .3 sometimes .12 ply 2
 chop     [0^7 _ . .] [. . 0^7' .] . [. 0^7 . .]   | piano oct 4 gain .45 cut k1(1500,9000) shape .15 verb .15
 bass     0 _ . [. 0] . . 4 .                      | sine oct 2 gain .85
-vibes    <. [4 . 2 .] . [6 . 4 2]>                | oct 5 gain .3 delay .3
+vibes    <. [4 . 2 .] . [6 . 4 2]>                | oct 5 gain .3 delay .3 jux rev
 tamb     . x . x                                  | gain .25 pan .4
 
 scene intro  chop vibes
