@@ -287,7 +287,38 @@ body.recording .editor { border-color: var(--c-err); }
 @keyframes blink { 50% { background: var(--k-pink); } }
 
 /* guide */
-.help { font-size: 12px; color: var(--dim); }
+.help { font-size: 12.5px; color: var(--dim); }
+.gtools { display: flex; justify-content: flex-end; }
+.help details.gsec { border: 1px solid var(--line); border-radius: 10px; background: var(--panel); padding: 2px 10px; }
+.help details.gsec > summary { cursor: pointer; padding: 8px 0; font-size: 13px; font-weight: 700; color: var(--fg); list-style: none; display: flex; justify-content: space-between; align-items: center; }
+.help details.gsec > summary::-webkit-details-marker { display: none; }
+.help details.gsec > summary::after { content: '+'; color: var(--dim); font-weight: 400; }
+.help details.gsec[open] > summary::after { content: '–'; }
+.help details.gsec > dl { display: block; margin: 0 0 10px; }
+.help details.gsec dt { font-family: var(--f-code); font-size: 11.5px; color: var(--fg); margin-top: 10px; max-width: none; overflow-wrap: anywhere; }
+.help details.gsec dd { margin: 3px 0 0; line-height: 1.55; }
+.ggrid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.gcard { margin: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--raised); padding: 6px 7px 8px; display: grid; gap: 4px; align-content: start; }
+.gcard svg { width: 100%; height: auto; display: block; }
+.gcard figcaption { display: grid; gap: 2px; }
+.gcard figcaption b { font-size: 12px; color: var(--fg); }
+.gcard figcaption span { font-size: 11px; line-height: 1.45; color: var(--dim); }
+.gstrip { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; }
+.gstrip[hidden] { display: none; }
+.gcard.mini { flex: 0 0 128px; }
+.gcard.mini figcaption span { display: none; }
+.guidedlg { width: min(1200px, 94vw); height: 90vh; max-height: 90vh; padding: 0; border: 1px solid var(--line); border-radius: 16px; background: var(--body); color: var(--fg); }
+.guidedlg::backdrop { background: rgba(0, 0, 0, .55); }
+.gd-head { position: sticky; top: 0; z-index: 1; display: flex; justify-content: space-between; align-items: center; padding: 12px 18px; background: var(--body); border-bottom: 1px solid var(--line); }
+.gd-head b { font-size: 16px; }
+.gd-body { padding: 16px 18px 24px; }
+.gd-body .help { font-size: 14px; columns: 380px 3; column-gap: 18px; }
+.gd-body .help > * { break-inside: avoid; margin-bottom: 14px; }
+.gd-body .help details.gsec dt { font-size: 13px; }
+.gd-body .help .ggrid { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+.gd-body .gcard figcaption b { font-size: 13.5px; }
+.gd-body .gcard figcaption span { font-size: 12.5px; }
+.gd-body .gtools { display: none; }
 .gpubox { border: 1px solid var(--line); background: var(--panel); border-radius: 12px; padding: 12px; display: grid; gap: 8px; }
 .gpubox h3 { margin: 0; display: flex; align-items: center; gap: 8px; }
 .gpubox p { margin: 0; line-height: 1.5; }
@@ -326,7 +357,7 @@ body.recording .editor { border-color: var(--c-err); }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.13 08:03<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.13 08:28<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -392,6 +423,7 @@ body.recording .editor { border-color: var(--c-err); }
           <span class="calinfo" id="handsMap" hidden data-i18n="handsMap"></span>
         </div>
         <canvas id="handcv" class="handcv" hidden></canvas>
+        <div class="gstrip" id="gestStrip" data-gestures="mini" hidden></div>
       </section>
 
       <section class="pane" id="pane-compose" role="tabpanel" aria-labelledby="tab-compose" hidden>
@@ -440,6 +472,9 @@ body.recording .editor { border-color: var(--c-err); }
       </section>
 
       <section class="pane help" id="pane-guide" role="tabpanel" aria-labelledby="tab-guide" hidden>
+        <div class="gtools"><button class="btn ghost" id="guideBig" data-i18n="guideBig"></button></div>
+        <h3 data-i18n="hgConduct"></h3>
+        <div class="ggrid" data-gestures=""></div>
         <div class="gpubox">
           <h3>GPU <span class="gpu-state" id="gpuState"></span></h3>
           <p data-i18n="gpuIntro"></p>
@@ -535,7 +570,6 @@ body.recording .editor { border-color: var(--c-err); }
           <dt>[ ]</dt><dd data-i18n="h25d"></dd>
           <dt>Q W E R</dt><dd data-i18n="h17d"></dd>
           <dt>Space · T · Esc</dt><dd data-i18n="h15d"></dd>
-          <dt data-i18n="h24t"></dt><dd data-i18n="handsMap"></dd>
         </dl>
         <h3 data-i18n="hgSamples"></h3>
         <dl>
@@ -543,6 +577,7 @@ body.recording .editor { border-color: var(--c-err); }
           <dt data-i18n="h28t"></dt><dd data-i18n="h28d"></dd>
         </dl>
       </section>
+      <dialog id="guideDlg" class="guidedlg"><div class="gd-head"><b data-i18n="tabGuide"></b><button class="btn ghost" id="guideClose" data-i18n="guideClose"></button></div><div class="gd-body"></div></dialog>
     </aside>
   </main>
 
@@ -575,6 +610,18 @@ const I18N = {
     sampleLoadFail: '{n} 소리를 불러오지 못했어요 ({e}). 주소와 공개 여부를 확인해 주세요', soundsAdded: '내 소리 {n}개를 추가했어요: {list}', soundsBad: '읽을 수 없는 파일: {list}',
     sndMine: '내 소리', sndAdd: '+ 파일 추가', sndRemove: '지우기', sndDrop: '오디오 파일이나 폴더를 페이지에 끌어다 놓아도 돼요. 이 브라우저에 저장돼요. 파일 이름에 음(pad_c3)이 있으면 그 음 기준으로 음정이 바뀌고, 없으면 히트로 울려요', sndDropBig: '놓으면 내 소리로 추가돼요', sndHit: '히트: x 마다 그대로 울려요 (tune 으로 음높이)', sndPitched: '음정 악기: {n} 에서 녹음한 소리', ac_sample: '녹음을 소리로: 주소 또는 끌어다 놓은 파일',
     h50d: '파일을 끌어다 놓거나 주소로 불러온 녹음이 그 이름의 악기가 돼요. hit 은 그대로, c3 같은 음을 쓰면 그 음 기준으로 음정을 바꿔요',
+    hgConduct: '손으로 지휘하기', guideBig: '⤢ 크게 보기', guideClose: '닫기', gBaton: '지휘 중', gFermata: '페르마타', gNext: '다음 씬',
+    handFermata: '페르마타 — 손을 펴면 이어져요', handStart: '♩ = {b} 로 시작해요', handCueIn: '{n} 들어와요', handCueOut: '{n} 빠져요',
+    gsBeat: '박자 젓기', gsBeatD: '오른손으로 박을 저으면 템포가 손을 따라와요. 일정한 박 네 번부터 따라가요',
+    gsSize: '크게, 작게', gsSizeD: '크게 저으면 ff, 작게 저으면 pp. 오른손을 내리면 원래 셈여림으로 돌아가요',
+    gsStart: '예비 박', gsStartD: '멈춰 있을 때 일정하게 네 번 저으면 다음 박에 연주가 시작돼요',
+    gsCue: '큐 주기', gsCueD: '왼손 검지로 가리키고 잠깐 멈추면 그 악기가 들어오거나 빠져요. 악기는 화면 위에 오케스트라처럼 늘어서요',
+    gsLeft: '왼손 표현', gsLeftD: '편 왼손의 높이는 k1, 좌우는 k3. 코드에서 k1·k3 에 묶은 소리가 바뀌어요',
+    gsBuild: '빌드업', gsBuildD: '오른손 엄지와 검지를 붙이고 있으면 쌓여 오르고, 떼면 다음 마디에 드롭',
+    gsRepeat: '비트 리피트', gsRepeatD: '왼손 엄지와 검지를 붙이고 있는 동안 박을 되풀이해요',
+    gsBreak: '브레이크다운', gsBreakD: '주먹 하나: 드럼과 베이스가 빠져요',
+    gsFermata: '페르마타', gsFermataD: '두 손 주먹: 지금 소리를 붙잡고 멈춰요. 한 손을 펴면 다시 흘러가요',
+    gsSwipe: '다음 장면', gsSwipeD: '오른손을 옆으로 빠르게: 다음·이전 씬',
     letFmt: 'let 은 "let 이름 = 패턴" 형식이에요 (예: let A = c4 e4 g4). 쓸 때는 $A', noVar: "'{n}' 프레이즈가 없어요. let {n} = … 로 만드세요", varLoop: "'{n}' 프레이즈가 자기 자신을 불러요",
     tfFmt: "'{w}' 은 이렇게 써요: off 1/8 +7 · echo 3 1/8 .5 · jux rev · superimpose +2 · sometimes .3 ply 2 · degrade .3 · chunk 4 +7 · iter 4 · palindrome · struct x.xx · mask xx.x · scramble 8 · shuffle 4",
     tf_off: '시간을 밀어서 겹치기 (1/8 = 8분음표)', tf_echo: '횟수 간격 감쇠로 메아리', tf_jux: '왼쪽은 원래대로, 오른쪽은 바꿔서', tf_superimpose: '바꾼 복사본을 위에 겹치기', tf_sometimes: '확률로 일부 음만 바꾸기', tf_often: '75% 확률로 바꾸기', tf_rarely: '25% 확률로 바꾸기', tf_degrade: '확률로 음 빼기', tf_chunk: '마디를 N조각으로, 한 조각씩 돌아가며 바꾸기', tf_iter: '매 마디 시작점을 1/N씩 밀기', tf_palindrome: '한 마디씩 앞뒤로 번갈아', tf_struct: '이 리듬으로 다시 치기 (x와 .)', tf_mask: 'x 칸의 음만 남기기', tf_scramble: 'N조각을 무작위로 (반복 허용)', tf_shuffle: 'N조각을 섞어서 (한 번씩)', ac_var: 'let 으로 만든 프레이즈', ac_let: '프레이즈 이름 붙이기: let A = …', ac_rand: '음마다 a~b 사이 무작위', ac_perlin: 'a~b 사이를 부드럽게 떠도는 값',
@@ -647,8 +694,8 @@ const I18N = {
     h27t: '소리 미리듣기', h27d: '눌러서 들어 보세요. 멈춰 있으면 바로, 재생 중이면 다음 박에 지금 키·코드로 섞어서 들려줘요 (Shift: 음악을 끄고 미리듣기만). 코드에서는 Alt를 누른 채 트랙 이름 위에 올리면 그 줄을 한 마디 들려줘요', sndSynth: '신스', sndSampled: '샘플 악기', sndGpu: 'GPU 악기', sndDrums: '신스 드럼', sndPerc: '샘플 타악기', sndKorean: '국악 타악기', pvClick: '클릭하면 들려줘요 (Shift: 음악 끄고)', pvLive: '재생 중: 다음 박에 맞춰 섞어서 들려줘요 (Shift: 큐)', pvAc: '듣기',
     h28t: '샘플 출처', h28d: 'VCSL (Versilian Community Sample Library), CC0 — 출처 표시 없이 자유롭게 쓸 수 있어요',
     hands: '손 컨트롤 켜기', handsOff: '손 컨트롤 끄기', handLoadingShort: '불러오는 중…',
-    handsTitle: '카메라로 손을 추적해 노브와 제스처를 조작해요 (로컬 파일에서만, 인터넷 필요)',
-    handsMap: '왼손 높이 k1 · 왼손 좌우 k3 · 오른손 높이 k2 · 오른손 집기 = 빌드업(놓으면 드롭) · 왼손 집기 = 비트 리피트 · 주먹 = 브레이크다운 · 오른손 휙 = 다음/이전 씬',
+    handsTitle: '카메라 앞에서 손으로 지휘해요: 템포, 셈여림, 큐 등 (손 인식 모델을 받느라 인터넷이 필요해요)',
+    handsMap: '오른손: 박자·셈여림 · 왼손: 큐·표현 · 주먹 두 개: 페르마타 (아래 그림)',
     h24t: '손 컨트롤',
     handLoading: '손 추적 모델을 불러오는 중이에요 (처음 한 번, 몇 초)', handReady: '손 컨트롤 켜짐 — 카메라에 두 손을 보여 주세요',
     handLoadFail: '손 추적 모델을 불러오지 못했어요. 인터넷 연결을 확인하세요',
@@ -761,6 +808,18 @@ const I18N = {
     sampleLoadFail: "Couldn't load the sound {n} ({e}). Check the address and that it is public", soundsAdded: 'Added {n} sounds: {list}', soundsBad: "Couldn't read: {list}",
     sndMine: 'My sounds', sndAdd: '+ Add files', sndRemove: 'Remove', sndDrop: 'You can also drop audio files or folders anywhere on the page. They stay in this browser. A note in the file name (pad_c3) makes it play pitched from that note; otherwise it plays as a hit', sndDropBig: 'Drop to add to my sounds', sndHit: 'Hit: plays as recorded on each x (tune changes pitch)', sndPitched: 'Pitched: recorded at {n}', ac_sample: 'a recording as a sound: an address or a dropped file',
     h50d: 'A recording dropped on the page or loaded from an address becomes an instrument of that name. hit plays it as recorded; a note like c3 re-pitches it from that note',
+    hgConduct: 'Conduct with your hands', guideBig: '⤢ Open large', guideClose: 'Close', gBaton: 'conducting', gFermata: 'fermata', gNext: 'next scene',
+    handFermata: 'Fermata — open a hand to go on', handStart: 'Starting at ♩ = {b}', handCueIn: '{n} comes in', handCueOut: '{n} drops out',
+    gsBeat: 'Beat time', gsBeatD: 'Beat time with your right hand and the tempo follows it, from four steady beats on',
+    gsSize: 'Big and small', gsSizeD: 'Wide strokes play ff, small ones pp. Lower your right hand to go back to the written dynamics',
+    gsStart: 'Preparation', gsStartD: 'While stopped, four steady beats start the music on the next one',
+    gsCue: 'Cue', gsCueD: 'Point with your left index finger and hold: that instrument comes in or drops out. The instruments sit across the top of the picture like an orchestra',
+    gsLeft: 'Left-hand shaping', gsLeftD: 'An open left hand: its height is k1, left and right is k3. Whatever the code binds to k1 and k3 follows',
+    gsBuild: 'Build-up', gsBuildD: 'Hold the right thumb and index together to build; let go to drop on the next bar',
+    gsRepeat: 'Beat repeat', gsRepeatD: 'Hold the left thumb and index together to repeat the beat',
+    gsBreak: 'Breakdown', gsBreakD: 'One fist: the drums and bass drop out',
+    gsFermata: 'Fermata', gsFermataD: 'Two fists: the sound is held where it is. Open a hand and it flows on',
+    gsSwipe: 'Next scene', gsSwipeD: 'A fast sideways right-hand swipe: next or previous scene',
     letFmt: 'Write let as "let name = pattern" (e.g. let A = c4 e4 g4), then use it as $A', noVar: "There's no phrase '{n}'. Make one with let {n} = …", varLoop: "The phrase '{n}' refers to itself",
     tfFmt: "Write '{w}' like: off 1/8 +7 · echo 3 1/8 .5 · jux rev · superimpose +2 · sometimes .3 ply 2 · degrade .3 · chunk 4 +7 · iter 4 · palindrome · struct x.xx · mask xx.x · scramble 8 · shuffle 4",
     tf_off: 'a copy later by a time (1/8 = an eighth)', tf_echo: 'echoes: count, spacing, decay', tf_jux: 'the pattern left, a changed copy right', tf_superimpose: 'a changed copy on top', tf_sometimes: 'change some of the notes, by chance', tf_often: 'change notes 75% of the time', tf_rarely: 'change notes 25% of the time', tf_degrade: 'drop notes by chance', tf_chunk: 'cut the bar in N, change one part per bar in turn', tf_iter: 'start each bar 1/N further in', tf_palindrome: 'forwards, then backwards, bar by bar', tf_struct: 'replay the notes on this rhythm (x and .)', tf_mask: 'keep only notes on x steps', tf_scramble: 'N parts in random order (may repeat)', tf_shuffle: 'N parts shuffled (each once)', ac_var: 'a phrase made with let', ac_let: 'name a phrase: let A = …', ac_rand: 'a random value from a to b for each note', ac_perlin: 'a value drifting smoothly between a and b',
@@ -829,8 +888,8 @@ const I18N = {
     h27t: 'Hear the sounds', h27d: 'Click to listen. Stopped, it plays at once; playing, it joins on the next beat in the current key and chords (Shift: music off, preview only). In the code, hold Alt over a track name to hear one bar of that line', sndSynth: 'Synths', sndSampled: 'Sampled instruments', sndGpu: 'GPU instruments', sndDrums: 'Synth drums', sndPerc: 'Sampled percussion', sndKorean: 'Korean percussion', pvClick: 'Click to listen (Shift: music off)', pvLive: 'Playing: joins on the next beat (Shift: cue)', pvAc: 'listen',
     h28t: 'Sample credits', h28d: 'VCSL (Versilian Community Sample Library), CC0 — free to use, no attribution required',
     hands: 'Hand control', handsOff: 'Stop hand control', handLoadingShort: 'Loading…',
-    handsTitle: 'Tracks your hands with the camera to drive knobs and gestures (local file only, needs internet)',
-    handsMap: 'Left hand height k1 · left hand side-to-side k3 · right hand height k2 · right pinch = build-up (release to drop) · left pinch = beat repeat · fist = breakdown · right-hand swipe = next/previous scene',
+    handsTitle: 'Conduct with your hands in front of the camera: tempo, dynamics, cues and more (needs internet for the hand model)',
+    handsMap: 'Right hand: time and dynamics · left hand: cues and shaping · two fists: fermata (pictures below)',
     h24t: 'Hand control',
     handLoading: 'Loading the hand tracking model (first time only, a few seconds)', handReady: 'Hand control on — show both hands to the camera',
     handLoadFail: "Couldn't load the hand tracking model. Check your internet connection",
@@ -3133,7 +3192,9 @@ function initAudio() {
   A.fxGate = g(1); A.eqL = bq('lowshelf', 220, 0.7, 0); A.eqM = bq('peaking', 1100, 0.6, 0); A.eqH = bq('highshelf', 4500, 0.7, 0);
   A.crush = ctx.createWaveShaper();
   // previews (preview.js) join after the music's own duck, so the music can step back while one plays
-  A.pvDuck = g(1); A.pvIn = g(1); A.post.connect(A.pvDuck); A.pvDuck.connect(A.gate); A.pvIn.connect(A.gate);
+  // dynamics from the conductor's baton (hand.js), 1 unless someone is conducting
+  A.dyn = g(1);
+  A.pvDuck = g(1); A.pvIn = g(1); A.post.connect(A.dyn); A.dyn.connect(A.pvDuck); A.pvDuck.connect(A.gate); A.pvIn.connect(A.gate);
   A.gate.connect(A.fxGate); A.fxGate.connect(A.hp); A.hp.connect(A.lp); A.lp.connect(A.eqL); A.eqL.connect(A.eqM); A.eqM.connect(A.eqH); A.eqH.connect(A.crush); A.crush.connect(A.glue);
   A.mud = bq('peaking', 280, 0.9, -1.5); A.air = bq('highshelf', 9500, 0.7, 2.5);
   // master EQ and stereo width, set from the master line's parameters (flat and 1 by default)
@@ -6659,14 +6720,19 @@ function sndInit() {
   sndLoadSaved();
 }
 
-// ===================== Tactus hand control (camera) =====================
-// Left hand height -> k1, left hand left/right -> k3, right hand height -> k2.
-// Right pinch = build-up (release drops on the next downbeat), left pinch = beat repeat,
-// fist = breakdown, fast right-hand swipe = next / previous scene.
+// ===================== Tactus hand control (camera): conducting =====================
+// The right hand is the baton: beat time and the tempo follows (four steady strokes while stopped start the
+// music on the next beat); the size of the strokes sets the dynamics, from pp to ff. The left hand shapes and cues:
+// its height is k1 and its left/right k3; pointing at an instrument (laid out across the picture like an
+// orchestra) and holding there brings it in or takes it out. Right pinch = build-up (release drops on the next
+// downbeat), left pinch = beat repeat, one fist = breakdown, both fists = fermata (the sound is held), a fast
+// right-hand swipe = next / previous scene. Right-hand height is k2 while it is not beating.
 const MP = 'https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14';
 const MP_MODEL = 'https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task';
 const HAND_LINKS = [[0, 1], [1, 2], [2, 3], [3, 4], [0, 5], [5, 6], [6, 7], [7, 8], [5, 9], [9, 10], [10, 11], [11, 12], [9, 13], [13, 14], [14, 15], [15, 16], [13, 17], [17, 18], [18, 19], [19, 20], [0, 17]];
-const H = { on: false, busy: false, lm: null, video: null, stream: null, raf: 0, last: -1, st: { L: null, R: null }, fists: 0, swipeAt: 0, res: null };
+const H = { on: false, busy: false, lm: null, video: null, stream: null, raf: 0, last: -1, st: { L: null, R: null }, fists: 0, swipeAt: 0, res: null,
+  // the baton: strokes (time, size), the tempo it gives, the dynamics; cue: the instrument pointed at and since when
+  beats: [], bpm: null, dyn: 1, dynDb: 0, beatAt: -1e9, ictusFlash: 0, cue: null, cueSince: 0, cueDone: null, fermata: false, startAt: 0 };
 
 function camAllowedByPage() {
   const pp = document.permissionsPolicy || document.featurePolicy;
@@ -6758,48 +6824,132 @@ function rawPose(f, prev, now, st) {
   // ignored for a moment after a pinch so letting go of a pinch never reads as a fist
   const recentPinch = st && now - st.pinchAt < 450;
   if (!recentPinch && i < 0.52 && m < 0.6 && r < 0.6 && p < 0.65) return 'fist';
+  // pointing = the index straight out, the other three curled
+  if (f.pinch > 0.45 && i > 0.8 && m < 0.62 && r < 0.62 && p < 0.7) return 'point';
   if (f.pinch > 0.6 && i > 0.75 && m > 0.75) return 'open';
   // a pinch that no longer qualifies ends; anything else keeps its last pose
-  return prev === 'pinch' ? 'open' : prev;
+  return prev === 'pinch' || prev === 'point' ? 'open' : prev;
 }
 const POSE_GESTURE = { L: { pinch: 'rep4', fist: 'break' }, R: { pinch: 'build', fist: 'break' } };
+// one fist is a breakdown; the second fist turns it into a fermata: the sound is frozen and held, nothing moves on
+const FERMATA = { name: 'fermata', acts: [{ op: 'freeze' }, { op: 'mute', list: ['all'] }] };
 function poseOn(side, pose) {
   const g = POSE_GESTURE[side][pose]; if (!g) return;
-  if (g === 'break' && H.fists++ > 0) return;
+  if (g === 'break') {
+    H.fists++;
+    if (H.fists === 1) gestureOn('break');
+    else if (H.fists === 2 && S.ctx && S.playing) { gestureOff('break'); padStart('hand:fermata', FERMATA, S.lastC, false); H.fermata = true; loopMsg(t('handFermata'), 'ok', 1500); }
+    return;
+  }
   gestureOn(g);
 }
 function poseOff(side, pose) {
   const g = POSE_GESTURE[side][pose]; if (!g) return;
-  if (g === 'break' && --H.fists > 0) return;
-  H.fists = Math.max(0, H.fists);
+  if (g === 'break') {
+    H.fists = Math.max(0, H.fists - 1);
+    if (H.fermata) { padStop('hand:fermata', S.lastC, false); H.fermata = false; if (H.fists === 1) gestureOn('break'); }
+    else if (H.fists === 0) gestureOff('break');
+    return;
+  }
   gestureOff(g);
 }
 function handLost(side) {
   const st = H.st[side];
   if (st) poseOff(side, st.pose);
   H.st[side] = null;
+  if (side === 'R') setDynamics(1, 2);   // no baton, no dynamics: back to as written
+  if (side === 'L') H.cue = null;
 }
 const knobMap = v => Math.max(0, Math.min(1, (v - 0.18) / 0.64));
 function handUpdate(side, f, now) {
   if (!f) { if (H.st[side] && now - H.st[side].seen > 250) handLost(side); return; }
   let st = H.st[side];
-  if (!st) st = H.st[side] = { pose: 'open', cand: 'open', n: 0, sx: f.ux, sy: f.uy, hist: [], seen: now, pinchAt: -1e9 };
+  if (!st) st = H.st[side] = { pose: 'open', cand: 'open', n: 0, sx: f.ux, sy: f.uy, hist: [], seen: now, pinchAt: -1e9, by: f.uy, dir: 0, top: f.uy, lastT: now };
   st.seen = now; st.f = f;
   const raw = rawPose(f, st.cand, now, st);
   if (raw === 'pinch') st.pinchAt = now;
   if (raw === st.cand) st.n++; else { st.cand = raw; st.n = 1; }
-  if (st.n >= (st.cand === 'fist' ? 6 : 3) && st.cand !== st.pose) { poseOff(side, st.pose); st.pose = st.cand; poseOn(side, st.pose); }
+  if (st.n >= (st.cand === 'fist' ? 6 : st.cand === 'point' ? 4 : 3) && st.cand !== st.pose) { poseOff(side, st.pose); st.pose = st.cand; poseOn(side, st.pose); }
   st.sx += 0.35 * (f.ux - st.sx); st.sy += 0.35 * (f.uy - st.sy);
+  if (side === 'L' && st.pose === 'point') { cueUpdate(f, now); st.hist = []; return; }
+  if (side === 'L') H.cue = null;
   if (st.pose !== 'open') { st.hist = []; return; }
-  if (side === 'L') { setKnob(0, knobMap(st.sy)); setKnob(2, knobMap(st.sx * 2)); }
-  else {
-    setKnob(1, knobMap(st.sy));
-    st.hist.push({ t: now, x: f.ux });
-    while (st.hist.length && now - st.hist[0].t > 220) st.hist.shift();
-    const dx = st.hist.length > 2 ? f.ux - st.hist[0].x : 0;
-    if (Math.abs(dx) > 0.22 && now - H.swipeAt > 900) { H.swipeAt = now; st.hist = []; swipeScene(dx > 0 ? 1 : -1); }
-  }
+  if (side === 'L') { setKnob(0, knobMap(st.sy)); setKnob(2, knobMap(st.sx * 2)); return; }
+  batonUpdate(st, f, now);
+  // height is k2 only while the hand is not beating time, so the strokes don't throw the knob around
+  if (now - H.beatAt > 1800) setKnob(1, knobMap(st.sy));
+  st.hist.push({ t: now, x: f.ux });
+  while (st.hist.length && now - st.hist[0].t > 220) st.hist.shift();
+  const dx = st.hist.length > 2 ? f.ux - st.hist[0].x : 0;
+  if (Math.abs(dx) > 0.22 && now - H.swipeAt > 900) { H.swipeAt = now; st.hist = []; swipeScene(dx > 0 ? 1 : -1); }
 }
+
+// ---------- the baton ----------
+// A beat is the bottom of a stroke: the hand was going down, by enough, and turns up. The time between beats is
+// the tempo, the depth of the strokes is the dynamics.
+const BEAT_MIN = 0.035;           // a stroke at least this deep (of the picture's height) counts
+function batonUpdate(st, f, now) {
+  const y = st.by += 0.55 * (f.uy - st.by);          // lightly smoothed height (up = 1)
+  const dir = y < st.prevY - 0.004 ? -1 : y > st.prevY + 0.004 ? 1 : st.dir;
+  if (st.dir >= 0 && dir < 0) st.top = st.prevY ?? y;     // started down: remember where from
+  if (st.dir < 0 && dir > 0) {                             // turned up: was it a beat?
+    const depth = (st.top ?? y) - y;
+    if (depth > BEAT_MIN && now - H.beatAt > 230) beat(now, depth);
+  }
+  st.dir = dir; st.prevY = y;
+}
+function beat(now, depth) {
+  H.beatAt = now; H.ictusFlash = now;
+  H.beats.push({ t: now, d: depth });
+  while (H.beats.length > 6) H.beats.shift();
+  const b = H.beats.filter(x => now - x.t < 4000);
+  // dynamics follow the size of the last few strokes: small is pp, wide is ff
+  const size = b.slice(-3).reduce((a, x) => a + x.d, 0) / Math.min(3, b.length);
+  setDynamics(Math.max(0, Math.min(1, (size - 0.04) / 0.21)), 0.25);
+  if (b.length < 4) return;
+  const iv = []; for (let i = 1; i < b.length; i++) iv.push(b[i].t - b[i - 1].t);
+  const last = iv.slice(-3), mean = last.reduce((a, x) => a + x, 0) / last.length;
+  const sd = Math.sqrt(last.reduce((a, x) => a + (x - mean) ** 2, 0) / last.length);
+  if (sd / mean > 0.14 || mean < 280 || mean > 1500) return;     // not steady, or not a tempo
+  let bpm = 60000 / mean;
+  // beating in halves or in eighths of the song's beat: keep to the song's own pulse
+  if (S.playing) for (const k of [2, 0.5]) if (Math.abs(bpm * k - S.bpm) < Math.abs(bpm - S.bpm) && Math.abs(bpm * k / S.bpm - 1) < 0.2) bpm *= k;
+  H.bpm = bpm;
+  if (!S.playing) {
+    // the conductor's preparation: steady beats while stopped start the music on the next one
+    if (now - H.startAt > 3000) { H.startAt = now; setTimeout(() => { if (!S.playing) { writeBpm(Math.round(bpm)); togglePlay(true); loopMsg(t('handStart', { b: Math.round(bpm) }), 'ok', 2000); } }, Math.max(0, mean - 90)); }
+    return;
+  }
+  // follow, a step at a time, so one odd stroke can't throw the tempo
+  const target = Math.max(S.bpm * 0.92, Math.min(S.bpm * 1.08, bpm));
+  if (Math.abs(target - S.bpm) >= 1.5) writeBpm(Math.round(target));
+}
+// 0..1 -> -12 dB .. +2 dB on the master, ramped so it breathes rather than steps
+function setDynamics(x, tau) {
+  H.dyn = x; H.dynDb = x === 1 && tau === 2 ? 0 : -12 + 14 * x;
+  if (!S.ctx || !A.dyn) return;
+  A.dyn.gain.setTargetAtTime(Math.pow(10, H.dynDb / 20), S.ctx.currentTime, tau);
+}
+const DYN_MARKS = ['pp', 'p', 'mp', 'mf', 'f', 'ff'];
+const dynMark = db => DYN_MARKS[Math.max(0, Math.min(5, Math.round((db + 12) / 14 * 5)))];
+
+// ---------- cues ----------
+// The tracks sit across the picture like an orchestra, left to right in code order. Point with the left hand
+// and hold for a moment: a silent track comes in, a playing one leaves.
+const CUE_HOLD = 700;
+function cueTracks() { return S.order.filter(n => { const d = S.tracks.get(n); return d && d.kind !== 'loop'; }); }
+function cueUpdate(f, now) {
+  const names = cueTracks(); if (!names.length) { H.cue = null; return; }
+  const x = Math.max(0, Math.min(0.999, 1 - f.lm[8].x));      // where the index fingertip is, mirrored
+  const name = names[Math.floor(x * names.length)];
+  if (name !== H.cue) { H.cue = name; H.cueSince = now; if (H.cueDone !== name) H.cueDone = null; return; }
+  if (H.cueDone === name || now - H.cueSince < CUE_HOLD) return;
+  H.cueDone = name;
+  const out = !S.muted.has(name);
+  toggleSet(S.muted, name); render();
+  loopMsg(t(out ? 'handCueOut' : 'handCueIn', { n: name }), 'ok', 1500);
+}
+
 function swipeScene(dir) {
   const names = [...S.scenes.keys()];
   if (!names.length) return;
@@ -6810,37 +6960,66 @@ function swipeScene(dir) {
   loopMsg(t('handScene', { n: next }), 'ok', 1800);
 }
 
-// ---------- preview ----------
+// ---------- what the camera sees, and what the hands are doing ----------
 function drawHands(res) {
   const cv = $('#handcv'); if (!cv || cv.hidden) return;
-  const w = cv.width = cv.clientWidth * devicePixelRatio, h = cv.height = cv.clientHeight * devicePixelRatio;
-  const g = cv.getContext('2d');
+  const dpr = devicePixelRatio, w = cv.width = cv.clientWidth * dpr, h = cv.height = cv.clientHeight * dpr;
+  const g = cv.getContext('2d'), now = performance.now();
   g.save(); g.translate(w, 0); g.scale(-1, 1); g.globalAlpha = 0.45; g.drawImage(H.video, 0, 0, w, h); g.restore();
-  const css = getComputedStyle(document.documentElement);
+  const css = getComputedStyle(document.documentElement), mono = css.getPropertyValue('--f-code');
   const col = { L: css.getPropertyValue('--sky').trim(), R: css.getPropertyValue('--amber').trim() };
+  // the orchestra: the tracks across the top, the one pointed at lit, with a ring filling up while it is held
+  const st0 = H.st.L;
+  if (st0 && st0.pose === 'point') {
+    const names = cueTracks(), n = names.length, bw = w / Math.max(1, n);
+    g.font = `${10 * dpr}px ${mono}`; g.textAlign = 'center';
+    names.forEach((nm, i) => {
+      const on = nm === H.cue, x = (i + 0.5) * bw, y = 16 * dpr, muted = S.muted.has(nm);
+      g.globalAlpha = on ? 1 : 0.65; g.fillStyle = on ? col.L : 'rgba(0,0,0,.45)';
+      g.beginPath(); g.roundRect(x - bw / 2 + 2 * dpr, 4 * dpr, bw - 4 * dpr, 20 * dpr, 6 * dpr); g.fill();
+      g.fillStyle = on ? '#000' : muted ? 'rgba(255,255,255,.45)' : '#fff';
+      g.fillText((muted ? '· ' : '') + nm, x, y + 2 * dpr);
+      if (on && H.cueDone !== nm) {
+        const q = Math.min(1, (now - H.cueSince) / CUE_HOLD);
+        g.strokeStyle = col.L; g.lineWidth = 3 * dpr; g.globalAlpha = 1;
+        g.beginPath(); g.arc(x, 40 * dpr, 9 * dpr, -Math.PI / 2, -Math.PI / 2 + q * 2 * Math.PI); g.stroke();
+      }
+    });
+    g.globalAlpha = 1; g.textAlign = 'start';
+  }
   for (const side of ['L', 'R']) {
     const f = H.res && H.res[side], st = H.st[side];
     if (!f) continue;
     const P = i => [(1 - f.lm[i].x) * w, f.lm[i].y * h];
-    g.strokeStyle = col[side]; g.fillStyle = col[side]; g.lineWidth = 2 * devicePixelRatio;
+    g.strokeStyle = col[side]; g.fillStyle = col[side]; g.lineWidth = 2 * dpr;
     g.beginPath();
     for (const [a, b] of HAND_LINKS) { const pa = P(a), pb = P(b); g.moveTo(pa[0], pa[1]); g.lineTo(pb[0], pb[1]); }
     g.stroke();
-    for (let i = 0; i < 21; i++) { const p = P(i); g.beginPath(); g.arc(p[0], p[1], 2.2 * devicePixelRatio, 0, 7); g.fill(); }
-    const p0 = P(0);
-    g.font = `${11 * devicePixelRatio}px ${css.getPropertyValue('--f-code')}`;
-    g.fillText(handLabel(side, st), p0[0] - 30 * devicePixelRatio, p0[1] + 16 * devicePixelRatio);
-    if (st && st.f) {
-      g.globalAlpha = 0.8; g.font = `${9.5 * devicePixelRatio}px ${css.getPropertyValue('--f-code')}`;
-      g.fillText(`pinch ${st.f.pinch.toFixed(2)} · fold ${st.f.fold.map(x => x.toFixed(1)).join(' ')}`, p0[0] - 30 * devicePixelRatio, p0[1] + 29 * devicePixelRatio);
-      g.globalAlpha = 1;
+    for (let i = 0; i < 21; i++) { const p = P(i); g.beginPath(); g.arc(p[0], p[1], 2.2 * dpr, 0, 7); g.fill(); }
+    // each beat flashes a ring at the baton tip
+    if (side === 'R' && now - H.ictusFlash < 260) {
+      const p = P(8), k = (now - H.ictusFlash) / 260;
+      g.globalAlpha = 1 - k; g.lineWidth = 3 * dpr; g.beginPath(); g.arc(p[0], p[1], (10 + 26 * k) * dpr, 0, 7); g.stroke(); g.globalAlpha = 1;
     }
+    const p0 = P(0);
+    g.font = `${11 * dpr}px ${mono}`;
+    g.fillText(handLabel(side, st), p0[0] - 30 * dpr, p0[1] + 16 * dpr);
   }
+  // the baton's reading: tempo and dynamics, big, while it beats
+  if (now - H.beatAt < 1800 && H.bpm) {
+    g.fillStyle = col.R; g.font = `600 ${16 * dpr}px ${mono}`; g.textAlign = 'right';
+    g.fillText(`♩ = ${Math.round(S.playing ? S.bpm : H.bpm)}   ${dynMark(H.dynDb)}`, w - 10 * dpr, h - 12 * dpr);
+    g.textAlign = 'start';
+  }
+  if (H.fermata) { g.fillStyle = '#fff'; g.font = `600 ${22 * dpr}px ${mono}`; g.textAlign = 'center'; g.fillText('𝄐', w / 2, h / 2); g.textAlign = 'start'; }
 }
 function handLabel(side, st) {
   if (!st) return '';
+  if (H.fermata && st.pose === 'fist') return t('gFermata');
   const g = POSE_GESTURE[side][st.pose];
   if (g) return t({ build: 'gBuild', rep4: 'gRep4', break: 'gBreak' }[g]);
+  if (side === 'L' && st.pose === 'point') return H.cue ? '→ ' + H.cue : '';
+  if (side === 'R' && performance.now() - H.beatAt < 1800) return t('gBaton');
   return side === 'L' ? `k1 ${Math.round(S.knobs[0] * 100)} · k3 ${Math.round(S.knobs[2] * 100)}` : `k2 ${Math.round(S.knobs[1] * 100)}`;
 }
 function syncHandsUI() {
@@ -6850,6 +7029,53 @@ function syncHandsUI() {
   b.disabled = H.busy;
   $('#handcv').hidden = !H.on;
   $('#handsMap').hidden = !H.on;
+  $('#gestStrip').hidden = !H.on;
+}
+
+// ---------- pictures of the gestures ----------
+// Small drawings for the guide and under the camera: a hand pose, where it is, and how it moves.
+// Left hands are drawn in the left-hand colour, right hands in the right-hand colour, as in the camera view.
+// (x, y) is the middle of the palm; s scales the hand (1 = about 30 units across).
+function handIcon(pose, x, y, s, side) {
+  const c = side === 'L' ? 'var(--sky)' : 'var(--amber)', bg = 'var(--raised)';
+  const cap = (cx, top, h, w = 6.4) => `<rect x="${x + (cx - w / 2) * s}" y="${y + top * s}" width="${w * s}" height="${h * s}" rx="${w / 2 * s}"/>`;
+  const palm = `<rect x="${x - 13 * s}" y="${y - 10 * s}" width="${26 * s}" height="${24 * s}" rx="${8 * s}"/>`;
+  const thumb = (ang, len = 15) => `<rect x="${x - 16 * s}" y="${y - 1 * s}" width="${7 * s}" height="${len * s}" rx="${3.5 * s}" transform="rotate(${ang} ${x - 12.5 * s} ${y + 10 * s})"/>`;
+  const knuckles = xs => xs.map(cx => `<circle cx="${x + cx * s}" cy="${y - 9 * s}" r="${3.6 * s}"/>`).join('');
+  const FX = [-9.4, -3.1, 3.2, 9.5];
+  let body;
+  if (pose === 'open') body = palm + [22, 26, 24, 19].map((h, k) => cap(FX[k], -8 - h, h + 4)).join('') + thumb(-40);
+  else if (pose === 'fist') body = `<rect x="${x - 14 * s}" y="${y - 10 * s}" width="${28 * s}" height="${25 * s}" rx="${10 * s}"/>` + knuckles(FX) + `<rect x="${x - 13 * s}" y="${y + 1 * s}" width="${20 * s}" height="${6.5 * s}" rx="${3.25 * s}" fill="${bg}" opacity=".55"/>`;
+  else if (pose === 'point') body = palm + cap(FX[0], -34, 30) + knuckles(FX.slice(1)) + thumb(-70, 13);
+  else if (pose === 'pinch') body = palm + [26, 24, 19].map((h, k) => cap(FX[k + 1], -8 - h, h + 4)).join('') + thumb(-25, 12)
+    + `<circle cx="${x - 12 * s}" cy="${y - 15 * s}" r="${6.5 * s}" fill="none" stroke="${c}" stroke-width="${5 * s}"/>`;
+  return `<g fill="${c}">${body}</g>`;
+}
+const arrow = (d, side, dash) => `<path d="${d}" fill="none" stroke="${side === 'L' ? 'var(--sky)' : 'var(--amber)'}" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"${dash ? ' stroke-dasharray="4 4"' : ''} marker-end="url(#ah${side})"/>`;
+const ARROWHEADS = `<defs>${['L', 'R'].map(sd => `<marker id="ah${sd}" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="${sd === 'L' ? 'var(--sky)' : 'var(--amber)'}"/></marker>`).join('')}</defs>`;
+const svgText = (x, y, txt, size = 11, anchor = 'middle', fill = 'var(--fg)') => `<text x="${x}" y="${y}" font-size="${size}" text-anchor="${anchor}" fill="${fill}" font-family="var(--f-code)">${txt}</text>`;
+const GESTURES = [
+  // the baton: the 4/4 pattern, down-in-out-up, with the beats numbered; the hand waits at the top
+  ['gsBeat', `${ARROWHEADS}${arrow('M52 12 C52 40 52 54 52 68', 'R')}${arrow('M52 68 C42 56 30 50 18 48', 'R')}${arrow('M18 48 C42 48 70 50 88 50', 'R')}${arrow('M88 50 C80 34 66 18 56 13', 'R')}
+    ${[[52, 80, '1'], [10, 51, '2'], [96, 54, '3'], [62, 10, '4']].map(([x, y, n]) => svgText(x, y, n, 12)).join('')}${handIcon('open', 104, 26, 0.5, 'R')}`],
+  ['gsSize', `${ARROWHEADS}${arrow('M28 40 L28 58', 'R')}${arrow('M88 26 L88 74', 'R')}${svgText(28, 76, 'pp', 13)}${svgText(110, 54, 'ff', 13)}${handIcon('open', 28, 26, 0.42, 'R')}${handIcon('open', 88, 14, 0.52, 'R')}`],
+  ['gsStart', `${ARROWHEADS}${[0, 1, 2, 3].map(i => arrow(`M${14 + i * 22} 20 L${14 + i * 22} 48`, 'R')).join('')}${[1, 2, 3, 4].map(i => svgText(14 + (i - 1) * 22, 64, i, 10)).join('')}<path d="M98 22 L116 36 L98 50z" fill="var(--amber)"/>`],
+  ['gsCue', `${['bass', 'keys', 'lead', 'pad'].map((n, i) => `<rect x="${4 + i * 28.5}" y="4" width="25" height="15" rx="4" fill="${i === 2 ? 'var(--sky)' : 'none'}" stroke="var(--line)"/>${svgText(16.5 + i * 28.5, 15, n, 8, 'middle', i === 2 ? '#000' : 'var(--dim)')}`).join('')}
+    <circle cx="69" cy="30" r="6" fill="none" stroke="var(--sky)" stroke-width="2.5" stroke-dasharray="25 40"/>${handIcon('point', 72, 70, 0.6, 'L')}`],
+  ['gsLeft', `${ARROWHEADS}${arrow('M22 74 L22 14', 'L')}${arrow('M22 14 L22 74', 'L')}${svgText(10, 46, 'k1', 11)}${arrow('M58 76 L112 76', 'L')}${arrow('M112 76 L58 76', 'L')}${svgText(85, 70, 'k3', 11)}${handIcon('open', 85, 38, 0.62, 'L')}`],
+  ['gsBuild', `${ARROWHEADS}${handIcon('pinch', 40, 52, 0.85, 'R')}${arrow('M70 66 C84 54 94 36 104 12', 'R', true)}`],
+  ['gsRepeat', `${handIcon('pinch', 40, 52, 0.85, 'L')}${svgText(92, 42, '♪♪♪♪', 15, 'middle', 'var(--sky)')}${svgText(92, 58, '× 4', 11, 'middle', 'var(--dim)')}`],
+  ['gsBreak', `${handIcon('fist', 38, 44, 0.95, 'R')}<g stroke="var(--dim)" stroke-width="2" fill="none"><ellipse cx="90" cy="34" rx="16" ry="6"/><path d="M74 34 V52 M106 34 V52"/><path d="M74 52 Q90 60 106 52"/></g><path d="M74 24 L108 62" stroke="var(--amber)" stroke-width="3" stroke-linecap="round"/>`],
+  ['gsFermata', `${handIcon('fist', 26, 52, 0.8, 'L')}${handIcon('fist', 94, 52, 0.8, 'R')}${svgText(60, 36, '𝄐', 28)}`],
+  ['gsSwipe', `${ARROWHEADS}${arrow('M18 38 L106 38', 'R')}${arrow('M18 46 L96 46', 'R')}${handIcon('open', 30, 64, 0.48, 'R')}`],
+];
+// each picture gets its own arrowhead ids: a marker inside a hidden copy (the strip under the camera) draws nothing
+let gestureUid = 0;
+function gestureCards(cls) {
+  return GESTURES.map(([k, svg0]) => { const u = 'g' + gestureUid++, svg = svg0.replace(/\bah([LR])\b/g, `ah${u}$1`); return `<figure class="gcard ${cls || ''}"><svg viewBox="0 0 120 86" role="img" aria-label="${esc(t(k))}">${svg}</svg><figcaption><b>${esc(t(k))}</b><span>${esc(t(k + 'D'))}</span></figcaption></figure>`; }).join('');
+}
+function renderGestureCards() {
+  for (const el of document.querySelectorAll('[data-gestures]')) el.innerHTML = gestureCards(el.dataset.gestures);
 }
 
 // ===================== Tactus editor + performance UI =====================
@@ -6876,7 +7102,7 @@ $('#lang').addEventListener('click', () => {
   if (cur) srcEl.value = presetText(cur, other);
   LANG = other;
   try { localStorage.setItem('pulse-lang', LANG); } catch (e) { }
-  applyI18n(); buildSlots(); buildPresets(); syncHandsUI(); buildChips(); evaluate('bar'); renderPads(true);
+  applyI18n(); buildSlots(); buildPresets(); syncHandsUI(); buildChips(); evaluate('bar'); renderPads(true); renderGestureCards();
 });
 
 // ---------- evaluation ----------
@@ -7885,9 +8111,39 @@ evaluate('bar');
 renderPads();
 pvInit();
 sndInit();
+buildGuide();
+renderGestureCards();
 (document.fonts ? document.fonts.ready : Promise.resolve()).then(measure);
 measure();
 requestAnimationFrame(frame);
+
+// ---------- the guide: sections as cards, and a large view ----------
+// Each heading and what follows it becomes a card that opens and closes. "Open large" moves the same content into a
+// wide dialog in columns (moved, not copied, so its buttons keep working), and back when it closes.
+function buildGuide() {
+  const pane = $('#pane-guide'); if (!pane || $('#guideBody')) return;
+  const body = document.createElement('div'); body.id = 'guideBody'; body.className = 'help';
+  for (const el of [...pane.children]) if (!el.classList.contains('gtools') && el.id !== 'guideDlg') body.appendChild(el);
+  pane.appendChild(body);
+  let card = null, k = 0;
+  for (const el of [...body.children]) {
+    if (el.classList.contains('gpubox')) {
+      // the GPU box carries its own heading: it becomes a card of its own
+      const h = el.querySelector('h3'), d = document.createElement('details'); d.className = 'gsec';
+      const sm = document.createElement('summary'); sm.append(...h.childNodes); h.remove();
+      el.replaceWith(d); d.append(sm, el); card = null; continue;
+    }
+    if (el.tagName === 'H3') {
+      card = document.createElement('details'); card.className = 'gsec'; if (k++ < 2) card.open = true;
+      const sm = document.createElement('summary'); sm.innerHTML = `<span data-i18n="${el.dataset.i18n || ''}">${el.innerHTML}</span>`;
+      card.appendChild(sm); el.replaceWith(card);
+    } else if (card) card.appendChild(el);
+  }
+  const dlg = $('#guideDlg');
+  $('#guideBig').addEventListener('click', () => { dlg.querySelector('.gd-body').appendChild(body); for (const d of body.querySelectorAll('details.gsec')) d.dataset.was = d.open, d.open = true; dlg.showModal(); });
+  $('#guideClose').addEventListener('click', () => dlg.close());
+  dlg.addEventListener('close', () => { pane.appendChild(body); for (const d of body.querySelectorAll('details.gsec')) d.open = d.dataset.was === 'true'; });
+}
 
 // ===================== Tactus visualizations (drawn behind the code) =====================
 // roll: piano roll (1 bar past, 3 bars ahead) · grid: each track's 2-bar steps on its own code line
