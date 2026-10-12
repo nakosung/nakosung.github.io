@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="description" content="Tactus live-coding instrument">
 <style>body{margin:0}</style>
+<meta charset="utf-8">
 <title>Tactus</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -144,7 +145,8 @@ button, select, input { font: inherit; color: inherit; }
 @keyframes hit { from { background: var(--c-op); color: var(--scr); box-shadow: 0 0 0 2px var(--c-op); } to { background: transparent; box-shadow: 0 0 0 2px transparent; } }
 @keyframes led { from { background: var(--tc, var(--c-op)); box-shadow: 0 0 10px var(--tc, var(--c-op)); } }
 @keyframes tap { from { background: var(--k-orange); color: var(--on-key); } }
-#viz { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; display: block; }
+#viz, #vizgpu { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; display: block; }
+#vizgpu { opacity: .95; }
 .vizbar { position: absolute; top: 8px; right: 12px; z-index: 4; display: flex; gap: 2px; padding: 2px; border-radius: 8px; background: rgba(19, 22, 26, .88); border: 1px solid var(--scr-line); }
 .vizbar button { border: 0; background: transparent; color: var(--scr-dim); font-size: 11px; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
 .vizbar button[aria-pressed="true"] { background: var(--scr-line); color: var(--scr-fg); }
@@ -171,17 +173,17 @@ body.recording .editor { border-color: var(--c-err); }
 .sec-h { margin: 0; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; font-weight: 700; font-stretch: 85%; }
 .sec-h small { font-size: 11px; font-weight: 400; color: var(--faint); font-stretch: 100%; text-align: right; }
 
-.pads { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
-.pad { --kc: var(--k-blue); position: relative; text-align: left; border: 1px solid var(--line); background: var(--raised); border-radius: 10px; padding: 9px 9px 8px; cursor: pointer; display: grid; gap: 3px; align-content: start; min-height: 64px; touch-action: none; user-select: none; -webkit-user-select: none; transition: transform .06s, background .06s; box-shadow: var(--shadow); }
+.pads { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.pad { --kc: var(--k-blue); position: relative; text-align: left; border: 1px solid var(--line); background: var(--raised); border-radius: 10px; padding: 8px 7px 7px; cursor: pointer; display: grid; gap: 3px; align-content: start; min-height: 64px; touch-action: none; user-select: none; -webkit-user-select: none; transition: transform .06s, background .06s; box-shadow: var(--shadow); }
 .pad[data-cat="rhythm"] { --kc: var(--k-yellow); }
 .pad[data-cat="struct"] { --kc: var(--k-orange); }
 .pad[data-cat="space"] { --kc: var(--k-green); }
 .pad[data-cat="tone"] { --kc: var(--k-blue); }
 .pad[data-cat="mod"] { --kc: var(--k-violet); }
 .pad .lamp { width: 7px; height: 7px; border-radius: 50%; background: color-mix(in srgb, var(--kc) 45%, var(--line)); }
-.pad b { font-size: 13px; font-weight: 650; line-height: 1.2; overflow-wrap: anywhere; }
-.pad span { font-size: 10.5px; color: var(--dim); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.pad kbd { position: absolute; top: 7px; right: 7px; font-family: var(--f-code); font-size: 10px; color: var(--faint); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; background: var(--panel); }
+.pad b { font-size: 12px; font-weight: 650; line-height: 1.2; overflow-wrap: normal; word-break: keep-all; hyphens: auto; }
+.pad span { font-size: 10px; color: var(--dim); line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.pad kbd { position: absolute; top: 6px; right: 6px; font-family: var(--f-code); font-size: 10px; color: var(--faint); border: 1px solid var(--line); border-radius: 4px; padding: 0 5px; background: var(--panel); }
 .pad .latch { position: absolute; top: 8px; right: 30px; font-size: 9px; color: var(--faint); }
 .pad.on { background: var(--kc); border-color: var(--kc); transform: scale(.97); box-shadow: 0 0 18px color-mix(in srgb, var(--kc) 45%, transparent); }
 .pad.on b, .pad.on span, .pad.on kbd, .pad.on .latch { color: var(--on-key); background: transparent; border-color: color-mix(in srgb, var(--on-key) 35%, transparent); }
@@ -253,6 +255,13 @@ body.recording .editor { border-color: var(--c-err); }
 
 /* guide */
 .help { font-size: 12px; color: var(--dim); }
+.gpubox { border: 1px solid var(--line); background: var(--panel); border-radius: 12px; padding: 12px; display: grid; gap: 8px; }
+.gpubox h3 { margin: 0; display: flex; align-items: center; gap: 8px; }
+.gpubox p { margin: 0; line-height: 1.5; }
+.gpu-state { font: 500 11px/1.3 var(--f-code); color: var(--faint); }
+.gpu-state.ok { color: var(--k-green); }
+.gpu-res { font-size: 12px; color: var(--fg); }
+.gpu-res b { font-family: var(--f-code); }
 .help h3 { margin: 6px 0 6px; font-size: 12.5px; font-weight: 700; color: var(--fg); font-stretch: 85%; }
 .help dl { display: grid; grid-template-columns: minmax(0, auto) minmax(0, 1fr); gap: 6px 10px; margin: 0 0 8px; }
 .help dt { font-family: var(--f-code); font-size: 11px; color: var(--fg); overflow-wrap: anywhere; max-width: 150px; }
@@ -284,7 +293,7 @@ body.recording .editor { border-color: var(--c-err); }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.12 08:55</span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.12 09:31</span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -313,10 +322,11 @@ body.recording .editor { border-color: var(--c-err); }
     <section class="editor">
       <div class="gutter" id="gutter"></div>
       <div class="code">
+        <canvas id="vizgpu" aria-hidden="true" hidden></canvas>
         <canvas id="viz" aria-hidden="true"></canvas>
         <pre id="hl" aria-hidden="true"></pre>
         <div class="vizbar" id="vizbar" role="group" data-i18n-aria="vizTitle">
-          <button data-v="roll" data-i18n="vizRoll"></button><button data-v="grid" data-i18n="vizGrid"></button><button data-v="spiral" data-i18n="vizSpiral"></button><button data-v="fft" data-i18n="vizFft"></button><button data-v="off" data-i18n="vizOff"></button>
+          <button data-v="roll" data-i18n="vizRoll"></button><button data-v="grid" data-i18n="vizGrid"></button><button data-v="spiral" data-i18n="vizSpiral"></button><button data-v="fft" data-i18n="vizFft"></button><button data-v="field" data-i18n="vizField" data-i18n-title="vizFieldTitle"></button><button data-v="off" data-i18n="vizOff"></button>
         </div>
         <textarea id="src" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off" data-i18n-aria="codeLabel"></textarea>
       </div>
@@ -396,6 +406,17 @@ body.recording .editor { border-color: var(--c-err); }
       </section>
 
       <section class="pane help" id="pane-guide" role="tabpanel" aria-labelledby="tab-guide" hidden>
+        <div class="gpubox">
+          <h3>GPU <span class="gpu-state" id="gpuState"></span></h3>
+          <p data-i18n="gpuIntro"></p>
+          <dl>
+            <dt>swarm · choir · plate</dt><dd data-i18n="gpuInst"></dd>
+            <dt>fx freeze P | freeze</dt><dd data-i18n="gpuFreeze"></dd>
+            <dt data-i18n="vizField"></dt><dd data-i18n="gpuField"></dd>
+          </dl>
+          <div class="row-btns"><button class="btn" id="gpuBench" data-i18n="gpuBench"></button></div>
+          <p class="gpu-res" id="gpuResult" hidden></p>
+        </div>
         <h3 data-i18n="hgTracks"></h3>
         <dl>
           <dt>name pattern | params</dt><dd data-i18n="h1d"></dd>
@@ -416,6 +437,7 @@ body.recording .editor { border-color: var(--c-err); }
           <dt>prog &lt;Dm7 G7 Cmaj7&gt;</dt><dd data-i18n="h20d"></dd>
           <dt>0 r r r | range 7</dt><dd data-i18n="h33d"></dd>
           <dt>drop2 open spread · arp up rate 16</dt><dd data-i18n="h34d"></dd>
+          <dt>swarm choir plate</dt><dd data-i18n="h44d"></dd>
         </dl>
         <h3 data-i18n="hgSound"></h3>
         <dl>
@@ -613,6 +635,17 @@ const I18N = {
     op_kill: 'low mid high 대역 빼기', op_pitch: '멜로디 이조 (반음)', op_riser: '빌드업 (마디), 놓으면 드롭', op_set: '트랙.파라미터 값 (a>b 램프)', op_scene: 'next prev 또는 씬 이름',
     op_fill: '다음 마디로 드럼 필인', op_impact: '다음 박에 임팩트', op_swell: '다음 마디로 리버스 스웰', op_down: '다운리프터', op_in: '램프 길이 (마디)',
     p_seed: '이 트랙만 다른 시드로', p_dens: '생성 밀도 0–1', p_evolve: 'N마디마다 조금씩 변이 (0 = 고정)', p_bars: '프레이즈 길이 (마디)', ac_seed: '곡 전체 시드', ac_fx: '연주 패드 만들기',
+    // v3: WebGPU
+    vizField: '파티클', vizFieldTitle: '트랙이 칠 때마다 그 코드 줄에서 입자가 튀어나와요 (WebGPU, 131,072개)', fieldOff: '파티클은 WebGPU가 필요해요: {e}',
+    gFreeze: '프리즈', gFreezeD: '지금 소리를 GPU로 얼려 화음으로 붙잡고 드럼만 남겨요', gRep8: '비트 리피트 1/8', gRep8D: '8분음표 반복', gUp: '옥타브 업', gUpD: '멜로디를 한 옥타브 올려요', gDrop: '드롭', gDropD: '다음 박에 임팩트',
+    gpuIntro: 'GPU가 하는 일: 오디오 스레드에서는 WebGPU를 쓸 수 없어서, GPU가 음표를 미리 통째로 렌더링해 두면 스케줄러가 정확한 시간에 틀어요.',
+    gpuInst: '음표 하나에 사인파 1,000~1,900개(swarm·choir) 또는 고유 진동 수백 개(plate)를 더하는 악기. 준비되기 전에는 CPU 소리가 대신해요',
+    gpuFreeze: '지금 믹스의 스펙트럼에서 가장 센 2,048개 성분을 뽑아 사인파로 다시 합성해 붙잡아요. GPU가 없으면 마지막 0.7초를 반복',
+    gpuField: '131,072개 입자를 GPU에서 매 프레임 움직여요. 트랙이 치면 그 줄에서 그 트랙 색으로 튀어나와요',
+    gpuBench: '이 컴퓨터에서 벤치마크', gpuBenchRun: '측정 중…', gpuOn: '켜짐', gpuLoading: '여는 중…', gpuOffShort: '없음 (CPU로 대체)', gpuIdle: '재생하면 켜져요',
+    gpuBenchRes: '사인파 {p}개, {s}초짜리 음 하나: GPU {g} · JavaScript {c} (일부를 재서 환산) → {x} 빨라요',
+    gpuBenchCpu: '사인파 {p}개, {s}초짜리 음 하나: JavaScript {c}. GPU를 쓸 수 없어요: {e}',
+    h44d: 'GPU로 렌더링하는 악기: 수천 개 사인파의 슈퍼소 패드, 포먼트 합창, 금속판 타악기',
   },
   en: {
     badSym: "'{c}' can't be used in a pattern",
@@ -750,6 +783,17 @@ const I18N = {
     op_kill: 'cut low, mid or high', op_pitch: 'transpose melodies (semitones)', op_riser: 'build-up (bars), drop on release', op_set: 'track.param value (a>b ramps)', op_scene: 'next, prev or a scene name',
     op_fill: 'drum fill into the next bar', op_impact: 'impact on the next beat', op_swell: 'reverse swell into the next bar', op_down: 'downlifter', op_in: 'ramp length in bars',
     p_seed: 'a different seed for this track', p_dens: 'generator density 0–1', p_evolve: 'mutate a little every N bars (0 = fixed)', p_bars: 'phrase length in bars', ac_seed: 'seed for the whole piece', ac_fx: 'make a performance pad',
+    // v3: WebGPU
+    vizField: 'Particles', vizFieldTitle: 'Each code line throws particles when its track plays (WebGPU, 131,072 particles)', fieldOff: 'Particles need WebGPU: {e}',
+    gFreeze: 'Freeze', gFreezeD: 'Freezes the mix into a held chord on the GPU and leaves only drums', gRep8: 'Beat repeat 1/8', gRep8D: 'Eighth-note repeat', gUp: 'Octave up', gUpD: 'Raises melodies an octave', gDrop: 'Drop', gDropD: 'Impact on the next beat',
+    gpuIntro: 'What the GPU does: WebGPU is not available on the audio thread, so the GPU renders whole notes ahead of time and the scheduler plays them at the exact moment.',
+    gpuInst: 'Instruments that sum 1,000–1,900 sines per note (swarm, choir) or hundreds of resonant modes (plate). A CPU voice stands in until a note is ready',
+    gpuFreeze: 'Takes the 2,048 strongest components of the mix right now and resynthesizes them as sines to hold. Without a GPU it loops the last 0.7 s',
+    gpuField: 'Moves 131,072 particles on the GPU every frame. When a track plays, its line throws them in its colour',
+    gpuBench: 'Benchmark this computer', gpuBenchRun: 'Measuring…', gpuOn: 'on', gpuLoading: 'opening…', gpuOffShort: 'not available (CPU fallback)', gpuIdle: 'starts when you press play',
+    gpuBenchRes: 'One {s} s note of {p} sines: GPU {g} · JavaScript {c} (scaled from a slice) → {x} faster',
+    gpuBenchCpu: 'One {s} s note of {p} sines: JavaScript {c}. No GPU: {e}',
+    h44d: 'GPU-rendered instruments: a supersaw pad of thousands of sines, a formant choir, a struck metal plate',
   },
 };
 let LANG = 'ko';
@@ -1070,7 +1114,7 @@ function atomNotes(raw, root, scale, oct, prog, tr = 0, inv = false) {
 const DRUMS = ['kick', 'snare', 'clap', 'hat', 'ohat', 'rim', 'tom', 'ride', 'crash', 'shaker',
   'asnare', 'ahat', 'aohat', 'atom', 'afloor', 'aride', 'acrash', 'handclap', 'conga', 'bongo', 'cajon', 'cajonslap', 'tamb', 'shake', 'claves', 'cowbell', 'woodblock', 'triangle', 'agogo', 'framedrum', 'darbuka', 'gong'];
 const LOOPS = ['loop1', 'loop2', 'loop3', 'loop4'];
-const SYNTHS = ['sine', 'tri', 'saw', 'square', 'supersaw', 'pad', 'bass', 'acid', 'pluck', 'bell', 'flute', 'bowed', 'epiano', 'zither', 'piano', 'vibes', 'harp', 'sax', 'dantranh', 'harpsi', 'marimba', 'kalimba'];
+const SYNTHS = ['sine', 'tri', 'saw', 'square', 'supersaw', 'pad', 'bass', 'acid', 'pluck', 'bell', 'flute', 'bowed', 'epiano', 'zither', 'piano', 'vibes', 'harp', 'sax', 'dantranh', 'harpsi', 'marimba', 'kalimba', 'swarm', 'choir', 'plate'];
 const NAME_INST = [
   ['kick', 'kick'], ['bd', 'kick'], ['snare', 'snare'], ['sd', 'snare'], ['clap', 'clap'], ['cp', 'clap'],
   ['ohat', 'ohat'], ['open', 'ohat'], ['oh', 'ohat'], ['hat', 'hat'], ['hh', 'hat'], ['rim', 'rim'], ['tom', 'tom'],
@@ -1079,7 +1123,7 @@ const NAME_INST = [
   ['ride', 'ride'], ['crash', 'crash'], ['cym', 'crash'], ['shaker', 'shaker'], ['shk', 'shaker'],
   ['gayageum', 'zither'], ['zither', 'zither'], ['koto', 'zither'], ['guitar', 'zither'],
   ['grand', 'piano'], ['vibe', 'vibes'], ['harpsi', 'harpsi'], ['cembalo', 'harpsi'], ['harp', 'harp'], ['sax', 'sax'], ['marimba', 'marimba'], ['kalimba', 'kalimba'], ['dantranh', 'dantranh'], ['jing', 'gong'],
-  ['daegeum', 'flute'], ['flute', 'flute'], ['haegeum', 'bowed'], ['string', 'bowed'], ['keys', 'epiano'], ['rhodes', 'epiano'], ['piano', 'piano'],
+  ['swarm', 'swarm'], ['choir', 'choir'], ['plate', 'plate'], ['daegeum', 'flute'], ['flute', 'flute'], ['haegeum', 'bowed'], ['string', 'bowed'], ['keys', 'epiano'], ['rhodes', 'epiano'], ['piano', 'piano'],
 ];
 const PARAMS = ['gain', 'pan', 'oct', 'cut', 'res', 'env', 'atk', 'dec', 'sus', 'rel', 'len', 'delay', 'verb', 'duck', 'shape', 'detune', 'tune', 'slices', 'hpf', 'low', 'high', 'drive', 'width', 'vib', 'slide', 'acc', 'bright', 'wave', 'vel', 'nudge', 'human', 'swing', 'sgrid', 'comp', 'rate', 'tr', 'range', 'seed', 'dens', 'evolve', 'bars'];
 const EXP_PARAMS = new Set(['cut', 'hpf']);
@@ -1089,7 +1133,7 @@ const GEN_PARAMS = ['seed', 'dens', 'evolve', 'bars'];
 let GEN_SEED = 0;
 // ---------- performance pads ----------
 // fx NAME [KEY] [latch] | action args ...     every built-in pad is written in this same language
-const PAD_OPS = { lp: 'v', hp: 'v', res: 'n', repeat: 'n', mute: 'list', only: 'list', throw: 'n?', echo: '', verb: 'n?', gate: 'g', crush: 'n', kill: 'list', pitch: 'n', riser: 'n?', set: 'set', scene: 'w', fill: '', impact: '', swell: '', down: '', in: 'n' };
+const PAD_OPS = { lp: 'v', hp: 'v', res: 'n', repeat: 'n', mute: 'list', only: 'list', throw: 'n?', echo: '', verb: 'n?', gate: 'g', crush: 'n', kill: 'list', pitch: 'n', riser: 'n?', set: 'set', scene: 'w', fill: '', impact: '', swell: '', down: '', freeze: '', in: 'n' };
 const PAD_KEYS = 'ZXCVBNMLPOIUY,./;';
 const PAD_GROUPS = ['drums', 'bass', 'synths', 'melody', 'loops', 'all'];
 const DEFAULT_PAD_SRC = [
@@ -1105,6 +1149,10 @@ const DEFAULT_PAD_SRC = [
   'fx kill   / | kill low',
   'fx echo   ; | echo',
   'fx fill   L | fill',
+  'fx freeze P | freeze only drums',
+  'fx rep8   O | repeat 8',
+  'fx up     U | pitch 12',
+  'fx drop   I | impact',
 ];
 const SCENE_FX = ['riser', 'filter', 'fill', 'pause', 'swell', 'down', 'impact'];
 const VOICINGS = ['root', 'close', 'open', 'drop2', 'spread'];
@@ -2168,6 +2216,29 @@ scene hook   all pause
 song intro:4 verse:8 hook:8 verse:8 hook:8
 `,
   },
+  {
+    id: 'gpu', name: 'WebGPU Drift',
+    head: {
+      ko: '// WebGPU Drift — 84 BPM, D 리디안. swarm(사인파 1,920개 패드)·choir(포먼트 합창)·plate(금속판 수백 개 모드)는 GPU가 음표를 미리 렌더링해요\n// P를 누르고 있으면 지금 소리를 얼려요(프리즈). 화면 위 "파티클"을 켜면 트랙마다 코드 줄에서 입자가 튀어나와요. GPU가 없으면 CPU 소리로 대신 연주해요',
+      en: '// WebGPU Drift — 84 BPM, D lydian. swarm (a 1,920-sine pad), choir (formant voices) and plate (hundreds of metal-plate modes) are rendered note by note on the GPU\n// Hold P to freeze the sound. Turn on "Particles" above the code and each track throws particles from its line. Without a GPU, CPU voices stand in',
+    },
+    body: `bpm 84
+key D lydian
+prog <0 4 5 3>
+
+kick   x . . . . . . . x . . . . . . .    | gain .75 tune .8 dec 1.2
+hat    [. x]*4?.3                          | gain .2 human .3
+swarm  0^7                                 | gain .55 atk .6 rel 2 duck .4 verb .3
+choir  <[0^ _ _ _] [2^ _ _ _]>/2           | gain .5 bright .3 verb .5
+plate  [0 . . 4 . . 7 .] [. 9 . . 4 . . .] | oct 5 gain .55 dec .6 delay .3 verb .4
+bass   0 _ _ _ . . . .                     | sine oct 2 gain .6
+
+scene air   swarm choir
+scene ring  swarm plate choir swell
+scene pulse all fill
+song air:8 ring:8 pulse:16 ring:8
+`,
+  },
 ];
 function presetText(p, lang) { return p.head[lang] + '\n' + p.body; }
 
@@ -2257,7 +2328,9 @@ function initAudio() {
   A.drumOut = g(Math.pow(10, (DRUM_TRIM_DB - compMakeupDb(DRUM_THR, DRUM_RATIO)) / 20));
   A.synIn = ctx.createDelay(0.05); A.synIn.delayTime.value = 0.006; A.synIn.connect(A.bus);
   A.drumIn.connect(A.drumComp); A.drumComp.connect(A.drumSat); A.drumSat.connect(A.drumOut); A.drumOut.connect(A.bus);
-  ensureSynthWorklet(); loadKit(); applyMaster(S.masterMode);
+  // a long FFT on the finished mix, read by the spectral freeze pad
+  A.frz = ctx.createAnalyser(); A.frz.fftSize = 32768; A.frz.smoothingTimeConstant = 0; A.lim.connect(A.frz);
+  ensureSynthWorklet(); loadKit(); applyMaster(S.masterMode); gpuInit().then(gpuPrewarm);
 }
 // a hall impulse: sparse early reflections, then a decorrelated stereo tail whose highs die faster than its lows
 function impulse(sec) {
@@ -2346,6 +2419,10 @@ const INST = {
   marimba: { lvl: 0.9, oct: 4, cut: 20000, res: 0.7, env: 0, atk: 0.002, dec: 1, sus: 1, rel: 0.5, slope: 12, hpf: 80 },
   kalimba: { lvl: 0.9, oct: 4, cut: 20000, res: 0.7, env: 0, atk: 0.002, dec: 1, sus: 1, rel: 0.6, slope: 12, hpf: 120 },
   zither: { lvl: 0.3, oct: 4, cut: 5000, res: 1, env: 0.6, atk: 0.002, dec: 1.6, sus: 0, rel: 0.5, slope: 12, hpf: 90, bright: 0.6, width: 0.5 },
+  // rendered on the GPU (gpu.js); detune, bright, width, dec, atk and rel shape the render
+  swarm: { lvl: 0.55, oct: 3, cut: 20000, res: 0.7, env: 0, atk: 0.25, dec: 1, sus: 1, rel: 1.2, slope: 12, hpf: 110, width: 0.85, detune: 22, bright: 0.55 },
+  choir: { lvl: 0.6, oct: 3, cut: 20000, res: 0.7, env: 0, atk: 0.35, dec: 1, sus: 1, rel: 1.4, slope: 12, hpf: 130, width: 0.8, detune: 16, bright: 0.35 },
+  plate: { lvl: 1.0, oct: 4, cut: 20000, res: 0.7, env: 0, atk: 0.001, dec: 1, sus: 1, rel: 2, slope: 12, hpf: 70, width: 0.6, bright: 0.5 },
   epiano: { lvl: 0.5, oct: 4, cut: 7000, res: 0.5, env: 0, atk: 0.002, dec: 1.6, sus: 0.25, rel: 0.45, slope: 12, hpf: 90, width: 0.5 },
 };
 function valueAt(v, s, key) {
@@ -2765,6 +2842,7 @@ function applyState(st) {
   S.tracks = st.tracks; S.order = st.order;
   if (st.key) { S.root = st.key.root; S.scale = st.key.scale; S.keySrc = st.key.src; }
   S.prog = st.prog; S.progSrc = st.progSrc;
+  setTimeout(gpuPrewarm, 0);
   if (st.scenes) {
     S.scenes = st.scenes; S.song = st.song; S.arrSrc = st.arrSrc;
     if (S.liveScene && !S.scenes.has(S.liveScene)) S.liveScene = null;
@@ -2825,6 +2903,7 @@ function resetFx(now) {
     p.cancelScheduledValues(now); p.setTargetAtTime(v, now, 0.05);
   }
   A.crush.curve = null;
+  if (typeof FRZ !== 'undefined' && (FRZ.on || FRZ.srcs.length)) freezeStop();
   if (A.riser) { try { A.riser.src.stop(now + 0.1); } catch (e) { } A.riser = null; }
   S.padMute = []; S.padSet = []; S.padGate = null; S.padPitch = 0; S.padFills = new Set();
   G.held.clear(); G.act.clear();
@@ -2929,6 +3008,7 @@ function padOn(name) {
       case 'fill': { const n = Math.ceil(c + 0.5 - 1e-6); S.padFills.add(n); break; }
       case 'impact': impact(Math.max(now, timeOf(Math.ceil(c * 4 - 1e-6) / 4))); break;
       case 'swell': { const n = Math.ceil(c - 1e-6) + (c % 1 > 0.6 ? 1 : 0); playSwell(now + 0.01, timeOf(n)); break; }
+      case 'freeze': freezeStart(); st.undo.push(() => freezeStop()); break;
       case 'down': playDown(Math.max(now, timeOf(Math.ceil(c * 4 - 1e-6) / 4)), 2 * bar); break;
     }
   }
@@ -3368,6 +3448,12 @@ function playArp(def, notes, c, d, P, vel, r) {
 }
 function playNotes(def, notes, time, dur, P, vel, r) {
   if (SAMPLE_PITCHED.has(def.inst)) { for (const m of notes) registerVoice(r, playSamplePitched(def.inst, m, time, dur, P, vel, r.input)); return; }
+  if (GPU_INSTS[def.inst]) {
+    // GPU-rendered note if it is ready; until then (or without WebGPU) a CPU voice stands in
+    const fb = GPU_INSTS[def.inst], miss = gpuPlay(def, notes, time, dur, P, vel, r);
+    for (const m of miss) registerVoice(r, playSynth(fb, m, time, dur, { ...P, cut: Math.min(P.cut, INST[fb].cut) }, vel * 0.8, r.input));
+    return;
+  }
   if (wkPlay(def, notes, time, dur, { ...P, gain: P.gain * vel })) return;
   for (const m of notes) registerVoice(r, playSynth(def.inst === 'zither' ? 'pluck' : def.inst, m, time, dur, P, vel, r.input));
 }
@@ -3499,6 +3585,436 @@ function applyMaster(mode) {
   const d = MASTER.default, mk = compMakeupDb(d.gT, d.gR) - compMakeupDb(m.gT, m.gR);
   A.satOut.gain.setTargetAtTime(curveGain(d.sat) / curveGain(m.sat) * Math.pow(10, (mk + (m.trim || 0)) / 20), now, 0.05);
   A.lim.threshold.setTargetAtTime(m.lim, now, 0.05);
+}
+
+// ===================== Tactus GPU (WebGPU) =====================
+// The audio thread cannot see the GPU (WebGPU is not exposed inside an AudioWorklet), so the GPU works
+// ahead of time on the main thread: it renders whole notes and textures into buffers that the scheduler
+// then plays at the exact time. That suits sounds that are too heavy for the CPU but can be prepared a
+// moment early:
+//   swarm  a supersaw pad of 40 detuned voices x 48 harmonics (about 1,900 sine partials per note)
+//   choir  24 detuned voices with vowel formants (about 1,000 partials per note)
+//   plate  a struck metal plate: every inharmonic mode split into six beating neighbours, each with its own decay
+//          (a few hundred partials in the middle register, more for low notes)
+//   fx ... | freeze   spectral freeze: the live mix's spectrum resynthesized as ~2,000 sines
+// and it draws the "field" visualization: 131,072 particles thrown from the code lines of the tracks.
+// Without WebGPU every part falls back: the GPU instruments to CPU voices, freeze to a looped grain.
+
+const GPU = { state: 'idle', dev: null, name: '', err: '', synth: null, cache: new Map(), bytes: 0, jobs: new Map(), chain: Promise.resolve(), renders: 0, lastMs: 0 };
+const GPU_INSTS = { swarm: 'supersaw', choir: 'pad', plate: 'bell' };   // and their CPU fallbacks
+const GPU_CACHE_BYTES = 160 << 20;
+
+function gpuInit() {
+  if (GPU.ready) return GPU.ready;
+  GPU.state = 'loading';
+  GPU.ready = (async () => {
+    try {
+      if (!navigator.gpu) throw new Error('WebGPU is not available in this browser');
+      if (/[?&]gpu=off\b/.test(location.search)) throw new Error('turned off with ?gpu=off');
+      const ad = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' });
+      if (!ad) throw new Error('no GPU adapter');
+      GPU.adapter = ad;   // keep the adapter alive: if it is collected, pending GPU reads fail
+      const info = ad.info || {};
+      GPU.name = [info.vendor, info.architecture || info.description].filter(Boolean).join(' ') || 'GPU';
+      GPU.dev = await ad.requestDevice({ requiredLimits: { maxStorageBufferBindingSize: Math.min(ad.limits.maxStorageBufferBindingSize, 1 << 27), maxBufferSize: Math.min(ad.limits.maxBufferSize, 1 << 27) } });
+      GPU.dev.lost.then(i => { GPU.state = 'off'; GPU.err = 'GPU device lost: ' + (i.message || i.reason); S.dirty = true; });
+      gpuBuildSynth();
+      GPU.state = 'ok';
+    } catch (e) { GPU.state = 'off'; GPU.err = String(e.message || e); }
+    S.dirty = true;
+    return GPU.state === 'ok';
+  })();
+  return GPU.ready;
+}
+
+// ---------- the partial synthesizer ----------
+// Each GPU thread computes one output sample as a sum over every partial. Partials are staged through
+// workgroup memory 256 at a time. Phase is kept precise over long notes by splitting the sample index
+// into 4096-sample blocks: cycles = fract(cyclesPerBlock * block) + freq/sr * (index within block).
+const SYNTH_WGSL = `
+struct P { n: u32, np: u32, atk: f32, rel0: f32, relk: f32, gain: f32, win: u32, off: u32 };
+@group(0) @binding(0) var<uniform> p: P;
+@group(0) @binding(1) var<storage, read> parts: array<vec4f>;
+@group(0) @binding(2) var<storage, read_write> outb: array<f32>;
+var<workgroup> tile: array<vec4f, 512>;
+@compute @workgroup_size(256)
+fn main(@builtin(global_invocation_id) gid: vec3u, @builtin(local_invocation_index) li: u32) {
+  let i = gid.x + p.off;
+  let hi = f32(i >> 12u);
+  let lo = f32(i & 4095u);
+  let t = f32(i);
+  var l = 0.0;
+  var r = 0.0;
+  for (var base = 0u; base < p.np; base += 256u) {
+    let k = base + li;
+    if (k < p.np) { tile[li * 2u] = parts[k * 2u]; tile[li * 2u + 1u] = parts[k * 2u + 1u]; }
+    else { tile[li * 2u] = vec4f(0.0); tile[li * 2u + 1u] = vec4f(0.0); }
+    workgroupBarrier();
+    let m = min(256u, p.np - base);
+    for (var j = 0u; j < m; j++) {
+      let a = tile[j * 2u];
+      let b = tile[j * 2u + 1u];
+      let cyc = fract(fract(a.y * hi) + a.x * lo + a.z);
+      let s = sin(6.2831853 * cyc) * a.w * exp(-b.x * t);
+      l += s * b.y;
+      r += s * b.z;
+    }
+    workgroupBarrier();
+  }
+  if (i >= p.n) { return; }
+  var env = min(1.0, t / max(1.0, p.atk));
+  if (t > p.rel0) { env *= exp(-(t - p.rel0) * p.relk); }
+  if (p.win == 1u) { env *= sin(3.14159265 * t / f32(p.n)); }
+  outb[i] = l * env * p.gain;
+  outb[i + p.n] = r * env * p.gain;
+}`;
+function gpuBuildSynth() {
+  const d = GPU.dev;
+  GPU.synth = d.createComputePipeline({ layout: 'auto', compute: { module: d.createShaderModule({ code: SYNTH_WGSL }), entryPoint: 'main' } });
+}
+// parts: Float32Array, 8 floats per partial: freq/sr, fract(freq*4096/sr), phase(cycles), amp, decay/sample, gainL, gainR, 0
+// The work is cut into slices of 16,384 samples, one submit each, so no single dispatch runs long
+// enough to trip the GPU watchdog on slower machines.
+const GPU_SLICE = 16384;
+async function gpuRender(parts, np, n, o = {}) {
+  const d = GPU.dev, t0 = performance.now();
+  const pb = d.createBuffer({ size: Math.max(32, np * 32), usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST });
+  d.queue.writeBuffer(pb, 0, parts.buffer, parts.byteOffset, np * 32);
+  const ob = d.createBuffer({ size: n * 8, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC });
+  const rb = d.createBuffer({ size: n * 8, usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST });
+  const unis = [];
+  for (let off = 0; off < n; off += GPU_SLICE) {
+    const uni = d.createBuffer({ size: 32, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+    const u = new ArrayBuffer(32), dv = new DataView(u);
+    dv.setUint32(0, n, true); dv.setUint32(4, np, true); dv.setFloat32(8, o.atk || 1, true); dv.setFloat32(12, o.rel0 ?? 1e30, true);
+    dv.setFloat32(16, o.relk || 0, true); dv.setFloat32(20, o.gain ?? 1, true); dv.setUint32(24, o.win ? 1 : 0, true); dv.setUint32(28, off, true);
+    d.queue.writeBuffer(uni, 0, u); unis.push(uni);
+    const bg = d.createBindGroup({ layout: GPU.synth.getBindGroupLayout(0), entries: [{ binding: 0, resource: { buffer: uni } }, { binding: 1, resource: { buffer: pb } }, { binding: 2, resource: { buffer: ob } }] });
+    const enc = d.createCommandEncoder(), pass = enc.beginComputePass();
+    pass.setPipeline(GPU.synth); pass.setBindGroup(0, bg);
+    pass.dispatchWorkgroups(Math.ceil(Math.min(GPU_SLICE, n - off) / 256));
+    pass.end();
+    d.queue.submit([enc.finish()]);
+    await d.queue.onSubmittedWorkDone();
+  }
+  const enc = d.createCommandEncoder();
+  enc.copyBufferToBuffer(ob, 0, rb, 0, n * 8);
+  d.queue.submit([enc.finish()]);
+  await rb.mapAsync(GPUMapMode.READ);
+  const out = new Float32Array(rb.getMappedRange().slice(0));
+  rb.unmap(); for (const b of [pb, ob, rb, ...unis]) b.destroy();
+  GPU.renders++; GPU.lastMs = performance.now() - t0;
+  return out;
+}
+// the same sum on the CPU, for the benchmark and as a reference (renders samples [a, b) only)
+function cpuRender(parts, np, n, o = {}, a = 0, b = n) {
+  const out = new Float32Array((b - a) * 2), TAU = Math.PI * 2;
+  for (let k = 0; k < np; k++) {
+    const q = k * 8, fps = parts[q], cpb = parts[q + 1], ph = parts[q + 2], amp = parts[q + 3], dk = parts[q + 4], gl = parts[q + 5], gr = parts[q + 6];
+    for (let i = a; i < b; i++) {
+      const c = (cpb * (i >> 12)) % 1 + fps * (i & 4095) + ph;
+      const s = Math.sin(TAU * c) * amp * Math.exp(-dk * i);
+      out[i - a] += s * gl; out[i - a + (b - a)] += s * gr;
+    }
+  }
+  return out;
+}
+
+// ---------- GPU instruments ----------
+function rngOf(seed) { let s = seed | 0 || 1; return () => { s ^= s << 13; s ^= s >>> 17; s ^= s << 5; return (s >>> 0) / 4294967296; }; }
+function partial(arr, k, f, sr, amp, phase, decayT60, pan) {
+  const q = k * 8, fps = f / sr, p = (Math.max(-1, Math.min(1, pan)) + 1) * Math.PI / 4;
+  arr[q] = fps; arr[q + 1] = (f * 4096 / sr) % 1; arr[q + 2] = phase; arr[q + 3] = amp;
+  arr[q + 4] = decayT60 > 0 ? 6.9078 / (decayT60 * sr) : 0; arr[q + 5] = Math.cos(p); arr[q + 6] = Math.sin(p); arr[q + 7] = 0;
+}
+const FORMANTS = { a: [[800, 80, 1], [1150, 90, 0.5], [2900, 120, 0.25], [3900, 130, 0.2]], o: [[450, 70, 1], [800, 80, 0.35], [2830, 100, 0.1], [3800, 130, 0.08]] };
+// returns partials plus render options for one note
+function gpuVoice(inst, midi, dur, P, sr) {
+  const f0 = mtof(midi), ny = sr * 0.45, rnd = rngOf(midi * 7919 + 17);
+  const parts = new Float32Array(4096 * 8); let np = 0, sum2 = 0;
+  const add = (f, amp, ph, t60, pan) => { if (f <= 20 || f >= ny || np >= 4096 || amp <= 0) return; partial(parts, np++, f, sr, amp, ph, t60, pan); sum2 += amp * amp; };
+  const atk = Math.max(0.002, P.atk), rel = Math.max(0.05, P.rel), width = Math.max(0, Math.min(1, P.width ?? 0.7));
+  let n, o;
+  if (inst === 'plate') {
+    // simply supported rectangular plate: f_mn grows with m^2 + n^2 (scaled for the aspect ratio)
+    const ay = 1.37, x0 = 0.31, y0 = 0.43, base = 1 + 1 / (ay * ay), T = 1.2 + 6 * Math.max(0.05, P.dec);
+    const bright = Math.max(0, Math.min(1, P.bright ?? 0.5));
+    for (let m = 1; m <= 32; m++) for (let k = 1; k <= 32; k++) {
+      const f = f0 * (m * m + (k * k) / (ay * ay)) / base;
+      if (f >= ny) continue;
+      const shape = Math.abs(Math.sin(m * Math.PI * x0) * Math.sin(k * Math.PI * y0));
+      const amp = shape / Math.pow(f / f0, 1.25 - 0.7 * bright), t60 = Math.max(0.15, T * Math.pow(f0 / f, 0.5));
+      // a real plate is never perfectly symmetric, so each mode splits into close neighbours that beat slowly
+      for (let c = 0; c < 6; c++) add(f * (1 + (rnd() - 0.5) * 0.004 * (c ? 1 : 0)), amp * (c ? 0.35 + rnd() * 0.4 : 1), c ? rnd() : 0, t60 * (0.8 + rnd() * 0.4), (rnd() * 2 - 1) * width * 0.6);
+    }
+    n = Math.round(Math.min(10, T * 1.05) * sr);
+    o = { atk: 0.0015 * sr };
+  } else {
+    // swarm and choir: many detuned voices, each a full harmonic series; their beating is the chorus
+    const choir = inst === 'choir', V = choir ? 24 : 40, H = choir ? 44 : 48, det = Math.max(2, P.detune ?? 18) * (choir ? 0.6 : 1);
+    const bright = Math.max(0, Math.min(1, P.bright ?? 0.6)), fc = f0 * (3 + 45 * bright);
+    const vow = FORMANTS.a.map((a, i) => [a[0] + (FORMANTS.o[i][0] - a[0]) * (1 - bright), a[1], a[2] + (FORMANTS.o[i][2] - a[2]) * (1 - bright)]);
+    for (let v = 0; v < V; v++) {
+      const x = V > 1 ? v / (V - 1) * 2 - 1 : 0, cents = x * det + (rnd() - 0.5) * det * 0.3, fv = f0 * Math.pow(2, cents / 1200), pan = x * width;
+      for (let h = 1; h <= H; h++) {
+        const f = fv * h;
+        let amp;
+        if (choir) { amp = 0.08 / h; for (const [F, B, G] of vow) amp += G / (1 + ((f - F) / B) ** 2) / Math.sqrt(h); }
+        else amp = (1 / h) / Math.sqrt(1 + Math.pow(f / fc, 4));
+        add(f, amp, rnd(), 0, pan);
+      }
+    }
+    const hold = Math.max(0.05, dur);
+    n = Math.round(Math.min(10, hold + rel * 3) * sr);
+    o = { atk: atk * sr, rel0: hold * sr, relk: 1 / (rel / 3 * sr) * 1.0 };
+  }
+  // random phases make the sum's level grow as the root of the summed powers
+  o.gain = 0.22 / Math.sqrt(Math.max(1e-9, sum2 / 2));
+  return { parts, np, n, o };
+}
+const gpuKey = (inst, midi, dur, P) => [inst, midi, inst === 'plate' ? 0 : Math.round(dur * 8) / 8, (P.bright ?? 0).toFixed(2), (P.detune ?? 0).toFixed(0), (P.dec ?? 0).toFixed(2), (P.width ?? 0).toFixed(2), (P.atk ?? 0).toFixed(2), (P.rel ?? 0).toFixed(2)].join('|');
+function gpuRequest(inst, midi, dur, P) {
+  const key = gpuKey(inst, midi, dur, P);
+  if (GPU.cache.has(key) || GPU.jobs.has(key)) return key;
+  const job = GPU.chain = GPU.chain.then(async () => {
+    if (GPU.state !== 'ok') return;
+    const sr = S.ctx.sampleRate, v = gpuVoice(inst, midi, dur, P, sr);
+    const pcm = await gpuRender(v.parts, v.np, v.n, v.o);
+    const buf = S.ctx.createBuffer(2, v.n, sr);
+    buf.copyToChannel(pcm.subarray(0, v.n), 0); buf.copyToChannel(pcm.subarray(v.n), 1);
+    GPU.cache.set(key, buf); GPU.bytes += v.n * 8;
+    while (GPU.bytes > GPU_CACHE_BYTES && GPU.cache.size > 1) { const [k0, b0] = GPU.cache.entries().next().value; GPU.cache.delete(k0); GPU.bytes -= b0.length * 8; }
+  }).catch(e => { GPU.err = String(e.message || e); }).finally(() => GPU.jobs.delete(key));
+  GPU.jobs.set(key, job);
+  return key;
+}
+// play GPU-rendered notes; returns the notes it could not play yet (still rendering, or no GPU)
+function gpuPlay(def, notes, time, dur, P, vel, r) {
+  if (GPU.state !== 'ok') return notes;
+  const miss = [];
+  for (const m of notes) {
+    const key = gpuRequest(def.inst, m, dur, P), buf = GPU.cache.get(key);
+    if (!buf) { miss.push(m); continue; }
+    GPU.cache.delete(key); GPU.cache.set(key, buf);   // keep recently used notes
+    const src = S.ctx.createBufferSource(), g = S.ctx.createGain();
+    src.buffer = buf; g.gain.value = P.gain * vel * (INST[def.inst].lvl || 0.5);
+    src.connect(g).connect(r.input);
+    src.start(time); src.onended = () => { try { g.disconnect(); } catch (e) { } };
+    registerVoice(r, { filters: [], kt: 1, tEnd: time + buf.duration });
+  }
+  return miss;
+}
+// render the notes a GPU track will play over the next bars, so the first hits are ready in time
+function gpuPrewarm() {
+  if (GPU.state !== 'ok' || !S.ctx) return;
+  const c0 = Math.floor(Math.max(0, S.playing ? S.lastC : 0));
+  for (const name of S.order) {
+    const def = S.tracks.get(name);
+    if (!def || !GPU_INSTS[def.inst]) continue;
+    for (let n = c0; n < c0 + 4; n++) for (const ev of cycleEvents(def, n)) {
+      const P = evalParams(def, ev.s);
+      const notes = /^r'*$/.test(ev.v) ? null : atomNotes(ev.v, S.root, S.scale, Math.round(P.oct), def.fixed ? 0 : progAt(ev.s), (ev.tr || 0) + Math.round(P.tr || 0), ev.inv);
+      if (notes) for (const m of notes) gpuRequest(def.inst, m, ev.d / S.cps * P.len, P);
+    }
+  }
+}
+
+// ---------- spectral freeze ----------
+// Hold a pad and the last moment of the mix becomes a sustained chord: the browser's FFT gives the
+// spectrum, its strongest peaks become ~2,000 sines with random phases, and the GPU renders 6 seconds
+// with a sine window. Copies overlap by half, so their powers always add up to one.
+const FRZ = { on: false, srcs: [], timer: null, g: null };
+async function freezeStart() {
+  if (!A.frz) return;
+  const ctx = S.ctx, sr = ctx.sampleRate, L = 6;
+  FRZ.on = true;
+  const g = FRZ.g = ctx.createGain(); g.gain.value = 0; g.connect(A.bus); g.connect(A.rIn);
+  let buf;
+  if (GPU.state === 'ok') {
+    const N = A.frz.fftSize, db = new Float32Array(N / 2); A.frz.getFloatFrequencyData(db);
+    let mx = -Infinity; for (let k = 2; k < db.length; k++) mx = Math.max(mx, db[k]);
+    const cand = [];
+    for (let k = 3; k < db.length - 2; k++) { const f = k * sr / N; if (f > 16000) break; if (db[k] > mx - 66 && db[k] >= db[k - 1] && db[k] >= db[k + 1]) cand.push(k); }
+    cand.sort((a, b) => db[b] - db[a]);
+    const use = cand.slice(0, 2048), parts = new Float32Array(Math.max(1, use.length) * 8), rnd = rngOf(Date.now() & 0xffff);
+    let s2 = 0;
+    use.forEach((k, i) => { const amp = Math.pow(10, db[k] / 20); s2 += amp * amp; partial(parts, i, (k + (rnd() - 0.5) * 0.7) * sr / N, sr, amp, rnd(), 0, (rnd() * 2 - 1) * 0.5); });
+    if (!use.length) { FRZ.on = false; return; }
+    const n = L * sr, pcm = await gpuRender(parts, use.length, n, { win: true, gain: 0.25 / Math.sqrt(s2 / 2) });
+    buf = ctx.createBuffer(2, n, sr); buf.copyToChannel(pcm.subarray(0, n), 0); buf.copyToChannel(pcm.subarray(n), 1);
+  } else {
+    // without a GPU: loop the last 0.68 s of the mix under the same window
+    const N = A.frz.fftSize, td = new Float32Array(N); A.frz.getFloatTimeDomainData(td);
+    buf = ctx.createBuffer(2, N, sr);
+    for (let ch = 0; ch < 2; ch++) { const d = buf.getChannelData(ch); for (let i = 0; i < N; i++) d[i] = td[i] * Math.sin(Math.PI * i / N) * 0.9; }
+  }
+  if (!FRZ.on) return;
+  const half = buf.duration / 2, now = ctx.currentTime + 0.01;
+  g.gain.setValueAtTime(0, now); g.gain.linearRampToValueAtTime(1, now + 0.08);
+  const play = (t, off) => { const s = ctx.createBufferSource(); s.buffer = buf; s.connect(g); s.start(t, off); FRZ.srcs.push(s); s.onended = () => { FRZ.srcs = FRZ.srcs.filter(x => x !== s); }; };
+  play(now, half); play(now, 0);
+  let next = now + half;
+  FRZ.timer = setInterval(() => { while (FRZ.on && next < ctx.currentTime + 0.5) { play(next, 0); next += half; } }, 100);
+}
+function freezeStop() {
+  FRZ.on = false; clearInterval(FRZ.timer);
+  const g = FRZ.g; if (!g) return;
+  const now = S.ctx.currentTime;
+  g.gain.cancelScheduledValues(now); g.gain.setValueAtTime(g.gain.value, now); g.gain.linearRampToValueAtTime(0, now + 0.6);
+  const srcs = FRZ.srcs; FRZ.srcs = [];
+  for (const s of srcs) { try { s.stop(now + 0.65); } catch (e) { } }
+  setTimeout(() => { try { g.disconnect(); } catch (e) { } }, 900);
+}
+
+// ---------- field: 131,072 particles thrown from the code lines ----------
+const FIELD_N = 131072, FIELD_MAXE = 24;
+const FIELD_COMMON = `
+struct U { dt: f32, time: f32, aspect: f32, ne: u32, bass: f32, mid: f32, high: f32, size: f32, em: array<vec4f, 24> };
+struct Pt { pos: vec2f, vel: vec2f, life: f32, maxl: f32, col: f32, seed: f32 };
+@group(0) @binding(0) var<uniform> u: U;`;
+const FIELD_COMP = FIELD_COMMON + `
+@group(0) @binding(1) var<storage, read_write> pts: array<Pt>;
+fn hash(x: u32) -> f32 { var h = x * 747796405u + 2891336453u; h = ((h >> ((h >> 28u) + 4u)) ^ h) * 277803737u; h = (h >> 22u) ^ h; return f32(h) / 4294967296.0; }
+// a divergence-free swirl: the curl of a moving stream function, so particles circulate instead of clumping
+fn flow(p: vec2f, t: f32) -> vec2f {
+  let A = p.x * 3.1 + t * 0.7; let B = p.y * 2.3 - t * 0.5; let C = p.x * 1.7 - t * 0.3; let D = p.y * 4.1 + t * 0.9;
+  let dy = -2.3 * sin(A) * sin(B) + 0.5 * 4.1 * cos(C) * cos(D);
+  let dx = 3.1 * cos(A) * cos(B) - 0.5 * 1.7 * sin(C) * sin(D);
+  return vec2f(dy, -dx) * 0.25;
+}
+@compute @workgroup_size(256)
+fn step(@builtin(global_invocation_id) id: vec3u) {
+  let i = id.x;
+  if (i >= arrayLength(&pts)) { return; }
+  var p = pts[i];
+  let seed = u32(fract(u.time * 0.137) * 1000003.0) * 1664525u + i * 22695477u;
+  p.life -= u.dt;
+  if (p.life <= 0.0) {
+    var tot = 0.0;
+    for (var k = 0u; k < u.ne; k++) { tot += u.em[k].y; }
+    if (hash(seed) < tot * 0.08 * u.dt) {
+      var pick = hash(seed + 7u) * tot;
+      var e = u.em[0];
+      for (var k = 0u; k < u.ne; k++) { e = u.em[k]; pick -= e.y; if (pick <= 0.0) { break; } }
+      p.pos = vec2f(e.w + hash(seed + 11u) * 0.05, e.x + (hash(seed + 13u) - 0.5) * 0.012);
+      let sp = (0.18 + hash(seed + 17u) * 0.55) * (0.6 + min(e.y, 2.0));
+      let an = (hash(seed + 19u) - 0.5) * 0.9;
+      p.vel = vec2f(cos(an) * sp, sin(an) * sp * 0.6);
+      p.maxl = 1.4 + hash(seed + 23u) * 2.6;
+      p.life = p.maxl;
+      p.col = e.z;
+    } else { p.life = 0.0; pts[i] = p; return; }
+  }
+  let f = flow(p.pos * vec2f(u.aspect, 1.0) * 1.6, u.time * (0.35 + u.mid * 1.5));
+  p.vel += f * (0.25 + u.bass * 2.4) * u.dt;
+  p.vel *= 1.0 - (0.9 - u.high * 0.4) * u.dt;
+  p.pos += p.vel * u.dt * vec2f(1.0 / u.aspect, 1.0);
+  if (p.pos.x > 1.05 || p.pos.y < -0.05 || p.pos.y > 1.05) { p.life = 0.0; }
+  pts[i] = p;
+}`;
+const FIELD_REND = FIELD_COMMON + `
+@group(0) @binding(1) var<storage, read> pts: array<Pt>;
+@group(0) @binding(2) var<storage, read> pal: array<vec4f, 10>;
+struct VO { @builtin(position) pos: vec4f, @location(0) col: vec4f, @location(1) uv: vec2f };
+@vertex
+fn vs(@builtin(vertex_index) vi: u32, @builtin(instance_index) ii: u32) -> VO {
+  let p = pts[ii];
+  var o: VO;
+  let corner = vec2f(f32(vi & 1u), f32(vi >> 1u)) * 2.0 - 1.0;
+  let k = clamp(p.life / max(p.maxl, 0.001), 0.0, 1.0);
+  let sz = u.size * (0.6 + k * 1.4);
+  let c = vec2f(p.pos.x * 2.0 - 1.0, 1.0 - p.pos.y * 2.0);
+  o.pos = vec4f(c + corner * vec2f(sz / u.aspect, sz), 0.0, 1.0);
+  if (p.life <= 0.0) { o.pos = vec4f(2.0, 2.0, 0.0, 1.0); }
+  let col = pal[u32(p.col) % 10u];
+  let a = pow(k, 1.6) * 0.22;
+  o.col = vec4f(col.rgb * a, a);
+  o.uv = corner;
+  return o;
+}
+@fragment
+fn fs(i: VO) -> @location(0) vec4f {
+  let d = dot(i.uv, i.uv);
+  if (d > 1.0) { discard; }
+  return i.col * (1.0 - d);
+}`;
+const FIELD = { ready: false, failed: false, hits: new Map(), lastT: 0 };
+// The field gets its own GPU device, so a problem with the canvas can never take the audio renders down with it.
+// offscreen: draw into a texture instead of the canvas (used by tests and headless browsers)
+async function fieldInit(canvas, offscreen) {
+  if (FIELD.ready || FIELD.failed || FIELD.loading) return;
+  FIELD.loading = true;
+  if (!(await gpuInit())) { FIELD.failed = true; FIELD.loading = false; return; }
+  try {
+    const ad = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' });   // an adapter makes only one device
+    if (!ad) throw new Error('no GPU adapter for the field');
+    FIELD.adapter = ad;
+    const d = await ad.requestDevice();
+    d.lost.then(() => { FIELD.ready = false; FIELD.failed = true; });
+    let ctx = null, fmt = 'rgba8unorm';
+    if (offscreen) FIELD.offscreen = { w: offscreen.w, h: offscreen.h, tex: d.createTexture({ size: [offscreen.w, offscreen.h], format: fmt, usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC }) };
+    else { ctx = canvas.getContext('webgpu'); fmt = navigator.gpu.getPreferredCanvasFormat(); ctx.configure({ device: d, format: fmt, alphaMode: 'premultiplied' }); }
+    FIELD.dev = d;
+    const pts = d.createBuffer({ size: FIELD_N * 32, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC });
+    const uni = d.createBuffer({ size: 32 + FIELD_MAXE * 16, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+    const pal = d.createBuffer({ size: 160, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST });
+    const pd = new Float32Array(40);
+    TRACK_COLORS.forEach((h, k) => { const v = parseInt(h.slice(1), 16); pd.set([(v >> 16 & 255) / 255, (v >> 8 & 255) / 255, (v & 255) / 255, 1], k * 4); });
+    d.queue.writeBuffer(pal, 0, pd);
+    const comp = d.createComputePipeline({ layout: 'auto', compute: { module: d.createShaderModule({ code: FIELD_COMP }), entryPoint: 'step' } });
+    const rm = d.createShaderModule({ code: FIELD_REND });
+    const blend = { color: { srcFactor: 'one', dstFactor: 'one', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one', operation: 'add' } };
+    const rend = d.createRenderPipeline({ layout: 'auto', vertex: { module: rm, entryPoint: 'vs' }, fragment: { module: rm, entryPoint: 'fs', targets: [{ format: fmt, blend }] }, primitive: { topology: 'triangle-strip' } });
+    Object.assign(FIELD, { ctx, uni, pts, comp, rend, canvas, fmt,
+      cbg: d.createBindGroup({ layout: comp.getBindGroupLayout(0), entries: [{ binding: 0, resource: { buffer: uni } }, { binding: 1, resource: { buffer: pts } }] }),
+      rbg: d.createBindGroup({ layout: rend.getBindGroupLayout(0), entries: [{ binding: 0, resource: { buffer: uni } }, { binding: 1, resource: { buffer: pts } }, { binding: 2, resource: { buffer: pal } }] }),
+      ready: true });
+  } catch (e) { FIELD.failed = true; GPU.err = String(e.message || e); }
+  FIELD.loading = false;
+}
+// a track hit on a code line: that line throws particles in its colour
+function fieldHit(line) { FIELD.hits.set(line, Math.min(2, (FIELD.hits.get(line) || 0) + 1)); }
+let fieldBins = null;
+function fieldFrame(now, emitters) {
+  if (!FIELD.ready) return;
+  const cv = FIELD.canvas, dpr = devicePixelRatio || 1, off = FIELD.offscreen;
+  const w = off ? off.w : Math.max(1, Math.round(cv.clientWidth * dpr)), h = off ? off.h : Math.max(1, Math.round(cv.clientHeight * dpr));
+  if (!off && (cv.width !== w || cv.height !== h)) { cv.width = w; cv.height = h; }
+  const t = performance.now() / 1000, dt = Math.min(0.05, FIELD.lastT ? t - FIELD.lastT : 0.016); FIELD.lastT = t;
+  let bass = 0, mid = 0, high = 0;
+  if (A.an && S.playing) {
+    fieldBins = fieldBins || new Uint8Array(A.an.frequencyBinCount); A.an.getByteFrequencyData(fieldBins);
+    const bin = S.ctx.sampleRate / A.an.fftSize, band = (a, b) => { let s = 0, c = 0; for (let k = Math.floor(a / bin); k <= Math.ceil(b / bin); k++, c++) s += fieldBins[k] || 0; return s / Math.max(1, c) / 255; };
+    bass = band(30, 160); mid = band(300, 2000); high = band(4000, 12000);
+  }
+  const u = new ArrayBuffer(32 + FIELD_MAXE * 16), f = new Float32Array(u), ui = new Uint32Array(u);
+  const em = emitters.slice(0, FIELD_MAXE);
+  f[0] = dt; f[1] = t; f[2] = w / h; ui[3] = em.length; f[4] = bass; f[5] = mid; f[6] = high; f[7] = 2.2 * dpr / h;
+  em.forEach((e, k) => { const en = FIELD.hits.get(e.line) || 0; f.set([e.y, en, e.col, e.x], 8 + k * 4); });
+  for (const [k, v] of FIELD.hits) { const nv = v * Math.pow(0.02, dt); if (nv < 0.01) FIELD.hits.delete(k); else FIELD.hits.set(k, nv); }
+  const d = FIELD.dev;
+  d.queue.writeBuffer(FIELD.uni, 0, u);
+  const enc = d.createCommandEncoder();
+  const cp = enc.beginComputePass(); cp.setPipeline(FIELD.comp); cp.setBindGroup(0, FIELD.cbg); cp.dispatchWorkgroups(FIELD_N / 256); cp.end();
+  const rp = enc.beginRenderPass({ colorAttachments: [{ view: off ? off.tex.createView() : FIELD.ctx.getCurrentTexture().createView(), loadOp: 'clear', clearValue: { r: 0, g: 0, b: 0, a: 0 }, storeOp: 'store' }] });
+  rp.setPipeline(FIELD.rend); rp.setBindGroup(0, FIELD.rbg); rp.draw(4, FIELD_N); rp.end();
+  d.queue.submit([enc.finish()]);
+}
+
+// ---------- benchmark: the same note on the GPU and in JavaScript ----------
+async function gpuBench() {
+  const sr = 48000, P = Object.assign({}, BASE, INST.swarm), v = gpuVoice('swarm', 57, 2, P, sr);
+  const out = { partials: v.np, seconds: v.n / sr };
+  // JavaScript: time a 1/32 slice and scale up, so the page does not freeze for seconds
+  const slice = Math.ceil(v.n / 32), t0 = performance.now();
+  cpuRender(v.parts, v.np, v.n, v.o, 0, slice);
+  out.cpuMs = (performance.now() - t0) * (v.n / slice);
+  if (await gpuInit()) {
+    await gpuRender(v.parts, v.np, 4096, v.o);      // compile and warm up
+    const t1 = performance.now(); await gpuRender(v.parts, v.np, v.n, v.o); out.gpuMs = performance.now() - t1;
+  }
+  out.gpu = GPU.state === 'ok' ? GPU.name : null; out.err = GPU.err;
+  return out;
 }
 
 // ===================== Pulse loop station =====================
@@ -4664,8 +5180,8 @@ window.addEventListener('blur', () => { for (const [, g] of codeHeld) gestureOff
 
 // ---------- pads (built from the fx lines) ----------
 const padsEl = $('#pads');
-const PAD_I18N = { filter: 'gFilter', build: 'gBuild', rep4: 'gRep4', rep16: 'gRep16', break: 'gBreak', throw: 'gThrow', wash: 'gWash', gate: 'gGate', crush: 'gCrush', kill: 'gKill', echo: 'gEcho', fill: 'gFill' };
-const PAD_CAT = { lp: 'tone', hp: 'tone', res: 'tone', kill: 'tone', crush: 'tone', repeat: 'rhythm', gate: 'rhythm', riser: 'struct', mute: 'struct', only: 'struct', fill: 'struct', scene: 'struct', impact: 'struct', swell: 'struct', down: 'struct', throw: 'space', echo: 'space', verb: 'space', set: 'mod', pitch: 'mod' };
+const PAD_I18N = { filter: 'gFilter', build: 'gBuild', rep4: 'gRep4', rep16: 'gRep16', break: 'gBreak', throw: 'gThrow', wash: 'gWash', gate: 'gGate', crush: 'gCrush', kill: 'gKill', echo: 'gEcho', fill: 'gFill', freeze: 'gFreeze', rep8: 'gRep8', up: 'gUp', drop: 'gDrop' };
+const PAD_CAT = { lp: 'tone', hp: 'tone', res: 'tone', kill: 'tone', crush: 'tone', repeat: 'rhythm', gate: 'rhythm', riser: 'struct', mute: 'struct', only: 'struct', fill: 'struct', scene: 'struct', impact: 'struct', swell: 'struct', down: 'struct', throw: 'space', echo: 'space', verb: 'space', freeze: 'space', set: 'mod', pitch: 'mod' };
 function renderPads() {
   const list = [...S.pads.values()];
   padsEl.innerHTML = list.map(p => {
@@ -4703,6 +5219,27 @@ $('.tabs').addEventListener('keydown', e => {
   e.preventDefault(); const n = TABS[mod(i + d, TABS.length)]; showTab(n); $('#tab-' + n).focus();
 });
 $('#composeBtn').addEventListener('click', () => { showTab('compose'); $('#cmpGo').focus(); });
+
+// ---------- GPU status and benchmark ----------
+function syncGpu() {
+  const el = $('#gpuState'); if (!el) return;
+  const st = GPU.state;
+  el.textContent = st === 'ok' ? GPU.name + ' · ' + t('gpuOn') : st === 'loading' ? t('gpuLoading') : st === 'off' ? t('gpuOffShort') : t('gpuIdle');
+  el.className = 'gpu-state' + (st === 'ok' ? ' ok' : '');
+  el.title = GPU.err || '';
+}
+$('#gpuBench').addEventListener('click', async () => {
+  const b = $('#gpuBench'), out = $('#gpuResult');
+  b.disabled = true; out.hidden = false; out.textContent = t('gpuBenchRun');
+  await new Promise(r => setTimeout(r, 30));
+  try {
+    const r = await gpuBench(), f = x => Math.round(x).toLocaleString();
+    out.innerHTML = r.gpuMs != null
+      ? t('gpuBenchRes', { p: r.partials.toLocaleString(), s: r.seconds, g: `<b>${f(r.gpuMs)} ms</b>`, c: `<b>${f(r.cpuMs)} ms</b>`, x: `<b>${(r.cpuMs / r.gpuMs).toFixed(0)}×</b>` })
+      : t('gpuBenchCpu', { p: r.partials.toLocaleString(), s: r.seconds, c: `<b>${f(r.cpuMs)} ms</b>`, e: esc(r.err || 'WebGPU') });
+  } catch (e) { out.textContent = String(e.message || e); }
+  b.disabled = false; syncGpu();
+});
 
 // ---------- compose ----------
 const STYLE_NAMES = { house: 'House', techno: 'Techno', dnb: 'DnB', lofi: 'Lo-fi', trance: 'Trance', synthwave: 'Synthwave', ambient: 'Ambient', jazz: 'Jazz' };
@@ -5043,6 +5580,7 @@ function frame() {
           const el = v.id && document.getElementById(v.id);
           if (el) { el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); }
           const led = document.getElementById('led' + v.line);
+          if (VZ.mode === 'field') fieldHit(v.line);
           if (led) { led.classList.remove('hit'); void led.offsetWidth; led.classList.add('hit'); }
         } else keep.push(v);
       }
@@ -5083,7 +5621,7 @@ function frame() {
     $('#bpm').textContent = Math.round(S.bpm);
     { const bEl = $('#build'); bEl.dataset.base = bEl.dataset.base || bEl.textContent; bEl.textContent = bEl.dataset.base + (WK.dsp === 'wasm' ? ' · Rust DSP' : ''); bEl.title = WK.dsp === 'wasm' ? 'Synth voices run in Rust compiled to WebAssembly' : 'build'; }
     $('#keyo').textContent = S.keySrc;
-    renderLoops();
+    renderLoops(); syncGpu();
     document.querySelectorAll('.pad').forEach(p => p.classList.toggle('on', G.held.has(p.dataset.g)));
   }
   // scope
@@ -5142,9 +5680,9 @@ requestAnimationFrame(frame);
 // spiral: one turn per bar · fft: spectrum. Future notes come straight from the patterns, not from audio.
 var VZ = { mode: 'roll', ver: 0 };
 try { VZ.mode = localStorage.getItem('pulse-viz') || 'roll'; } catch (e) { }
-const VZ_OPACITY = { roll: 0.55, grid: 0.4, spiral: 0.5, fft: 0.45, off: 0 };
+const VZ_OPACITY = { roll: 0.55, grid: 0.4, spiral: 0.5, fft: 0.45, field: 0, off: 0 };
 const VZ_COLORS = TRACK_COLORS;
-const vizCv = document.getElementById('viz'), vizG = vizCv.getContext('2d');
+const vizCv = document.getElementById('viz'), vizG = vizCv.getContext('2d'), vizGpu = document.getElementById('vizgpu');
 
 function vizCycle(def, n) {
   if (!def.vz || def.vzVer !== VZ.ver) { def.vz = new Map(); def.vzVer = VZ.ver; }
@@ -5283,12 +5821,32 @@ function drawViz(now) {
   if (vizCv.width !== w || vizCv.height !== h) { vizCv.width = w; vizCv.height = h; }
   vizG.clearRect(0, 0, w, h);
   vizCv.style.opacity = VZ_OPACITY[VZ.mode] ?? 0.5;
+  vizGpu.hidden = VZ.mode !== 'field' || !FIELD.ready;
+  if (VZ.mode === 'field') { drawField(now); return; }
   if (VZ.mode === 'off' || !w || !h) return;
   const c = S.playing ? transport(now) : 0;
   if (VZ.mode === 'roll') drawRoll(vizG, w, h, c, dpr);
   else if (VZ.mode === 'grid') drawGrid(vizG, w, h, c, dpr);
   else if (VZ.mode === 'spiral') drawSpiral(vizG, w, h, c, dpr);
   else if (VZ.mode === 'fft' && S.playing) drawFft(vizG, w, h, c, dpr);
+}
+// field: every track's code line throws particles in its colour when it plays (WebGPU, gpu.js)
+let fieldWarned = false;
+function drawField(now) {
+  if (!FIELD.ready) {
+    if (!FIELD.loading && !FIELD.failed) fieldInit(vizGpu);
+    if (FIELD.failed && !fieldWarned) { fieldWarned = true; loopMsg(t('fieldOff', { e: GPU.err || 'WebGPU' }), 'bad', 6000); setVizMode('roll'); }
+    return;
+  }
+  const r = vizGpu.getBoundingClientRect(); if (!r.width || !r.height) return;
+  const cs = getComputedStyle(srcEl), pt = parseFloat(cs.paddingTop), pl = parseFloat(cs.paddingLeft), em = [];
+  for (const [line, name] of S.lineNames) {
+    if (!S.tracks.has(name)) continue;
+    const y = (pt + line * lineH + lineH / 2 - srcEl.scrollTop) / r.height;
+    if (y < -0.05 || y > 1.05) continue;
+    em.push({ line, y, x: Math.max(0, (pl + (name.length + 1) * charW - srcEl.scrollLeft) / r.width), col: Math.max(0, S.order.indexOf(name)) % 10 });
+  }
+  fieldFrame(now, em);
 }
 function setVizMode(m) {
   VZ.mode = m;
