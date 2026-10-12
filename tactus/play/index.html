@@ -302,7 +302,7 @@ body.recording .editor { border-color: var(--c-err); }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.12 22:32<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.12 23:07<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -2177,6 +2177,93 @@ scene verse  kick snare hat bass pad fill
 scene build  snare hat arp riser | arp.cut 600>5000
 scene chorus all pause
 song intro:8 verse:16 build:4 chorus:16 verse:8 build:4 chorus:16 intro:8
+`,
+  },
+  {
+    id: 'gdchip', name: 'Neon Steps (GD style)',
+    head: {
+      ko: '// Neon Steps — 138 BPM 칩 하우스. Geometry Dash 같은 리듬 게임 음악 스타일로 새로 쓴 곡이에요 (원곡 없음)\n// 사각파 아르페지오, 오프비트 베이스, 사이드체인 슈퍼소 훅. 마지막 드롭에선 사각파가 한 옥타브 위에서 훅을 겹쳐요',
+      en: '// Neon Steps — 138 BPM chip house. An original in the style of rhythm-game music like Geometry Dash (not based on any song)\n// Square-wave arpeggio, offbeat bass, a sidechained supersaw hook. In the last drop a square wave doubles the hook an octave up',
+    },
+    body: `bpm 138
+key F major
+prog <0 4 5 3>          // F C Dm Bb
+master loud
+
+kick   x x x x                          | gain 1 drive .1
+clap   . x . x                          | gain .6 verb .2
+hat    [. x]*4                          | gain .4 pan .2 human .15 every 4 ply 2
+ohat   . . . . . . x .                  | gain .28
+crash  <x . . . . . . .>                | gain .35
+bass   [. 0 . 0']*2                     | bass oct 2 cut 900 res 4 duck .8 gain .8
+chip   [0 2 4 7 4 2 0' 2]*2             | square oct 5 cut 5000 gain .17 duck .5 delay .2
+pad    0^                               | gain .3 duck .9 verb .5
+lead   <[4 . 4 . 2 4 . 7] [6 _ 4 . 1 _ 4 .] [5 . 5 . 2 5 . 7] [8 _ 7 . 5 _ 3 _]> | supersaw fixed oct 4 gain .62 duck .4 verb .3 delay .2
+lead2  <[4 . 4 . 2 4 . 7] [6 _ 4 . 1 _ 4 .] [5 . 5 . 2 5 . 7] [8 _ 7 . 5 _ 3 _]> | square fixed oct 5 gain .16 cut 6000 delay .3
+
+scene intro chip pad hat
+scene build chip pad clap hat riser | chip.cut 600>6000
+scene drop  kick clap hat ohat crash bass chip pad lead
+scene break pad lead chip filter
+scene last  all
+song intro:8 build:4 drop:16 break:8 build:4 last:16
+`,
+  },
+  {
+    id: 'gddnb', name: 'Hyperdrive (GD style)',
+    head: {
+      ko: '// Hyperdrive — 174 BPM 드럼앤베이스. Geometry Dash 같은 리듬 게임 음악 스타일로 새로 쓴 곡이에요 (원곡 없음)\n// 리스 베이스 + 사인 서브, 사각파 훅, 빠른 플럭 아르페지오. k1 리스 필터, k2 훅 필터',
+      en: '// Hyperdrive — 174 BPM drum & bass. An original in the style of rhythm-game music like Geometry Dash (not based on any song)\n// Reese bass over a sine sub, a square-wave hook, a fast pluck arpeggio. k1 opens the reese, k2 the hook',
+    },
+    body: `bpm 174
+key D minor
+prog <0 5 3 4>          // Dm Bb Gm Am
+master loud
+
+kick   x . . . . . . . . . x . . . . .  | gain 1
+snare  . . . . x . . . . . . . x . . .  | gain .85 tune 1.15 verb .15
+ghost  . . . . . . . x . x . . . . . x? | snare gain .2 tune 1.3 pan -.2 human .4
+hat    x*16                             | gain .3 vel [1 .4 .7 .4]*4 pan .2 human .2 every 8 ply 2
+reese  0 _ . 0 _ . . . 0 _ . . <2 4> _ . . | supersaw oct 1 cut k1(300,2200) res 3 detune 35 shape .4 gain .65 duck .5
+sub    0 _ . 0 _ . . . 0 _ . . <2 4> _ . . | sine oct 1 gain .36 duck .5
+hook   <[0 . 2 . 4 . 7 . 6 . 4 . 2 _ . .] [4 . 2 . 0 . 2 . 4 _ . . -1 _ . .]> | square oct 5 cut k2(1500,7000) gain .28 delay .25 duck .3
+arp    [0 4 7 4]*4                      | pluck oct 4 gain .3 cut 3500 delay .3 duck .4
+pad    0^7                              | gain .22 atk 1 rel 2 verb .6 duck .3
+
+scene intro pad arp hat
+scene build hat snare arp pad riser
+scene drop  all pause
+scene roll  kick snare ghost hat reese sub hook fill
+scene break pad hook arp filter down
+song intro:8 build:8 drop:16 roll:8 break:8 build:4 drop:16
+`,
+  },
+  {
+    id: 'gdstep', name: 'Gravity Flip (GD style)',
+    head: {
+      ko: '// Gravity Flip — 150 BPM 하프타임 덥스텝. Geometry Dash 같은 리듬 게임 음악 스타일로 새로 쓴 곡이에요 (원곡 없음)\n// 워블 베이스는 16분음표마다 필터 값을 바꿔서 만들어요 (cut [250 1800 600 3200]*4). 스네어는 3박에 한 번',
+      en: '// Gravity Flip — 150 BPM half-time dubstep. An original in the style of rhythm-game music like Geometry Dash (not based on any song)\n// The wobble bass changes its filter on every sixteenth (cut [250 1800 600 3200]*4). The snare lands once, on beat 3',
+    },
+    body: `bpm 150
+key G minor
+prog <0 0 5 6>          // Gm Gm Eb F
+master loud
+
+kick   x . . . . . . x . . x . . . . .  | gain 1 drive .2
+snare  . . . . . . . . x . . . . . . .  | gain .95 tune .9 verb .2 shape .2
+clap   . . . . . . . . x . . . . . . .  | gain .4
+hat    x*8                              | gain .3 vel [1 .5]*4 pan .2 human .2 every 4 ply 3
+wob    [0 0 0 0 0 0 . 0 0 0 . . <3 5> <3 5> . .] | saw oct 2 cut [250 1800 600 3200]*4 res 8 env .2 shape .7 hpf 90 gain .6 duck .6
+sub    0 _ _ _ _ _ . 0 _ _ . . <3 5> _ . .  | sine oct 1 gain .55 duck .6
+chip   <[7 . 4 . 7 . 9 . 7 . 4 . 2 . 4 .] [7 . 4 . 7 . 9 . 11 _ 9 _ 7 _ . .]> | square oct 4 cut 4500 gain .3 delay .25 duck .3
+arp    [0 2 4 2]*4                      | pluck oct 4 gain .15 cut 3000 delay .35
+pad    0^                               | gain .26 atk .8 rel 2 verb .6 duck .4
+
+scene intro pad arp
+scene build arp chip hat snare riser
+scene drop  kick snare clap hat wob sub chip pad
+scene break pad arp chip filter down
+song intro:8 build:4 drop:16 break:8 build:4 drop:16
 `,
   },
   {
