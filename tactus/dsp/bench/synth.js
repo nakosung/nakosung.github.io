@@ -27,6 +27,7 @@ class Syn extends AudioWorkletProcessor {
         } catch (err) { this.port.postMessage({ t: 'wasm-fail', err: String(err) }); }
         return;
       }
+      if (m.t === 'end') { this.dead = true; return; }
       if (m.t === 'live') { if (this.x) { this.x.live(m.cut != null ? m.cut : -1, m.res != null ? m.res : -1); return; } if (this.ac) { if (m.cut != null) this.ac.cut = m.cut; if (m.res != null) this.ac.k = Math.min(3.9, m.res / 4); } return; }
       this.q.push(m); this.q.sort((a, b) => a.frame - b.frame);
     };
@@ -117,7 +118,7 @@ class Syn extends AudioWorkletProcessor {
       L[i] = l; R[i] = r;
     }
     if (this.ks.length) this.ks = this.ks.filter(v => v.life > currentFrame);
-    return true;
+    return !this.dead;
   }
 }
 registerProcessor('pulse-synth', Syn);
@@ -141,10 +142,23 @@ function ensureSynthWorklet() {
   WK.loading = (async () => {
     const urls = [URL.createObjectURL(new Blob([SYN_CODE], { type: 'text/javascript' })), 'data:text/javascript;charset=utf-8,' + encodeURIComponent(SYN_CODE)];
     dspModule();
-    for (const u of urls) { try { await S.ctx.audioWorklet.addModule(u); WK.ok = true; return true; } catch (e) { } }
+    for (const u of urls) { try { await S.ctx.audioWorklet.addModule(u); WK.ok = true; dspProbe(); return true; } catch (e) { } }
     WK.ok = false; return false;
   })();
   return WK.loading;
+}
+// load the Rust module once at start, so the header can say which DSP is running before any Rust voice plays
+async function dspProbe() {
+  const m = await dspModule(); if (!m) return;
+  try {
+    const node = new AudioWorkletNode(S.ctx, 'pulse-synth', { numberOfInputs: 0, numberOfOutputs: 1, outputChannelCount: [2] });
+    node.port.onmessage = e => {
+      if (e.data.t === 'wasm-ok') { WK.dsp = 'wasm'; S.dirty = true; }
+      else if (e.data.t === 'wasm-fail') console.warn('Rust DSP unavailable, using JS voices:', e.data.err);
+      node.port.postMessage({ t: 'end' }); node.port.onmessage = null;
+    };
+    node.port.postMessage({ t: 'wasm', bytes: m.slice().buffer });
+  } catch (e) { }
 }
 function wkNode(name) {
   const r = rt(name);
