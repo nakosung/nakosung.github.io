@@ -164,6 +164,18 @@ button, select, input { font: inherit; color: inherit; }
 .ac-i code { font-family: var(--f-code); font-size: 12px; color: var(--scr-fg); white-space: nowrap; }
 .ac-i span { font-size: 11px; color: var(--scr-dim); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .ac-i.sel { background: rgba(164, 139, 255, .26); }
+.ac-i .pv { margin-left: auto; font: 10px/1 var(--f-ui); color: var(--scr-dim); border: 1px solid rgba(255,255,255,.18); border-radius: 4px; padding: 2px 5px; }
+.ac-i .pv:hover { color: var(--scr-fg); border-color: var(--scr-fg); }
+.sounds { display: grid; gap: 8px; margin-top: 8px; }
+.sgrp h4 { margin: 0 0 4px; font-size: 11px; font-weight: 600; color: var(--dim); }
+.sgrp > div { display: flex; flex-wrap: wrap; gap: 4px; }
+.snd { font: 11px/1 var(--f-code); padding: 5px 7px; border-radius: 6px; border: 1px solid var(--line); background: var(--raised); color: var(--fg); cursor: pointer; }
+.snd:hover, .snd:focus-visible { border-color: var(--accent, #7c6cff); }
+.snd:active { transform: scale(.96); }
+.pvcard { position: fixed; z-index: 50; width: 168px; padding: 8px 9px; border-radius: 10px; border: 1px solid var(--line); background: var(--panel); box-shadow: var(--shadow); display: grid; gap: 5px; pointer-events: none; }
+.pvcard b { font: 600 12px/1.2 var(--f-code); }
+.pvcard canvas { width: 100%; height: 34px; color: color-mix(in srgb, var(--accent, #7c6cff) 70%, var(--dim)); }
+.pvcard span { font-size: 10px; color: var(--dim); line-height: 1.35; }
 .recbar { position: absolute; left: 46px; right: 0; bottom: 0; z-index: 3; display: flex; align-items: center; gap: 12px; padding: 8px 14px; background: #2a1720; border-top: 1px solid #6b2b42; color: var(--scr-fg); font-size: 12.5px; }
 .recbar .rt { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .recbar .count { font-weight: 700; font-stretch: 75%; font-size: 22px; color: var(--c-err); min-width: 18px; text-align: center; }
@@ -304,7 +316,7 @@ body.recording .editor { border-color: var(--c-err); }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.12 23:33<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.12 23:49<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -510,7 +522,7 @@ body.recording .editor { border-color: var(--c-err); }
         </dl>
         <h3 data-i18n="hgSamples"></h3>
         <dl>
-          <dt data-i18n="h27t"></dt><dd data-i18n="h27d"></dd>
+          <dt data-i18n="h27t"></dt><dd><span data-i18n="h27d"></span><div id="sounds" class="sounds"></div></dd>
           <dt data-i18n="h28t"></dt><dd data-i18n="h28d"></dd>
         </dl>
       </section>
@@ -607,7 +619,7 @@ const I18N = {
     h16d: '녹음한 루프를 코드로: 빈 패턴이면 파라미터만, 패턴을 쓰면 조각을 골라 재생 (x = 제자리 조각)',
     h17d: '루프 슬롯 1–4 녹음/덧입히기',
     reset: '예제로 되돌리기',
-    h27t: '샘플 악기', h27d: 'piano vibes harp sax harpsi marimba kalimba dantranh · 타악기 asnare ahat aohat atom afloor aride acrash handclap conga bongo cajon cajonslap tamb shake claves cowbell woodblock triangle agogo framedrum darbuka gong · 국악 타악기 kung deok buk buktak jing kkwaeng kkwaengm',
+    h27t: '소리 미리듣기', h27d: '눌러서 들어 보세요. 멈춰 있으면 바로, 재생 중이면 다음 박에 지금 키·코드로 섞어서 들려줘요 (Shift: 음악을 끄고 미리듣기만). 코드에서는 Alt를 누른 채 트랙 이름 위에 올리면 그 줄을 한 마디 들려줘요', sndSynth: '신스', sndSampled: '샘플 악기', sndGpu: 'GPU 악기', sndDrums: '신스 드럼', sndPerc: '샘플 타악기', sndKorean: '국악 타악기', pvClick: '클릭하면 들려줘요 (Shift: 음악 끄고)', pvLive: '재생 중: 다음 박에 맞춰 섞어서 들려줘요 (Shift: 큐)', pvAc: '듣기',
     h28t: '샘플 출처', h28d: 'VCSL (Versilian Community Sample Library), CC0 — 출처 표시 없이 자유롭게 쓸 수 있어요',
     hands: '손 컨트롤 켜기', handsOff: '손 컨트롤 끄기', handLoadingShort: '불러오는 중…',
     handsTitle: '카메라로 손을 추적해 노브와 제스처를 조작해요 (로컬 파일에서만, 인터넷 필요)',
@@ -781,7 +793,7 @@ const I18N = {
     h16d: 'Use a recorded loop in code: empty pattern sets its params, a pattern plays chosen slices (x = slice in place)',
     h17d: 'Record or overdub loop slots 1–4',
     reset: 'Restore example',
-    h27t: 'Sampled instruments', h27d: 'piano vibes harp sax harpsi marimba kalimba dantranh · percussion asnare ahat aohat atom afloor aride acrash handclap conga bongo cajon cajonslap tamb shake claves cowbell woodblock triangle agogo framedrum darbuka gong · Korean percussion kung deok buk buktak jing kkwaeng kkwaengm',
+    h27t: 'Hear the sounds', h27d: 'Click to listen. Stopped, it plays at once; playing, it joins on the next beat in the current key and chords (Shift: music off, preview only). In the code, hold Alt over a track name to hear one bar of that line', sndSynth: 'Synths', sndSampled: 'Sampled instruments', sndGpu: 'GPU instruments', sndDrums: 'Synth drums', sndPerc: 'Sampled percussion', sndKorean: 'Korean percussion', pvClick: 'Click to listen (Shift: music off)', pvLive: 'Playing: joins on the next beat (Shift: cue)', pvAc: 'listen',
     h28t: 'Sample credits', h28d: 'VCSL (Versilian Community Sample Library), CC0 — free to use, no attribution required',
     hands: 'Hand control', handsOff: 'Stop hand control', handLoadingShort: 'Loading…',
     handsTitle: 'Tracks your hands with the camera to drive knobs and gestures (local file only, needs internet)',
@@ -2741,7 +2753,9 @@ function initAudio() {
   // performance chain: pad gate → filters → DJ isolator → bit crusher → glue
   A.fxGate = g(1); A.eqL = bq('lowshelf', 220, 0.7, 0); A.eqM = bq('peaking', 1100, 0.6, 0); A.eqH = bq('highshelf', 4500, 0.7, 0);
   A.crush = ctx.createWaveShaper();
-  A.post.connect(A.gate); A.gate.connect(A.fxGate); A.fxGate.connect(A.hp); A.hp.connect(A.lp); A.lp.connect(A.eqL); A.eqL.connect(A.eqM); A.eqM.connect(A.eqH); A.eqH.connect(A.crush); A.crush.connect(A.glue);
+  // previews (preview.js) join after the music's own duck, so the music can step back while one plays
+  A.pvDuck = g(1); A.pvIn = g(1); A.post.connect(A.pvDuck); A.pvDuck.connect(A.gate); A.pvIn.connect(A.gate);
+  A.gate.connect(A.fxGate); A.fxGate.connect(A.hp); A.hp.connect(A.lp); A.lp.connect(A.eqL); A.eqL.connect(A.eqM); A.eqM.connect(A.eqH); A.eqH.connect(A.crush); A.crush.connect(A.glue);
   A.mud = bq('peaking', 280, 0.9, -1.5); A.air = bq('highshelf', 9500, 0.7, 2.5);
   // master EQ and stereo width, set from the master line's parameters (flat and 1 by default)
   A.mLow = bq('lowshelf', 110, 0.7, 0); A.mMid = bq('peaking', 1000, 0.7, 0); A.mHigh = bq('highshelf', 7500, 0.7, 0);
@@ -5932,6 +5946,179 @@ async function exportZip() {
   loopMsg(t('exported'), 'ok');
 }
 
+// ===================== Sound preview =====================
+// Hear an instrument before using it: from the sound list in the guide, from the autocomplete list, or a whole
+// code line (Alt over its name). Stopped, it plays at once. Playing, it waits for the next beat and plays in the
+// song's key, chords and tempo, with the music turned down a little so it can be heard in context; Shift turns the
+// music off for the preview (a DJ cue). Hovering shows a small waveform; sound needs a click or a key.
+
+const PV = { last: '', lastAt: 0, thumbs: new Map(), card: null };
+const PV_SUSTAIN = new Set(['pad', 'swarm', 'choir', 'bowed', 'flute']);
+const PV_LOW = new Set(['bass', 'acid', 'upright', 'sine']);
+const PV_GROUPS = [
+  ['sndSynth', ['sine', 'tri', 'saw', 'square', 'supersaw', 'pad', 'bass', 'acid', 'pluck', 'bell', 'flute', 'bowed', 'epiano', 'zither']],
+  ['sndSampled', ['piano', 'upright', 'vibes', 'harp', 'sax', 'harpsi', 'marimba', 'kalimba', 'dantranh']],
+  ['sndGpu', ['swarm', 'choir', 'plate', 'membrane', 'nsax']],
+  ['sndDrums', ['kick', 'snare', 'clap', 'hat', 'ohat', 'rim', 'tom', 'ride', 'crash', 'shaker']],
+  ['sndPerc', ['asnare', 'ahat', 'aohat', 'atom', 'afloor', 'aride', 'acrash', 'handclap', 'conga', 'bongo', 'cajon', 'cajonslap', 'tamb', 'shake', 'claves', 'cowbell', 'woodblock', 'triangle', 'agogo', 'framedrum', 'darbuka', 'gong']],
+  ['sndKorean', ['kung', 'deok', 'buk', 'buktak', 'jing', 'kkwaeng', 'kkwaengm']],
+];
+
+// what an instrument plays when previewed: drums a hit and a soft echo of it, low voices root-fifth-octave,
+// held voices the current chord for a bar, everything else an arpeggio of the current chord
+function pvPhrase(inst, drum) {
+  if (drum) return 'x . . . . . .45 .';
+  if (PV_SUSTAIN.has(inst)) return '0^7 _ _ _';
+  if (PV_LOW.has(inst)) return '0 . 4 . 7 . 4 .';
+  return '0 2 4 7 4 2 0 _';
+}
+function pvDefFor(inst) {
+  const drum = DRUMS.includes(inst);
+  // parseLine, not compile: compile resets the document's bus names and seed
+  let def = null; try { def = parseLine('pv ' + pvPhrase(inst, drum) + ' | ' + inst); } catch (e) { return null; }
+  return def && def.type === 'track' ? { ...def, name: '__pv' } : null;
+}
+
+// the events of one bar of def, from pattern bar k, each sent to play(event, bar offset 0..1)
+function pvEvents(def, k, play) {
+  for (const e of def.pat.q(k, k + 1)) if (e.s >= k - EPS && e.s < k + 1 - EPS && e.v !== '~') play(e, e.s - k);
+}
+// play one event the way the scheduler would, into strip r (or a bare output when rendering a thumbnail)
+function pvPlayEvent(def, e, time, cps, c, r, out) {
+  const P = evalParams(def, e.s);
+  if (r) stripAt(r, P, time);
+  const vel = accentOf(e.v) * (P.vel ?? 1), dur = e.d / cps * P.len;
+  if (def.kind === 'drum') {
+    const raw = e.v.replace(/'+$/, ''), v0 = raw === 'X' ? 1.3 : /^[\d.]+$/.test(raw) ? +raw : 1;
+    playDrum(def.inst, time, v0 * vel, P, out);
+    return;
+  }
+  let notes = atomNotes(e.v, S.root, S.scale, Math.round(P.oct), def.fixed ? 0 : progAt(c), (e.tr || 0) + Math.round(P.tr || 0), e.inv);
+  if (!notes) return;
+  if (notes.length > 1) notes = voiceChord(def, notes, def.opts && def.opts.voicing);
+  playNotes(def, notes, time, dur, P, vel, r || { input: out });
+}
+
+// the preview channel: its own strip after the music's duck, so the music can step back while it plays
+function pvStrip() {
+  let r = S.rt.get('__pv');
+  if (!r) { r = makeStrip(A.pvIn); S.rt.set('__pv', r); }
+  return r;
+}
+function previewDef(def, key, cue) {
+  if (!def) return;
+  initAudio(); S.ctx.resume();
+  // the first preview may come before the sample kit is decoded: wait for it, then play
+  if (!KIT.ready && (SAMPLE_PITCHED.has(def.inst) || SAMPLE_HITS.has(def.inst))) { const l = loadKit(); if (l) { l.then(() => previewDef(def, key + '*', cue)); return; } }
+  const ctx = S.ctx, now = ctx.currentTime;
+  if (key === PV.last && now - PV.lastAt < 0.35) return;
+  PV.last = key; PV.lastAt = now;
+  const r = pvStrip(), live = S.playing, cps = live ? S.cps : (S.bpm || 120) / 240;
+  // start: the next beat of the song, or right away
+  const c0 = live ? Math.ceil(S.lastC * 4 - 1e-6) / 4 : 0, t0 = live ? timeOf(c0) : now + 0.06;
+  const k = live ? c0 - patOrigin(c0) : 0, tEnd = t0 + 1 / cps;
+  // an earlier preview stops where this one starts
+  const g = A.pvIn.gain; g.cancelScheduledValues(now); g.setTargetAtTime(0, now, 0.012); g.setValueAtTime(0, Math.max(now + 0.03, t0 - 0.004)); g.setValueAtTime(1, Math.max(now + 0.031, t0 - 0.003));
+  if (live) {
+    const d = A.pvDuck.gain; d.cancelScheduledValues(now); d.setValueAtTime(d.value, now);
+    d.setTargetAtTime(cue ? 0.0001 : 0.65, t0 - 0.03, 0.02); d.setTargetAtTime(1, tEnd + 0.15, 0.12);
+  }
+  pvEvents(def, k, (e, off) => pvPlayEvent(def, e, t0 + off / cps, cps, c0 + off, r, r.input));
+}
+function previewInst(inst, cue) { previewDef(pvDefFor(inst), 'i:' + inst, cue); }
+// a code line: the track as it plays now (its parameters, sends and pattern), one bar of it
+function previewLine(name, cue) {
+  const def = (S.pending && S.pending.state.tracks.get(name)) || S.tracks.get(name);
+  if (!def || def.kind === 'loop') return;
+  previewDef({ ...def, name: '__pv' }, 'l:' + name + def.line, cue);
+}
+
+// ---------- waveform thumbnails, rendered offline ----------
+// The voices are written against S.ctx, so for a moment it points at an offline context; nothing else runs then.
+async function pvThumb(inst) {
+  if (PV.thumbs.has(inst)) return PV.thumbs.get(inst);
+  const def = pvDefFor(inst); if (!def) return null;
+  if (!KIT.ready && loadKit()) await loadKit();
+  const sr = 22050, len = Math.round(sr * 2.6), off = new OfflineAudioContext(2, len, sr);
+  const real = S.ctx, wk = WK.ok, out = off.createGain();
+  out.connect(off.destination);
+  try {
+    S.ctx = off; WK.ok = false;   // worklet voices live in the real context; their JS stand-ins render here
+    pvEvents(def, 0, (e, o) => pvPlayEvent(def, e, 0.02 + o * 2, 0.5, o, null, out));
+  } finally { S.ctx = real; WK.ok = wk; }
+  const buf = await off.startRendering();
+  const a = buf.getChannelData(0), b = buf.getChannelData(1), W = 96, env = new Float32Array(W);
+  let pk = 1e-6;
+  for (let i = 0; i < W; i++) {
+    let m = 0; const i0 = Math.floor(i * len / W), i1 = Math.floor((i + 1) * len / W);
+    for (let j = i0; j < i1; j++) m = Math.max(m, Math.abs(a[j]), Math.abs(b[j]));
+    env[i] = m; pk = Math.max(pk, m);
+  }
+  for (let i = 0; i < W; i++) env[i] = Math.sqrt(env[i] / pk);   // square root so quiet tails still show
+  PV.thumbs.set(inst, env);
+  return env;
+}
+function pvDraw(cv, env) {
+  const dpr = devicePixelRatio || 1, w = cv.clientWidth * dpr, h = cv.clientHeight * dpr;
+  cv.width = w; cv.height = h;
+  const x = cv.getContext('2d'), col = getComputedStyle(cv).color;
+  x.clearRect(0, 0, w, h); x.fillStyle = col;
+  if (!env) return;
+  x.beginPath(); x.moveTo(0, h / 2);
+  for (let i = 0; i < env.length; i++) x.lineTo(i / (env.length - 1) * w, h / 2 - env[i] * h * 0.46);
+  for (let i = env.length - 1; i >= 0; i--) x.lineTo(i / (env.length - 1) * w, h / 2 + env[i] * h * 0.46);
+  x.closePath(); x.fill();
+}
+
+// ---------- the hover card ----------
+function pvCard() {
+  if (PV.card) return PV.card;
+  const el = document.createElement('div');
+  el.className = 'pvcard'; el.hidden = true;
+  el.innerHTML = '<b></b><canvas></canvas><span></span>';
+  document.body.appendChild(el);
+  return (PV.card = el);
+}
+function pvShow(inst, anchor) {
+  const el = pvCard(), rc = anchor.getBoundingClientRect();
+  el.querySelector('b').textContent = inst;
+  el.querySelector('span').textContent = t(S.playing ? 'pvLive' : 'pvClick');
+  el.hidden = false;
+  const cw = el.offsetWidth, ch = el.offsetHeight;
+  el.style.left = Math.max(8, Math.min(innerWidth - cw - 8, rc.left)) + 'px';
+  el.style.top = (rc.bottom + ch + 8 > innerHeight ? rc.top - ch - 6 : rc.bottom + 6) + 'px';
+  const cv = el.querySelector('canvas'); pvDraw(cv, PV.thumbs.get(inst));
+  el.dataset.inst = inst;
+  // thumbnails need the audio engine (and its samples), which starts on the first click or key
+  if (!PV.thumbs.has(inst) && S.ctx) pvThumb(inst).then(env => { if (el.dataset.inst === inst && !el.hidden) pvDraw(cv, env); }).catch(() => { });
+}
+function pvHide() { if (PV.card) PV.card.hidden = true; }
+
+// ---------- where previews start ----------
+function pvInit() {
+  // the guide's sound list
+  const box = document.getElementById('sounds');
+  if (box) {
+    box.innerHTML = PV_GROUPS.map(([k, list]) => `<div class="sgrp"><h4 data-i18n="${k}">${esc(t(k))}</h4><div>${list.map(n => `<button class="snd" data-inst="${n}">${n}</button>`).join('')}</div></div>`).join('');
+    box.addEventListener('click', e => { const b = e.target.closest('.snd'); if (b) previewInst(b.dataset.inst, e.shiftKey); });
+    box.addEventListener('pointerover', e => { const b = e.target.closest('.snd'); if (b) pvShow(b.dataset.inst, b); });
+    box.addEventListener('pointerout', e => { if (e.target.closest('.snd') && !(e.relatedTarget && e.relatedTarget.closest && e.relatedTarget.closest('.snd'))) pvHide(); });
+  }
+  // Alt over a track's name in the code plays one bar of that line
+  let altLine = -1;
+  srcEl.addEventListener('pointermove', e => {
+    if (!e.altKey || e.buttons) { altLine = -1; return; }
+    const cs = getComputedStyle(srcEl), rc = srcEl.getBoundingClientRect();
+    const line = Math.floor((e.clientY - rc.top - parseFloat(cs.paddingTop) + srcEl.scrollTop) / lineH);
+    const col = Math.floor((e.clientX - rc.left - parseFloat(cs.paddingLeft) + srcEl.scrollLeft) / charW);
+    const text = srcEl.value.split('\n')[line] || '', m = /^(\s*)([a-zA-Z]\w*)/.exec(text);
+    if (!m || GLOBALS.has(m[2]) || col < m[1].length || col > m[0].length) { altLine = -1; return; }
+    if (line === altLine) return;
+    altLine = line; previewLine(m[2], e.shiftKey);
+  });
+  srcEl.addEventListener('pointerleave', () => { altLine = -1; });
+}
+
 // ===================== Tactus hand control (camera) =====================
 // Left hand height -> k1, left hand left/right -> k3, right hand height -> k2.
 // Right pinch = build-up (release drops on the next downbeat), left pinch = beat repeat,
@@ -6468,7 +6655,7 @@ function acItems(pre, word) {
   const hm = /^\s*([a-zA-Z]\w*)/.exec(pre), head = hm && hm[1];
   if (/^\s*$/.test(before)) {
     const g = ['bpm', 'key', 'scale', 'swing', 'prog', 'scene', 'song', 'master', 'seed', 'fx', 'auto', 'bus', 'space', 'viz', 'shader'].map(n => ({ label: n, ins: n + ' ', desc: t('ac_' + n) }));
-    const tr = AC_TRACKS.map(n => ({ label: n, ins: n.padEnd(7) + ' ', desc: instForName(n) }));
+    const tr = AC_TRACKS.map(n => ({ label: n, ins: n.padEnd(7) + ' ', desc: instForName(n), inst: LOOPS.includes(n) ? null : instForName(n) }));
     return [...tr, ...g];
   }
   if (head === 'key') return /^\s*key\s+\S+\s+$/.test(before) ? Object.keys(SCALES).concat(['pyeongjo', 'gyemyeonjo']).map(s => ({ label: s, ins: s, desc: t('ac_scaleName') })) : [];
@@ -6518,7 +6705,7 @@ function acItems(pre, word) {
     }
     return PARAMS.filter(n => !RETURN_ONLY.includes(n)).map(n => ({ label: n, ins: n + ' ', desc: t('p_' + n) }))
       .concat(docNames(/^\s*bus\s+([a-zA-Z]\w*)/).filter(n => n !== 'verb' && n !== 'delay').map(n => ({ label: n, ins: n + ' ', desc: t('ac_send') })))
-      .concat([...SYNTHS, ...DRUMS, ...LOOPS].map(n => ({ label: n, ins: n + ' ', desc: t('ac_inst') })))
+      .concat([...SYNTHS, ...DRUMS].map(n => ({ label: n, ins: n + ' ', desc: t('ac_inst'), inst: n })), LOOPS.map(n => ({ label: n, ins: n + ' ', desc: t('ac_inst') })))
       .concat(['fixed', 'fast', 'slow', 'every'].map(n => ({ label: n, ins: n + ' ', desc: t('ac_' + n) })))
       .concat(VOICINGS.map(n => ({ label: n, ins: n + ' ', desc: t('ac_voicing') })))
       .concat(ARPS.map(n => ({ label: n, ins: n + ' ', desc: t('ac_arp') })));
@@ -6536,7 +6723,7 @@ function acUpdate(force) {
   const items = acItems(pre, word).filter(it => it.label.startsWith(word) && it.label !== word).slice(0, 30);
   if (!items.length) return acClose();
   ac.items = items; ac.sel = 0; ac.nav = false; ac.start = pos - word.length; ac.end = pos;
-  acEl.innerHTML = items.map((it, i) => `<div class="ac-i${i ? '' : ' sel'}" role="option" data-i="${i}"><code>${esc(it.label)}</code><span>${esc(it.desc || '')}</span></div>`).join('');
+  acEl.innerHTML = items.map((it, i) => `<div class="ac-i${i ? '' : ' sel'}" role="option" data-i="${i}"><code>${esc(it.label)}</code><span>${esc(it.desc || '')}</span>${it.inst ? `<b class="pv" title="${esc(t('pvClick'))}">▶ ${esc(t('pvAc'))}</b>` : ''}</div>`).join('');
   const cs = getComputedStyle(srcEl), line = v.slice(0, ls).split('\n').length - 1, col = pre.length - word.length;
   const left = parseFloat(cs.paddingLeft) + col * charW - srcEl.scrollLeft;
   const top = parseFloat(cs.paddingTop) + (line + 1) * lineH - srcEl.scrollTop + 2;
@@ -6545,11 +6732,14 @@ function acUpdate(force) {
   acEl.style.left = Math.max(4, Math.min(left, maxLeft)) + 'px';
   acEl.style.top = (top + acEl.offsetHeight > srcEl.clientHeight ? top - lineH - acEl.offsetHeight - 4 : top) + 'px';
 }
-function acClose() { acEl.hidden = true; ac.items = []; }
+function acClose() { acEl.hidden = true; ac.items = []; pvHide(); }
 function acMove(d) {
   ac.sel = mod(ac.sel + d, ac.items.length);
   acEl.querySelectorAll('.ac-i').forEach((el, i) => el.classList.toggle('sel', i === ac.sel));
   const el = acEl.children[ac.sel]; if (el) el.scrollIntoView({ block: 'nearest' });
+  // stepping through instruments with the arrows plays each one
+  const it = ac.items[ac.sel];
+  if (it && it.inst && el) { previewInst(it.inst); pvShow(it.inst, el); } else pvHide();
 }
 function acAccept(i = ac.sel) {
   const it = ac.items[i]; if (!it) return;
@@ -6557,7 +6747,14 @@ function acAccept(i = ac.sel) {
   acClose(); render(); scheduleEval();
   if (/[: ]$/.test(it.ins)) acUpdate(true);
 }
-acEl.addEventListener('mousedown', e => { const r = e.target.closest('.ac-i'); if (!r) return; e.preventDefault(); acAccept(+r.dataset.i); });
+acEl.addEventListener('mousedown', e => {
+  const r = e.target.closest('.ac-i'); if (!r) return; e.preventDefault();
+  const it = ac.items[+r.dataset.i];
+  if (e.target.closest('.pv') && it && it.inst) { previewInst(it.inst, e.shiftKey); return; }
+  acAccept(+r.dataset.i);
+});
+acEl.addEventListener('pointerover', e => { const r = e.target.closest('.ac-i'), it = r && ac.items[+r.dataset.i]; if (it && it.inst) pvShow(it.inst, r); });
+acEl.addEventListener('pointerleave', pvHide);
 srcEl.addEventListener('blur', () => setTimeout(acClose, 100));
 srcEl.addEventListener('click', acClose);
 srcEl.addEventListener('scroll', acClose);
@@ -7140,6 +7337,7 @@ buildArr();
 syncHandsUI();
 evaluate('bar');
 renderPads();
+pvInit();
 (document.fonts ? document.fonts.ready : Promise.resolve()).then(measure);
 measure();
 requestAnimationFrame(frame);
