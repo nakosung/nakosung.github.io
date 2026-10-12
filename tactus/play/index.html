@@ -303,7 +303,7 @@ body.recording .editor { border-color: var(--c-err); }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.12 11:47<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.12 11:58<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -463,6 +463,17 @@ body.recording .editor { border-color: var(--c-err); }
           <dt>gain pan oct cut res env</dt><dd data-i18n="h10d"></dd>
           <dt>master default loud warm open</dt><dd data-i18n="h37d"></dd>
           <dt>chop 0 3 x 2 | loop1</dt><dd data-i18n="h16d"></dd>
+        </dl>
+        <h3 data-i18n="hgMix"></h3>
+        <dl>
+          <dt>lpf 3000 mid -3 midf 400 dist .3 crush .4 chorus .5 phaser .4</dt><dd data-i18n="hm1d"></dd>
+          <dt>thr -24 ratio 4 catk 10 crel 120</dt><dd data-i18n="hm2d"></dd>
+          <dt>bus wash | chorus .6 verb .7 hpf 300</dt><dd data-i18n="hm3d"></dd>
+          <dt>keys ... | wash .4</dt><dd data-i18n="hm4d"></dd>
+          <dt>bus delay | time 3 fb .55 lpf 3000</dt><dd data-i18n="hm5d"></dd>
+          <dt>bus verb | pre 40 hpf 300 duck .5</dt><dd data-i18n="hm6d"></dd>
+          <dt>master warm | thr -20 ratio 3 low 1 high 1.5 width 1.2 limit -1</dt><dd data-i18n="hm7d"></dd>
+          <dt>chorus 0~.8/8</dt><dd data-i18n="hm8d"></dd>
         </dl>
         <h3 data-i18n="hgSong"></h3>
         <dl>
@@ -652,6 +663,20 @@ const I18N = {
     op_fill: '다음 마디로 드럼 필인', op_impact: '다음 박에 임팩트', op_swell: '다음 마디로 리버스 스웰', op_down: '다운리프터', op_in: '램프 길이 (마디)',
     p_seed: '이 트랙만 다른 시드로', p_dens: '생성 밀도 0–1', p_evolve: 'N마디마다 조금씩 변이 (0 = 고정)', p_bars: '프레이즈 길이 (마디)', ac_seed: '곡 전체 시드', ac_fx: '연주 패드 만들기',
     // v3: WebGPU
+    busFmt: 'bus 다음에 이름, | 다음에 효과를 써요 (예: bus wash | chorus .5 verb .6)', busName: '"{n}"은 이미 파라미터나 키워드 이름이에요. 다른 버스 이름을 써요',
+    mixParam: '"{w}"는 이 줄에서 못 써요. 쓸 수 있는 것: {list}', returnOnly: '{w}는 bus delay · bus verb · master 줄에서만 써요',
+    p_lpf: '로우패스 Hz (트랙 전체)', p_mid: '가운데 대역 dB', p_midf: '가운데 대역 주파수 Hz', p_chorus: '코러스 0–1', p_phaser: '페이저 0–1', p_dist: '디스토션 0–1', p_crush: '비트 크러시 0–1',
+    p_thr: '컴프레서 스레숄드 dB', p_ratio: '컴프레서 비율', p_catk: '컴프레서 어택 ms', p_crel: '컴프레서 릴리스 ms', p_time: '딜레이 시간 (16분음표 단위)', p_fb: '딜레이 피드백 0–.9', p_pre: '리버브 프리딜레이 ms', p_limit: '리미터 천장 dB',
+    ac_bus: '버스: 효과를 거는 채널. 트랙에서 버스 이름으로 보내요', ac_space: '리버브 공간', ac_viz: '배경을 코드로 정하기', ac_shader: 'WGSL 식으로 배경 그리기', ac_send: '이 버스로 보내는 양 0–1',
+    hgMix: '믹스: 이펙트 · 센드 · 컴프레서',
+    hm1d: '트랙 채널에 거는 효과. 로우패스, 가운데 대역 EQ, 디스토션, 비트 크러시, 코러스, 페이저',
+    hm2d: '컴프레서를 직접: 스레숄드 dB, 비율, 어택·릴리스 ms. comp .5 한 손잡이로도 돼요',
+    hm3d: '버스 만들기. 버스도 트랙과 같은 채널(EQ·효과·컴프레서·덕킹)을 가져요',
+    hm4d: '트랙에서 버스 이름을 파라미터처럼 쓰면 그만큼 보내요. 여러 트랙이 같은 효과를 함께 써요',
+    hm5d: '기본 딜레이: 시간(16분음표 단위), 피드백, 필터, 덕킹',
+    hm6d: '기본 리버브: 프리딜레이 ms, 필터, 레벨, 덕킹',
+    hm7d: '마스터: 글루 컴프레서, 3밴드 EQ, 스테레오 폭, 테이프 드라이브, 리미터 천장, 리미터 입력 게인 dB',
+    hm8d: '모든 값은 0~1/4, 300>6000, k1(…), <…> 처럼 움직일 수 있어요. 16분음표마다 다시 읽어요',
     vizSono: '소노그램', vizSonoTitle: '곡 전체의 스펙트럼. 곡이 흐르는 동안 마디 위치마다 채워져요',
     spaceFmt: 'space 는 {list} 중 하나예요', vizFmt: 'viz 다음에 배경 이름을 써요 (예: viz <terrain dots sono>/4)', vizUnknown: '"{n}" 배경이 없어요. {list} 또는 shader 줄의 이름을 써요',
     shaderFmt: 'shader 이름 다음에 WGSL 식을 써요 (예: shader glow sin(length(q) * 20. - t * 4.) * bass)', shaderName: '"{n}"은 이미 있는 배경 이름이에요', shaderErr: '셰이더 오류: {e}',
@@ -809,6 +834,20 @@ const I18N = {
     op_fill: 'drum fill into the next bar', op_impact: 'impact on the next beat', op_swell: 'reverse swell into the next bar', op_down: 'downlifter', op_in: 'ramp length in bars',
     p_seed: 'a different seed for this track', p_dens: 'generator density 0–1', p_evolve: 'mutate a little every N bars (0 = fixed)', p_bars: 'phrase length in bars', ac_seed: 'seed for the whole piece', ac_fx: 'make a performance pad',
     // v3: WebGPU
+    busFmt: 'Write a name after bus and effects after | (e.g. bus wash | chorus .5 verb .6)', busName: '"{n}" is already a parameter or keyword. Pick another bus name',
+    mixParam: '"{w}" does not work on this line. Available: {list}', returnOnly: '{w} only works on bus delay, bus verb and master lines',
+    p_lpf: 'low-pass Hz (whole track)', p_mid: 'mid band dB', p_midf: 'mid band frequency Hz', p_chorus: 'chorus 0–1', p_phaser: 'phaser 0–1', p_dist: 'distortion 0–1', p_crush: 'bit crush 0–1',
+    p_thr: 'compressor threshold dB', p_ratio: 'compressor ratio', p_catk: 'compressor attack ms', p_crel: 'compressor release ms', p_time: 'delay time (in 16ths)', p_fb: 'delay feedback 0–.9', p_pre: 'reverb pre-delay ms', p_limit: 'limiter ceiling dB',
+    ac_bus: 'bus: an effects channel. Tracks send to it by its name', ac_space: 'reverb space', ac_viz: 'pick the backdrop in code', ac_shader: 'draw a backdrop with a WGSL expression', ac_send: 'amount sent to this bus 0–1',
+    hgMix: 'Mix: effects · sends · compressors',
+    hm1d: 'Effects on a track\'s channel: low-pass, mid EQ, distortion, bit crush, chorus, phaser',
+    hm2d: 'The compressor by hand: threshold dB, ratio, attack and release ms. comp .5 still works as one knob',
+    hm3d: 'Make a bus. A bus has the same channel as a track: EQ, effects, compressor, ducking',
+    hm4d: 'Use the bus name like a parameter on a track to send that much. Several tracks can share one effect',
+    hm5d: 'The built-in delay: time in 16ths, feedback, filters, ducking',
+    hm6d: 'The built-in reverb: pre-delay ms, filters, level, ducking',
+    hm7d: 'The master: glue compressor, 3-band EQ, stereo width, tape drive, limiter ceiling, gain into the limiter (dB)',
+    hm8d: 'Every value can move: 0~1/4, 300>6000, k1(…), <…>. It is re-read every 16th',
     vizSono: 'Sonogram', vizSonoTitle: 'The whole song\'s spectrum, filled in at each bar as the song plays',
     spaceFmt: 'space is one of {list}', vizFmt: 'Write backdrop names after viz (e.g. viz <terrain dots sono>/4)', vizUnknown: 'No backdrop "{n}". Use {list} or a shader line\'s name',
     shaderFmt: 'Write a name, then a WGSL expression (e.g. shader glow sin(length(q) * 20. - t * 4.) * bass)', shaderName: '"{n}" is already a backdrop name', shaderErr: 'Shader error: {e}',
@@ -1159,9 +1198,16 @@ const NAME_INST = [
   ['grand', 'piano'], ['vibe', 'vibes'], ['harpsi', 'harpsi'], ['cembalo', 'harpsi'], ['harp', 'harp'], ['sax', 'sax'], ['marimba', 'marimba'], ['kalimba', 'kalimba'], ['dantranh', 'dantranh'], ['jing', 'gong'],
   ['swarm', 'swarm'], ['choir', 'choir'], ['plate', 'plate'], ['membrane', 'membrane'], ['timp', 'membrane'], ['nsax', 'nsax'], ['daegeum', 'flute'], ['flute', 'flute'], ['haegeum', 'bowed'], ['string', 'bowed'], ['keys', 'epiano'], ['rhodes', 'epiano'], ['piano', 'piano'],
 ];
-const PARAMS = ['gain', 'pan', 'oct', 'cut', 'res', 'env', 'atk', 'dec', 'sus', 'rel', 'len', 'delay', 'verb', 'duck', 'shape', 'detune', 'tune', 'slices', 'hpf', 'low', 'high', 'drive', 'width', 'vib', 'slide', 'acc', 'bright', 'wave', 'vel', 'nudge', 'human', 'swing', 'sgrid', 'comp', 'rate', 'tr', 'range', 'seed', 'dens', 'evolve', 'bars'];
-const EXP_PARAMS = new Set(['cut', 'hpf']);
-const GLOBALS = new Set(['bpm', 'key', 'scale', 'swing', 'prog', 'scene', 'song', 'master', 'seed', 'fx', 'space', 'viz', 'shader']);
+const PARAMS = ['gain', 'pan', 'oct', 'cut', 'res', 'env', 'atk', 'dec', 'sus', 'rel', 'len', 'delay', 'verb', 'duck', 'shape', 'detune', 'tune', 'slices', 'hpf', 'low', 'high', 'drive', 'width', 'vib', 'slide', 'acc', 'bright', 'wave', 'vel', 'nudge', 'human', 'swing', 'sgrid', 'comp', 'rate', 'tr', 'range', 'seed', 'dens', 'evolve', 'bars',
+  // channel strip: more EQ, insert effects, compressor detail
+  'lpf', 'mid', 'midf', 'chorus', 'phaser', 'dist', 'crush', 'thr', 'ratio', 'catk', 'crel',
+  // only on 'bus delay', 'bus verb' and 'master' lines
+  'time', 'fb', 'pre', 'limit'];
+const RETURN_ONLY = ['time', 'fb', 'pre', 'limit'];
+// names of the code's own buses: each also works as a send parameter on track lines (set while compiling)
+let BUS_NAMES = new Set();
+const EXP_PARAMS = new Set(['cut', 'hpf', 'lpf', 'midf']);
+const GLOBALS = new Set(['bpm', 'key', 'scale', 'swing', 'prog', 'scene', 'song', 'master', 'seed', 'fx', 'space', 'viz', 'shader', 'bus']);
 // generator parameters shape the notes, so they are part of the pattern rather than the sound
 const GEN_PARAMS = ['seed', 'dens', 'evolve', 'bars'];
 let GEN_SEED = 0;
@@ -1239,6 +1285,25 @@ function parseValue(ch) {
   return null;
 }
 
+// what each mix line takes: a bus is a channel strip without notes; the returns and the master have their own knobs
+const STRIP_PARAMS = ['gain', 'pan', 'hpf', 'lpf', 'low', 'mid', 'midf', 'high', 'chorus', 'phaser', 'dist', 'crush', 'comp', 'thr', 'ratio', 'catk', 'crel', 'duck'];
+const BUS_PARAMS = [...STRIP_PARAMS, 'delay', 'verb'];
+const VERB_PARAMS = ['gain', 'pre', 'hpf', 'lpf', 'duck'];
+const DELAY_PARAMS = ['gain', 'time', 'fb', 'hpf', 'lpf', 'duck'];
+const MASTER_PARAMS = ['thr', 'ratio', 'catk', 'crel', 'low', 'mid', 'midf', 'high', 'width', 'drive', 'limit', 'gain'];
+function mixParams(src, base, allowed) {
+  const chunks = splitChunks(src, base), params = {};
+  for (let i = 0; i < chunks.length; i++) {
+    const w = chunks[i].s;
+    if (!allowed.includes(w)) throw new PErr(t('mixParam', { w, list: allowed.join(' ') }), chunks[i].c0);
+    const c = chunks[++i];
+    if (!c) throw new PErr(t('needVal', { w }), chunks[i - 1].c0);
+    const v = parseValue(c);
+    if (!v) throw new PErr(t('badVal', { v: c.s, w }), c.c0);
+    params[w] = v;
+  }
+  return params;
+}
 function parseParams(src, base) {
   const chunks = splitChunks(src, base);
   const params = {};
@@ -1276,7 +1341,7 @@ function parseParams(src, base) {
       speed *= w === 'fast' ? +c.s : 1 / +c.s;
       continue;
     }
-    if (PARAMS.includes(w)) {
+    if (PARAMS.includes(w) || BUS_NAMES.has(w)) {
       const c = chunks[++i];
       if (!c) throw new PErr(t('needVal', { w }), chunks[i - 1].c0);
       const v = parseValue(c);
@@ -1303,10 +1368,23 @@ function parseLine(text) {
   const name = m[2];
   const restBase = m[0].length;
   const rest = code.slice(restBase);
+  // master warm   ·   master loud | thr -20 ratio 3 low 1 high 1.5 width 1.2 limit -1
   if (name === 'master') {
-    const v = rest.trim();
-    if (!MASTERS.includes(v)) throw new PErr(t('masterFmt', { list: MASTERS.join(' ') }), restBase);
-    return { type: 'master', v };
+    const bar = rest.indexOf('|'), v = (bar >= 0 ? rest.slice(0, bar) : rest).trim();
+    if (v && !MASTERS.includes(v)) throw new PErr(t('masterFmt', { list: MASTERS.join(' ') }), restBase);
+    if (!v && bar < 0) throw new PErr(t('masterFmt', { list: MASTERS.join(' ') }), restBase);
+    const params = bar >= 0 ? mixParams(rest.slice(bar + 1), restBase + bar + 1, MASTER_PARAMS) : {};
+    return { type: 'master', v: v || 'default', params };
+  }
+  // bus wash | chorus .5 verb .6 hpf 300   →   tracks send to it with "wash .4"
+  // bus verb | ... and bus delay | ... set up the built-in returns
+  if (name === 'bus') {
+    const bar = rest.indexOf('|'), nm = (bar >= 0 ? rest.slice(0, bar) : rest).trim();
+    if (!/^[a-zA-Z]\w*$/.test(nm)) throw new PErr(t('busFmt'), restBase);
+    const allowed = nm === 'verb' ? VERB_PARAMS : nm === 'delay' ? DELAY_PARAMS : BUS_PARAMS;
+    if (nm !== 'verb' && nm !== 'delay' && (PARAMS.includes(nm) || GLOBALS.has(nm))) throw new PErr(t('busName', { n: nm }), restBase);
+    const params = bar >= 0 ? mixParams(rest.slice(bar + 1), restBase + bar + 1, allowed) : {};
+    return { type: 'bus', name: nm, params };
   }
   if (name === 'space') {
     const v = rest.trim();
@@ -1410,6 +1488,7 @@ function parseLine(text) {
   const patSrc = bar >= 0 ? rest.slice(0, bar) : rest;
   const parSrc = bar >= 0 ? rest.slice(bar + 1) : '';
   const pr = parseParams(parSrc, restBase + bar + 1);
+  for (const k of RETURN_ONLY) if (pr.params[k]) throw new PErr(t('returnOnly', { w: k }), restBase + bar + 1 + parSrc.indexOf(k));
   for (const k of GEN_PARAMS) if (pr.params[k] && pr.params[k].k !== 'num') throw new PErr(t('needNum', { a: k }), restBase + bar + 1);
   let spec = null;
   try { spec = genSpec(patSrc, name, pr.inst || instForName(name), pr.params, GEN_SEED); } catch (e) { if (e instanceof PErr) e.col = restBase + patSrc.search(/\S/); throw e; }
@@ -1478,7 +1557,10 @@ const DEFAULT_PADS = DEFAULT_PAD_SRC.map(l => { const r = parseLine(l); r.pad.bu
 function compile(text) {
   { const sm = /^\s*seed\s+(-?\d+)\s*(?:\/\/.*)?$/m.exec(text); GEN_SEED = sm ? +sm[1] : 0; }
   const lines = text.split('\n');
-  const out = { pads: new Map(), seed: GEN_SEED, master: null, bpm: null, key: null, scale: null, swing: null, prog: null, progSrc: '', scenes: new Map(), song: null, arrSrc: '', tracks: new Map(), order: [], errors: new Map(), lineNames: new Map(), space: null, viz: null, shaders: new Map() };
+  const out = { pads: new Map(), seed: GEN_SEED, master: null, bpm: null, key: null, scale: null, swing: null, prog: null, progSrc: '', scenes: new Map(), song: null, arrSrc: '', tracks: new Map(), order: [], errors: new Map(), lineNames: new Map(), space: null, viz: null, shaders: new Map(), buses: new Map(), masterParams: {} };
+  // bus names first, so track lines anywhere in the code can send to them
+  BUS_NAMES = new Set();
+  for (const ln of lines) { const m = /^\s*bus\s+([a-zA-Z]\w*)/.exec(stripComment(ln)); if (m && m[1] !== 'verb' && m[1] !== 'delay' && !PARAMS.includes(m[1])) BUS_NAMES.add(m[1]); }
   const sceneLines = [];
   lines.forEach((ln, i) => {
     const hm = HEAD_RE.exec(stripComment(ln));
@@ -1488,7 +1570,8 @@ function compile(text) {
       const r = parseLine(ln);
       if (!r) return;
       if (r.type === 'bpm') out.bpm = r.v;
-      else if (r.type === 'master') out.master = r.v;
+      else if (r.type === 'master') { out.master = r.v; out.masterParams = r.params; }
+      else if (r.type === 'bus') { if (out.buses.has(r.name)) throw new PErr(t('dup', { n: r.name }), 0); r.line = i; out.buses.set(r.name, r); }
       else if (r.type === 'space') out.space = r.v;
       else if (r.type === 'viz') { r.line = i; out.viz = r; }
       else if (r.type === 'shader') { if (out.shaders.has(r.name)) throw new PErr(t('dup', { n: r.name }), 0); r.line = i; out.shaders.set(r.name, r); }
@@ -2331,6 +2414,29 @@ scene full  all
 song open:8 full:16
 `,
   },
+  {
+    id: 'mixbus', name: 'Mix & Buses',
+    head: {
+      ko: '// Mix & Buses — 122 BPM, F 마이너. 믹스를 코드로: wash(코러스+리버브)와 grit(디스토션+크러시) 버스에 트랙이 이름으로 보내요\n// bus delay·bus verb가 기본 리턴을, master 줄의 | 뒤가 마스터 컴프레서·EQ·폭·리미터를 정해요. 값은 LFO나 k1으로 움직일 수 있어요',
+      en: '// Mix & Buses — 122 BPM, F minor. The mix in code: tracks send to the wash (chorus + reverb) and grit (distortion + crush) buses by name\n// bus delay and bus verb set up the built-in returns; after | on the master line come its compressor, EQ, width and limiter. Any value can move with an LFO or k1',
+    },
+    body: `bpm 122
+key F minor
+prog <Fm7 Dbmaj7 Ebm7 Cm7>
+master warm | thr -20 ratio 3 low 1 high 1.5 width 1.25 limit -1
+bus wash  | chorus .6 hpf 250 verb .7 duck .7
+bus grit  | dist .45 crush k2(0,.7) lpf 5000 gain .7
+bus delay | time 3 fb .5 lpf 2800 duck .5
+bus verb  | pre 35 hpf 300
+
+kick   x*4                         | gain 1 tune .9
+clap   . x . x                     | gain .6 grit .3
+hat    [. x]*4                     | gain .35 phaser .5
+keys   <0^7 _ . [. 0^7]>           | epiano gain .5 wash .5 thr -24 ratio 4
+bass   [0 . . 0] [. 0 . .]         | bass gain .8 dist .2 duck .6
+lead   <[4 . 2 .] [. 7 . 4]>       | pluck gain .4 delay .35 wash .2 chorus .4 lpf k1(1200,9000)
+`,
+  },
 ];
 function presetText(p, lang) { return p.head[lang] + '\n' + p.body; }
 
@@ -2381,7 +2487,15 @@ function initAudio() {
   A.crush = ctx.createWaveShaper();
   A.post.connect(A.gate); A.gate.connect(A.fxGate); A.fxGate.connect(A.hp); A.hp.connect(A.lp); A.lp.connect(A.eqL); A.eqL.connect(A.eqM); A.eqM.connect(A.eqH); A.eqH.connect(A.crush); A.crush.connect(A.glue);
   A.mud = bq('peaking', 280, 0.9, -1.5); A.air = bq('highshelf', 9500, 0.7, 2.5);
-  A.glue.connect(A.mud); A.mud.connect(A.air); A.satOut = g(1); A.air.connect(A.sat); A.sat.connect(A.satOut); A.satOut.connect(A.lim);
+  // master EQ and stereo width, set from the master line's parameters (flat and 1 by default)
+  A.mLow = bq('lowshelf', 110, 0.7, 0); A.mMid = bq('peaking', 1000, 0.7, 0); A.mHigh = bq('highshelf', 7500, 0.7, 0);
+  A.glue.connect(A.mLow); A.mLow.connect(A.mMid); A.mMid.connect(A.mHigh); A.mHigh.connect(A.mud); A.mud.connect(A.air);
+  A.wIn = g(1); A.wOut = ctx.createChannelMerger(2); A.wSplit = ctx.createChannelSplitter(2);
+  A.wM = [g(1), g(0), g(0), g(1)];   // LL, RL, LR, RR
+  A.air.connect(A.wIn); A.wIn.connect(A.wSplit);
+  A.wSplit.connect(A.wM[0], 0); A.wSplit.connect(A.wM[1], 1); A.wSplit.connect(A.wM[2], 0); A.wSplit.connect(A.wM[3], 1);
+  A.wM[0].connect(A.wOut, 0, 0); A.wM[1].connect(A.wOut, 0, 0); A.wM[2].connect(A.wOut, 0, 1); A.wM[3].connect(A.wOut, 0, 1);
+  A.satOut = g(1); A.wOut.connect(A.sat); A.sat.connect(A.satOut); A.satOut.connect(A.lim);
   // safety: transparent below -1.4 dBFS, rounds off the few fast transients the limiter lets through
   A.safe = ctx.createWaveShaper(); A.safe.oversample = '4x';
   { const n = 4096, c = new Float32Array(n), t = 0.85; for (let i = 0; i < n; i++) { const x = i / (n - 1) * 2 - 1, a = Math.abs(x); c[i] = a <= t ? x : Math.sign(x) * (t + (1 - t) * Math.tanh((a - t) / (1 - t))); } A.safe.curve = c; }
@@ -2390,18 +2504,18 @@ function initAudio() {
   A.dIn = g(1); A.dHP = bq('highpass', 300);
   A.dlL = ctx.createDelay(4); A.dlR = ctx.createDelay(4);
   A.dls = [A.dlL, A.dlR]; A.dl = A.dlL;
-  for (const d of A.dls) d.delayTime.value = (3 / 16) / S.cps;
+  for (const d of A.dls) d.delayTime.value = (S.dlSteps || 3) / 16 / S.cps;
   A.dLP = bq('lowpass', 4200); A.dFb = g(0.42);
   A.dMerge = ctx.createChannelMerger(2); A.dOut = g(0.75);
   A.dIn.connect(A.dHP); A.dHP.connect(A.dlL); A.dlL.connect(A.dlR); A.dlR.connect(A.dLP); A.dLP.connect(A.dFb); A.dFb.connect(A.dlL);
-  A.dlL.connect(A.dMerge, 0, 0); A.dlR.connect(A.dMerge, 0, 1); A.dMerge.connect(A.dOut); A.dOut.connect(A.post);
+  A.dlL.connect(A.dMerge, 0, 0); A.dlR.connect(A.dMerge, 0, 1); A.dMerge.connect(A.dOut); A.dDuck = g(1); A.dOut.connect(A.dDuck); A.dDuck.connect(A.post);
   A.throw = g(0); A.bus.connect(A.throw); A.throw.connect(A.dIn);
   A.vthrow = g(0); A.bus.connect(A.vthrow);
   // reverb: pre-delay → generated hall (early reflections + damped stereo tail) → cleaned of mud and fizz
   A.rIn = g(1); A.rPre = ctx.createDelay(0.2); A.rPre.delayTime.value = 0.022;
   A.cv = ctx.createConvolver(); A.cv.buffer = impulse(3.4);
   A.rHP = bq('highpass', 240); A.rLP = bq('lowpass', 8500); A.rOut = g(0.85);
-  A.vthrow.connect(A.rIn); A.rIn.connect(A.rPre); A.rPre.connect(A.cv); A.cvG = g(1); A.cv.connect(A.cvG); A.cvG.connect(A.rHP); A.rHP.connect(A.rLP); A.rLP.connect(A.rOut); A.rOut.connect(A.post);
+  A.vthrow.connect(A.rIn); A.rIn.connect(A.rPre); A.rPre.connect(A.cv); A.cvG = g(1); A.cv.connect(A.cvG); A.cvG.connect(A.rHP); A.rHP.connect(A.rLP); A.rLP.connect(A.rOut); A.rDuck = g(1); A.rOut.connect(A.rDuck); A.rDuck.connect(A.post);
   // noise: white for hats and transients, pink for warmer snare and clap bodies
   const sr = ctx.sampleRate, nb = ctx.createBuffer(1, sr * 2, sr), pb = ctx.createBuffer(1, sr * 2, sr);
   const w = nb.getChannelData(0), p = pb.getChannelData(0);
@@ -2423,6 +2537,7 @@ function initAudio() {
   // a long FFT on the finished mix, read by the spectral freeze pad
   A.frz = ctx.createAnalyser(); A.frz.fftSize = 32768; A.frz.smoothingTimeConstant = 0; A.lim.connect(A.frz);
   ensureSynthWorklet(); loadKit(); applyMaster(S.masterMode); gpuInit().then(gpuPrewarm);
+  mixSync();
   if (S.space && S.space !== 'hall-default') applySpace(S.space);
 }
 // a hall impulse: sparse early reflections, then a decorrelated stereo tail whose highs die faster than its lows
@@ -2444,7 +2559,7 @@ async function applySpace(name) {
   A.rPre.connect(cv); cv.connect(gN); gN.connect(A.rHP);
   const now = ctx.currentTime, oldCv = A.cv, oldG = A.cvG;
   gN.gain.setTargetAtTime(1, now, 0.12); oldG.gain.setTargetAtTime(0, now, 0.12);
-  A.rPre.delayTime.setTargetAtTime(sp ? sp.pre : 0.022, now, 0.05);
+  A.rPre.delayTime.setTargetAtTime(sp ? sp.pre : 0.022, now, 0.05); if (S.mixLast) delete S.mixLast.vp;
   A.cv = cv; A.cvG = gN; S.dirty = true;
   setTimeout(() => { try { A.rPre.disconnect(oldCv); oldCv.disconnect(); oldG.disconnect(); } catch (e) { } }, 1500);
 }
@@ -2489,24 +2604,91 @@ function curveN(k) {
 function rt(name, drum) {
   let r = S.rt.get(name);
   if (r) return r;
-  const ctx = S.ctx, bq = (type, f, q = 0.7) => { const b = ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; return b; };
-  r = { input: ctx.createGain(), hpf: bq('highpass', 20, 0.6), low: bq('lowshelf', 200), high: bq('highshelf', 6500), comp: ctx.createDynamicsCompressor(), duck: ctx.createGain(), dS: ctx.createGain(), rS: ctx.createGain() };
-  r.comp.threshold.value = 0; r.comp.ratio.value = 1; r.comp.attack.value = 0.005; r.comp.release.value = 0.15; r.comp.knee.value = 6;
-  r.dS.gain.value = 0; r.rS.gain.value = 0;
-  r.input.connect(r.hpf); r.hpf.connect(r.low); r.low.connect(r.high); r.high.connect(r.comp); r.comp.connect(r.duck);
-  r.duck.connect(drum ? A.drumIn : A.synIn); r.duck.connect(r.dS); r.duck.connect(r.rS);
-  r.dS.connect(A.dIn); r.rS.connect(A.rIn);
+  r = makeStrip(drum ? A.drumIn : A.synIn);
   S.rt.set(name, r);
   return r;
 }
+// the channel strip shared by tracks and buses:
+// input → high-pass → low shelf → mid bell → high shelf → low-pass → distortion → bit crush → compressor
+//       → (dry + chorus + phaser) → ducker → out, with sends to the delay, the reverb and the code's buses.
+// The modulation effects are built the first time a strip asks for them.
+function makeStrip(dest) {
+  const ctx = S.ctx, bq = (type, f, q = 0.7) => { const b = ctx.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; return b; };
+  const g = v => { const n = ctx.createGain(); n.gain.value = v; return n; };
+  const r = { input: g(1), hpf: bq('highpass', 20, 0.6), low: bq('lowshelf', 200), mid: bq('peaking', 1000, 0.8), high: bq('highshelf', 6500), lpf: bq('peaking', 20000, 0.6),
+    dist: ctx.createWaveShaper(), distG: g(1), crush: ctx.createWaveShaper(), comp: ctx.createDynamicsCompressor(), modIn: g(1), dry: g(1), duck: g(1), dS: g(0), rS: g(0), sends: new Map(), dest, st: {} };
+  r.comp.threshold.value = 0; r.comp.ratio.value = 1; r.comp.attack.value = 0.005; r.comp.release.value = 0.15; r.comp.knee.value = 6;
+  r.input.connect(r.hpf); r.hpf.connect(r.low); r.low.connect(r.mid); r.mid.connect(r.high); r.high.connect(r.lpf); r.lpf.connect(r.dist); r.dist.connect(r.distG);
+  r.distG.connect(r.crush); r.crush.connect(r.comp); r.comp.connect(r.modIn); r.modIn.connect(r.dry); r.dry.connect(r.duck);
+  r.duck.connect(dest); r.duck.connect(r.dS); r.duck.connect(r.rS);
+  r.dS.connect(A.dIn); r.rS.connect(A.rIn);
+  return r;
+}
+// stereo chorus: two delays swept by slow sines in opposite phase, one per side
+function stripChorus(r) {
+  if (r.cho) return r.cho;
+  const ctx = S.ctx, c = r.cho = { wet: ctx.createGain(), merge: ctx.createChannelMerger(2) };
+  c.wet.gain.value = 0;
+  [0, 1].forEach(side => {
+    const d = ctx.createDelay(0.05), lfo = ctx.createOscillator(), depth = ctx.createGain();
+    d.delayTime.value = 0.014 + side * 0.004; lfo.frequency.value = 0.6 + side * 0.17; depth.gain.value = 0.0028;
+    lfo.connect(depth); depth.connect(d.delayTime); lfo.start();
+    const mono = ctx.createGain(); mono.channelCount = 1; mono.channelCountMode = 'explicit'; mono.channelInterpretation = 'speakers';
+    r.modIn.connect(mono); mono.connect(d); d.connect(c.merge, 0, side);
+  });
+  c.merge.connect(c.wet); c.wet.connect(r.duck);
+  return c;
+}
+// phaser: four all-pass stages swept together; mixed with the dry signal they cut moving notches
+function stripPhaser(r) {
+  if (r.ph) return r.ph;
+  const ctx = S.ctx, p = r.ph = { wet: ctx.createGain() };
+  p.wet.gain.value = 0;
+  const lfo = ctx.createOscillator(), depth = ctx.createGain(); lfo.frequency.value = 0.35; depth.gain.value = 700; lfo.connect(depth); lfo.start();
+  let node = r.modIn;
+  for (let k = 0; k < 4; k++) { const ap = ctx.createBiquadFilter(); ap.type = 'allpass'; ap.frequency.value = 900 + k * 250; ap.Q.value = 0.6; depth.connect(ap.frequency); node.connect(ap); node = ap; }
+  node.connect(p.wet); p.wet.connect(r.duck);
+  return p;
+}
+const bitCurves = new Map();
+function bitCurve(bits) {
+  if (bitCurves.has(bits)) return bitCurves.get(bits);
+  const n = 8192, c = new Float32Array(n), q = Math.pow(2, bits - 1);
+  for (let i = 0; i < n; i++) { const x = i / (n - 1) * 2 - 1; c[i] = Math.round(x * q) / q; }
+  bitCurves.set(bits, c); return c;
+}
+const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
 function stripAt(r, P, time) {
-  r.dS.gain.setValueAtTime(Math.max(0, P.delay), time);
-  r.rS.gain.setValueAtTime(Math.max(0, P.verb), time);
-  r.hpf.frequency.setValueAtTime(Math.max(20, Math.min(2000, P.hpf)), time);
-  r.low.gain.setValueAtTime(Math.max(-24, Math.min(12, P.low)), time);
-  r.high.gain.setValueAtTime(Math.max(-24, Math.min(12, P.high)), time);
-  const cp = Math.max(0, Math.min(1, P.comp || 0));
-  r.comp.threshold.setValueAtTime(-cp * 30, time); r.comp.ratio.setValueAtTime(1 + cp * 5, time);
+  const st = r.st;
+  r.dS.gain.setValueAtTime(Math.max(0, P.delay || 0), time);
+  r.rS.gain.setValueAtTime(Math.max(0, P.verb || 0), time);
+  r.hpf.frequency.setValueAtTime(clamp(P.hpf ?? 20, 20, 2000), time);
+  r.low.gain.setValueAtTime(clamp(P.low || 0, -24, 12), time);
+  r.high.gain.setValueAtTime(clamp(P.high || 0, -24, 12), time);
+  if (P.mid || st.mid) { r.mid.gain.setValueAtTime(clamp(P.mid || 0, -24, 12), time); r.mid.frequency.setValueAtTime(clamp(P.midf || 1000, 60, 12000), time); st.mid = !!P.mid; }
+  // without lpf the filter is a 0 dB bell, which passes everything untouched
+  if (P.lpf) { if (r.lpf.type !== 'lowpass') r.lpf.type = 'lowpass'; r.lpf.frequency.setValueAtTime(clamp(P.lpf, 60, Math.min(20000, S.ctx.sampleRate * 0.45)), time); }
+  else if (r.lpf.type !== 'peaking') { r.lpf.type = 'peaking'; r.lpf.gain.value = 0; }
+  // distortion and bit crush only touch the waveshaper's curve when the amount changes
+  const dk = Math.round(clamp(P.dist || 0, 0, 1) * 20) / 20;
+  if (dk !== (st.dist || 0)) { st.dist = dk; r.dist.curve = dk ? curve(dk) : null; r.dist.oversample = dk ? '2x' : 'none'; r.distG.gain.setValueAtTime(dk ? 1 / Math.sqrt(curveGain(dk)) : 1, time); }
+  const bits = P.crush > 0.02 ? Math.round(16 - clamp(P.crush, 0, 1) * 13) : 0;
+  if (bits !== (st.bits || 0)) { st.bits = bits; r.crush.curve = bits ? bitCurve(bits) : null; }
+  // compressor: 'comp' is one knob; thr / ratio / catk / crel set it by hand
+  const cp = clamp(P.comp || 0, 0, 1), thr = P.thr != null ? clamp(P.thr, -60, 0) : -cp * 30, ratio = P.ratio != null ? clamp(P.ratio, 1, 20) : 1 + cp * 5;
+  r.comp.threshold.setValueAtTime(thr, time); r.comp.ratio.setValueAtTime(ratio, time);
+  if (P.catk != null) r.comp.attack.setValueAtTime(clamp(P.catk, 0.1, 500) / 1000, time);
+  if (P.crel != null) r.comp.release.setValueAtTime(clamp(P.crel, 10, 2000) / 1000, time);
+  if (P.chorus > 0 || r.cho) stripChorus(r).wet.gain.setTargetAtTime(clamp(P.chorus || 0, 0, 1) * 0.7, time, 0.02);
+  if (P.phaser > 0 || r.ph) stripPhaser(r).wet.gain.setTargetAtTime(clamp(P.phaser || 0, 0, 1) * 0.9, time, 0.02);
+  // sends to the code's buses: a track parameter named after the bus
+  if (S.busRt && S.busRt.size) for (const [bn, b] of S.busRt) {
+    if (b === r) continue;
+    const amt = Math.max(0, P[bn] || 0);
+    let sg = r.sends.get(bn);
+    if (!sg && amt > 0) { sg = S.ctx.createGain(); sg.gain.value = 0; r.duck.connect(sg); sg.connect(b.input); r.sends.set(bn, sg); }
+    if (sg) sg.gain.setValueAtTime(amt, time);
+  }
 }
 
 // ---------- params ----------
@@ -2853,6 +3035,7 @@ function duckAt(time, kickName, s) {
     g.setTargetAtTime(1 - d, time, 0.004);
     g.setTargetAtTime(1, time + 0.03, 0.07 / Math.max(0.5, S.cps * 2));
   }
+  mixDuck(time, s);
 }
 function playEvents(def, pa, pb, off) {
   const now = S.ctx.currentTime;
@@ -2943,6 +3126,7 @@ function tick() {
   const target = transport(now + LOOKAHEAD);
   if (target <= S.lastC) return;
   scheduleRange(S.lastC, target);
+  mixTick(S.lastC, target);
   S.lastC = target;
   if (S.stutter && S.lastC > S.stutter.end) S.stutter = null;
   if (S.breakdown && S.lastC > S.breakdown.endC) { S.breakdown = null; }
@@ -2976,7 +3160,7 @@ function applyPending() {
 function setBpmAt(b, c) {
   b = Math.max(40, Math.min(240, b));
   S.t0 = timeOf(c); S.c0 = c; S.bpm = b; S.cps = b / 240;
-  if (A.dls) for (const d of A.dls) d.delayTime.setValueAtTime((3 / 16) / S.cps, Math.max(S.ctx.currentTime, S.t0));
+  if (A.dls) for (const d of A.dls) d.delayTime.setValueAtTime((S.dlSteps || 3) / 16 / S.cps, Math.max(S.ctx.currentTime, S.t0));
   S.dirty = true;
 }
 
@@ -2984,7 +3168,7 @@ function setBpm(b) {
   b = Math.max(40, Math.min(240, b));
   if (S.ctx && S.playing) { const now = S.ctx.currentTime; S.c0 = transport(now); S.t0 = now; }
   S.bpm = b; S.cps = b / 240;
-  if (A.dls) for (const d of A.dls) d.delayTime.setTargetAtTime((3 / 16) / S.cps, S.ctx.currentTime, 0.05);
+  if (A.dls) for (const d of A.dls) d.delayTime.setTargetAtTime((S.dlSteps || 3) / 16 / S.cps, S.ctx.currentTime, 0.05);
   S.dirty = true;
 }
 
@@ -3016,7 +3200,7 @@ function stop() {
 // Every pad, built-in or written in code, is a list of actions from the fx language (see engine.js).
 const G = { held: new Set(), act: new Map() };
 function resetFx(now) {
-  for (const [p, v] of [[A.lp.frequency, 20000], [A.hp.frequency, 20], [A.lp.Q, 0.7], [A.throw.gain, 0], [A.dFb.gain, 0.42], [A.vthrow.gain, 0], [A.dryG.gain, 1], [A.rIn.gain, 1], [A.dIn.gain, 1], [A.fxGate.gain, 1], [A.eqL.gain, 0], [A.eqM.gain, 0], [A.eqH.gain, 0]]) {
+  for (const [p, v] of [[A.lp.frequency, 20000], [A.hp.frequency, 20], [A.lp.Q, 0.7], [A.throw.gain, 0], [A.dFb.gain, S.dlFb ?? 0.42], [A.vthrow.gain, 0], [A.dryG.gain, 1], [A.rIn.gain, 1], [A.dIn.gain, 1], [A.fxGate.gain, 1], [A.eqL.gain, 0], [A.eqM.gain, 0], [A.eqH.gain, 0]]) {
     p.cancelScheduledValues(now); p.setTargetAtTime(v, now, 0.05);
   }
   A.crush.curve = null;
@@ -3095,7 +3279,7 @@ function padOn(name) {
         const amt = a.n ?? 0.7;
         hold(A.throw.gain, now); A.throw.gain.setTargetAtTime(amt, now, 0.02);
         hold(A.dFb.gain, now); A.dFb.gain.setTargetAtTime(0.74, now, 0.05);
-        st.undo.push(n => { hold(A.throw.gain, n); A.throw.gain.setTargetAtTime(0, n, 0.03); hold(A.dFb.gain, n); A.dFb.gain.setTargetAtTime(0.42, n + 0.4, 0.8); });
+        st.undo.push(n => { hold(A.throw.gain, n); A.throw.gain.setTargetAtTime(0, n, 0.03); hold(A.dFb.gain, n); A.dFb.gain.setTargetAtTime(S.dlFb ?? 0.42, n + 0.4, 0.8); });
         break;
       }
       case 'echo': {
@@ -3107,7 +3291,7 @@ function padOn(name) {
         st.undo.push(n => {
           const tb = Math.max(n, timeOf(Math.ceil(S.lastC * 4 - 1e-6) / 4));
           for (const p of [A.dryG.gain, A.rIn.gain, A.dIn.gain]) { hold(p, n); p.setValueAtTime(p.value, tb); p.setTargetAtTime(1, tb, 0.01); }
-          hold(A.throw.gain, n); A.throw.gain.setTargetAtTime(0, n, 0.02); hold(A.dFb.gain, n); A.dFb.gain.setTargetAtTime(0.42, tb + 0.3, 0.6);
+          hold(A.throw.gain, n); A.throw.gain.setTargetAtTime(0, n, 0.02); hold(A.dFb.gain, n); A.dFb.gain.setTargetAtTime(S.dlFb ?? 0.42, tb + 0.3, 0.6);
         });
         break;
       }
@@ -3182,6 +3366,124 @@ function impact(t) {
   n.connect(lp).connect(g); g.connect(A.bus); g.connect(A.rIn);
   n.start(t); n.stop(t + 2);
   playDrum('kick', t, 1.2, { ...BASE, gain: 0.9, dec: 2 }, A.bus);
+}
+
+// ===================== Tactus mix: buses, returns, master =====================
+// Code lines that shape the mix instead of playing notes:
+//   bus wash | chorus .5 verb .6 hpf 300     a bus: a channel strip without notes. Any track sends to it
+//                                           with a parameter named after it ("pad ... | wash .4").
+//   bus verb | pre 30 hpf 300 lpf 6000      the built-in reverb return: pre-delay (ms), filters, level
+//   bus delay | time 3 fb .5 lpf 3000       the built-in delay: time in 16ths, feedback, filters, level
+//   master warm | thr -20 ratio 3 low 1 high 1.5 width 1.2 drive .1 limit -1 gain 1
+//                                           the master: glue compressor, EQ, stereo width, tape drive,
+//                                           limiter ceiling (dB) and gain into the limiter (dB)
+// Every value can move like a track parameter (0~1/4, 300>6000, k1(…), <…>); it is re-read every 16th.
+S.buses = new Map(); S.busRt = new Map(); S.masterParams = {}; S.dlSteps = 3;
+const RET_BASE = {
+  verb: { gain: 0.85, pre: 22, hpf: 240, lpf: 8500 },
+  delay: { gain: 0.75, time: 3, fb: 0.42, hpf: 300, lpf: 4200 },
+};
+// called after each compile: keep strips for buses that still exist, retire the rest
+function mixApply(r) {
+  S.buses = new Map([...r.buses].filter(([n]) => n !== 'verb' && n !== 'delay'));
+  S.retParams = { verb: (r.buses.get('verb') || {}).params || {}, delay: (r.buses.get('delay') || {}).params || {} };
+  const sig = JSON.stringify(r.masterParams || {});
+  if (sig !== S.masterSig) { S.masterSig = sig; S.masterParams = r.masterParams || {}; S.mixLast = {}; S.masterSat = null; if (S.ctx) { applyMaster(S.masterMode); resetMasterExtras(); } }
+  if (S.ctx) mixSync();
+}
+function mixSync() {
+  for (const [n, b] of S.busRt) if (!S.buses.has(n)) {
+    // a removed bus: silence its sends, then let it go
+    for (const r of S.rt.values()) { const sg = r.sends.get(n); if (sg) { sg.gain.setTargetAtTime(0, S.ctx.currentTime, 0.02); r.sends.delete(n); setTimeout(() => { try { sg.disconnect(); } catch (e) { } }, 200); } }
+    b.out.gain.setTargetAtTime(0, S.ctx.currentTime, 0.05);
+    S.busRt.delete(n);
+  }
+  for (const n of S.buses.keys()) if (!S.busRt.has(n)) {
+    const ctx = S.ctx, out = ctx.createGain(), pan = ctx.createStereoPanner();
+    const b = makeStrip(out); b.out = out; b.pan = pan; out.connect(pan); pan.connect(A.synIn);
+    S.busRt.set(n, b);
+  }
+}
+const busP = (bus, s) => { const P = { gain: 1, pan: 0 }; for (const k in bus.params) { const x = valueAt(bus.params[k], s, k); if (x !== null) P[k] = x; } return P; };
+// buses, returns and the master follow their parameters every 16th
+function mixTick(a, b) {
+  if (!S.ctx) return;
+  for (let k = Math.ceil(a * 16 - 1e-9); k / 16 < b; k++) {
+    const s = k / 16, time = Math.max(S.ctx.currentTime, timeOf(s));
+    for (const [n, bus] of S.buses) {
+      const r = S.busRt.get(n); if (!r) continue;
+      const P = busP(bus, s);
+      stripAt(r, P, time);
+      r.out.gain.setTargetAtTime(Math.max(0, P.gain), time, 0.01); r.pan.pan.setTargetAtTime(clamp(P.pan || 0, -1, 1), time, 0.01);
+    }
+    returnsAt(s, time);
+    masterAt(s, time);
+  }
+}
+// only changed values are written, so pads that throw the delay or open the filters are left alone
+function setIf(key, param, v, time) {
+  const L = S.mixLast || (S.mixLast = {});
+  if (L[key] === v) return;
+  L[key] = v; param.setTargetAtTime(v, time, 0.02);
+}
+function returnsAt(s, time) {
+  const rp = S.retParams || { verb: {}, delay: {} }, ev = (name) => { const P = { ...RET_BASE[name] }; for (const k in rp[name]) { const x = valueAt(rp[name][k], s, k); if (x !== null) P[k] = x; } return P; };
+  const v = ev('verb'), d = ev('delay');
+  if (A.rOut) {
+    setIf('vg', A.rOut.gain, Math.max(0, v.gain), time);
+    if (rp.verb.pre != null) setIf('vp', A.rPre.delayTime, clamp(v.pre, 0, 200) / 1000, time);
+    setIf('vh', A.rHP.frequency, clamp(v.hpf, 20, 2000), time); setIf('vl', A.rLP.frequency, clamp(v.lpf, 500, 20000), time);
+  }
+  if (A.dOut) {
+    setIf('dg', A.dOut.gain, Math.max(0, d.gain), time);
+    S.dlFb = clamp(d.fb, 0, 0.9); setIf('df', A.dFb.gain, S.dlFb, time);
+    setIf('dh', A.dHP.frequency, clamp(d.hpf, 20, 3000), time); setIf('dl', A.dLP.frequency, clamp(d.lpf, 300, 20000), time);
+    const steps = clamp(Math.round(d.time * 4) / 4, 0.25, 16);
+    if (steps !== S.dlSteps) { S.dlSteps = steps; for (const x of A.dls) x.delayTime.setTargetAtTime(steps / 16 / S.cps, time, 0.03); }
+  }
+}
+function resetMasterExtras() {
+  if (!A.mLow) return;
+  const now = S.ctx.currentTime;
+  for (const f of [A.mLow, A.mMid, A.mHigh]) f.gain.setTargetAtTime(0, now, 0.03);
+  widthAt(1, now);
+}
+function widthAt(w, time) {
+  w = clamp(w, 0, 2);
+  const a = (1 + w) / 2, b = (1 - w) / 2;
+  A.wM[0].gain.setTargetAtTime(a, time, 0.02); A.wM[1].gain.setTargetAtTime(b, time, 0.02); A.wM[2].gain.setTargetAtTime(b, time, 0.02); A.wM[3].gain.setTargetAtTime(a, time, 0.02);
+}
+function masterAt(s, time) {
+  const mp = S.masterParams; if (!mp || !A.glue) return;
+  const keys = Object.keys(mp); if (!keys.length) return;
+  const P = {}; for (const k of keys) { const x = valueAt(mp[k], s, k); if (x !== null) P[k] = x; }
+  const m = MASTER[S.masterMode] || MASTER.default;
+  if (P.thr != null) setIf('mt', A.glue.threshold, clamp(P.thr, -60, 0), time);
+  if (P.ratio != null) setIf('mr', A.glue.ratio, clamp(P.ratio, 1, 20), time);
+  if (P.catk != null) setIf('ma', A.glue.attack, clamp(P.catk, 0.1, 500) / 1000, time);
+  if (P.crel != null) setIf('mc', A.glue.release, clamp(P.crel, 10, 2000) / 1000, time);
+  if (P.low != null) setIf('ml', A.mLow.gain, clamp(P.low, -12, 12), time);
+  if (P.mid != null) setIf('mm', A.mMid.gain, clamp(P.mid, -12, 12), time);
+  if (P.midf != null) setIf('mf', A.mMid.frequency, clamp(P.midf, 60, 12000), time);
+  if (P.high != null) setIf('mh', A.mHigh.gain, clamp(P.high, -12, 12), time);
+  if (P.width != null && P.width !== (S.mixLast || {}).mw) { (S.mixLast || (S.mixLast = {})).mw = P.width; widthAt(P.width, time); }
+  if (P.limit != null) setIf('mx', A.lim.threshold, clamp(P.limit, -12, 0), time);
+  // drive and gain go through the same level bookkeeping as the master modes
+  if (P.drive != null || P.gain != null || P.thr != null || P.ratio != null) {
+    const sat = P.drive != null ? clamp(P.drive, 0, 1) : m.sat, thr = P.thr != null ? clamp(P.thr, -60, 0) : m.gT, ratio = P.ratio != null ? clamp(P.ratio, 1, 20) : m.gR;
+    const key = Math.round(sat * 20) / 20;
+    if (key !== S.masterSat) { S.masterSat = key; A.sat.curve = curve(sat); }
+    const d = MASTER.default, mk = compMakeupDb(d.gT, d.gR) - compMakeupDb(thr, ratio);
+    setIf('mg', A.satOut.gain, curveGain(d.sat) / curveGain(sat) * Math.pow(10, (mk + (m.trim || 0) + clamp(P.gain || 0, -12, 12)) / 20), time);
+  }
+}
+// the kick's sidechain also reaches buses and returns that ask for it
+function mixDuck(time, s) {
+  const hit = (g, d) => { g.setTargetAtTime(1 - d, time, 0.004); g.setTargetAtTime(1, time + 0.03, 0.07 / Math.max(0.5, S.cps * 2)); };
+  for (const [n, bus] of S.buses) { if (!bus.params.duck) continue; const r = S.busRt.get(n); const d = clamp(valueAt(bus.params.duck, s, 'duck') || 0, 0, 1); if (r && d) hit(r.duck.gain, d); }
+  const rp = S.retParams || {};
+  if (rp.verb && rp.verb.duck && A.rDuck) { const d = clamp(valueAt(rp.verb.duck, s, 'duck') || 0, 0, 1); if (d) hit(A.rDuck.gain, d); }
+  if (rp.delay && rp.delay.duck && A.dDuck) { const d = clamp(valueAt(rp.delay.duck, s, 'duck') || 0, 0, 1); if (d) hit(A.dDuck.gain, d); }
 }
 
 // Tactus DSP (Rust → WebAssembly, source in dsp/src/lib.rs), 11626 bytes
@@ -5519,7 +5821,8 @@ function evaluate(mode = 'bar', opts = {}) {
   const deferBpm = newBpm && S.playing && structural && mode === 'phrase';
   if (newBpm && !deferBpm) setBpm(newBpm);
   S.swing = r.swing ?? 0;
-  { const m = r.master || 'default'; if (m !== S.masterMode) { S.masterMode = m; if (S.ctx) applyMaster(m); } }
+  { const m = r.master || 'default'; if (m !== S.masterMode) { S.masterMode = m; S.mixLast = {}; S.masterSat = null; if (S.ctx) applyMaster(m); } }
+  mixApply(r);
   { const sp = r.space || 'hall-default'; if (sp !== (S.space || 'hall-default')) { S.space = sp; if (S.ctx) applySpace(sp); } }
   // backdrops: a changed viz line takes over again from any button pressed before
   { const sig = r.viz ? r.viz.list.join(' ') + '/' + r.viz.per : ''; if (sig !== S.vizSig) { S.vizSig = sig; S.vizManual = false; } S.vizCode = r.viz; S.shaders = r.shaders; }
@@ -5782,7 +6085,7 @@ srcEl.addEventListener('wheel', e => {
 }, { passive: false });
 
 // ---------- autocomplete ----------
-const AC_RANGES = { bright: [.2, .9], slide: [0, 1], acc: [0, 1], hpf: [20, 800], low: [-12, 6], high: [-12, 6], drive: [0, .8], width: [0, 1], vib: [0, 30], cut: [300, 6000], gain: [0, 1], pan: [-1, 1], res: [1, 15], verb: [0, .8], delay: [0, .6], duck: [0, 1], shape: [0, .8], detune: [0, 40], env: [0, 1], oct: [2, 5], len: [.25, 1], atk: [.005, 1], dec: [.05, 1], sus: [0, 1], rel: [.05, 2], tune: [.7, 1.4], slices: [4, 16], vel: [.5, 1.3], nudge: [-30, 30], human: [0, 1], swing: [0, .6], sgrid: [8, 16], comp: [0, 1], rate: [4, 32], tr: [-7, 7], range: [3, 12] };
+const AC_RANGES = { lpf: [300, 8000], mid: [-9, 6], midf: [200, 4000], chorus: [0, 1], phaser: [0, 1], dist: [0, .8], crush: [0, .8], thr: [-36, -6], ratio: [1.5, 8], catk: [1, 50], crel: [40, 400], bright: [.2, .9], slide: [0, 1], acc: [0, 1], hpf: [20, 800], low: [-12, 6], high: [-12, 6], drive: [0, .8], width: [0, 1], vib: [0, 30], cut: [300, 6000], gain: [0, 1], pan: [-1, 1], res: [1, 15], verb: [0, .8], delay: [0, .6], duck: [0, 1], shape: [0, .8], detune: [0, 40], env: [0, 1], oct: [2, 5], len: [.25, 1], atk: [.005, 1], dec: [.05, 1], sus: [0, 1], rel: [.05, 2], tune: [.7, 1.4], slices: [4, 16], vel: [.5, 1.3], nudge: [-30, 30], human: [0, 1], swing: [0, .6], sgrid: [8, 16], comp: [0, 1], rate: [4, 32], tr: [-7, 7], range: [3, 12] };
 const AC_QUAL = ['', 'm', '7', 'maj7', 'm7', '9', 'm9', 'maj9', 'sus2', 'sus4', '7sus4', 'dim', 'dim7', 'm7b5', 'aug', '6', 'm6', 'add9', 'madd9', '11', 'm11', '13', '7b9', '7#9', 'mM7', '5'];
 const AC_TRACKS = ['kick', 'snare', 'clap', 'hat', 'ohat', 'ride', 'crash', 'shaker', 'rim', 'tom', 'bass', 'keys', 'flute', 'strings', 'gayageum', 'piano', 'vibes', 'sax', 'harp', 'harpsi', 'asnare', 'ahat', 'aride', 'acrash', 'conga', 'bongo', 'cajon', 'tamb', 'gong', 'sub', 'acid', 'lead', 'pad', 'arp', 'pluck', 'stab', 'bell', 'chord', ...LOOPS];
 const acEl = document.createElement('div');
@@ -5795,7 +6098,7 @@ function acItems(pre, word) {
   const before = pre.slice(0, pre.length - word.length);
   const hm = /^\s*([a-zA-Z]\w*)/.exec(pre), head = hm && hm[1];
   if (/^\s*$/.test(before)) {
-    const g = ['bpm', 'key', 'scale', 'swing', 'prog', 'scene', 'song', 'master', 'seed', 'fx'].map(n => ({ label: n, ins: n + ' ', desc: t('ac_' + n) }));
+    const g = ['bpm', 'key', 'scale', 'swing', 'prog', 'scene', 'song', 'master', 'seed', 'fx', 'bus', 'space', 'viz', 'shader'].map(n => ({ label: n, ins: n + ' ', desc: t('ac_' + n) }));
     const tr = AC_TRACKS.map(n => ({ label: n, ins: n.padEnd(7) + ' ', desc: instForName(n) }));
     return [...tr, ...g];
   }
@@ -5809,7 +6112,15 @@ function acItems(pre, word) {
   if (isTrack0 && word.startsWith('~') && /^\s*[a-zA-Z]\w*\s+$/.test(before)) return GEN_KINDS.map(k => ({ label: '~' + k, ins: '~' + k + ' ', desc: t('gen' + k[0].toUpperCase() + k.slice(1)) }));
   { const gm = /~(\w+)\s+$/.exec(before);
     if (isTrack0 && gm && !before.includes('|')) { const st = { beat: BEAT_STYLES, bass: BASS_STYLES, chords: CHORD_STYLES.concat(['tri']), arp: Object.keys(ARP_SHAPES) }[gm[1]] || []; return st.map(x => ({ label: x, ins: x + ' ', desc: t('genStyle') })); } }
+  // mix lines: after | the parameters each line takes
+  if ((head === 'master' || head === 'bus') && before.includes('|')) {
+    const bn = (/^\s*bus\s+(\w+)/.exec(pre) || [])[1];
+    const list = head === 'master' ? MASTER_PARAMS : bn === 'verb' ? VERB_PARAMS : bn === 'delay' ? DELAY_PARAMS : BUS_PARAMS;
+    if (list.includes((/(\S+)\s+$/.exec(before) || [])[1])) return [];
+    return list.map(n => ({ label: n, ins: n + ' ', desc: t('p_' + n) }));
+  }
   if (head === 'master') return MASTERS.map(m => ({ label: m, ins: m, desc: t('ac_master_' + m) }));
+  if (head === 'space') return SPACES_LIST.map(m => ({ label: m, ins: m, desc: t('ac_space') }));
   if (head === 'scale') return Object.keys(SCALES).concat(['pyeongjo', 'gyemyeonjo']).map(s => ({ label: s, ins: s, desc: t('ac_scaleName') }));
   if (head === 'song') return docNames(/^\s*scene\s+(\w+)/).map(n => ({ label: n, ins: n + ':', desc: t('ac_sceneRef') }));
   if (head === 'scene') {
@@ -5836,7 +6147,8 @@ function acItems(pre, word) {
       return [1, 2, 3, 4].map(k => ({ label: `k${k}(${lo},${hi})`, ins: `k${k}(${lo},${hi}) `, desc: t('ac_knob', { k }) }))
         .concat([{ label: `${lo}~${hi}/8`, ins: `${lo}~${hi}/8 `, desc: t('ac_lfo') }]);
     }
-    return PARAMS.map(n => ({ label: n, ins: n + ' ', desc: t('p_' + n) }))
+    return PARAMS.filter(n => !RETURN_ONLY.includes(n)).map(n => ({ label: n, ins: n + ' ', desc: t('p_' + n) }))
+      .concat(docNames(/^\s*bus\s+([a-zA-Z]\w*)/).filter(n => n !== 'verb' && n !== 'delay').map(n => ({ label: n, ins: n + ' ', desc: t('ac_send') })))
       .concat([...SYNTHS, ...DRUMS, ...LOOPS].map(n => ({ label: n, ins: n + ' ', desc: t('ac_inst') })))
       .concat(['fixed', 'fast', 'slow', 'every'].map(n => ({ label: n, ins: n + ' ', desc: t('ac_' + n) })))
       .concat(VOICINGS.map(n => ({ label: n, ins: n + ' ', desc: t('ac_voicing') })))

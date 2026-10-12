@@ -333,6 +333,7 @@ html[lang=ko] body { word-break: keep-all; }
         <li><b data-ko="이름과 이 페이지" data-en="A name and this page">이름과 이 페이지</b><span data-ko="Tactus라는 이름과 지금 보고 있는 소개 페이지" data-en="The name Tactus and the page you are reading">Tactus라는 이름과 지금 보고 있는 소개 페이지</span></li>
         <li><b data-ko="Rust DSP" data-en="Rust DSP">Rust DSP</b><span data-ko="오디오 스레드의 보이스를 Rust로 옮겨 WebAssembly로 실행" data-en="The audio-thread voices rewritten in Rust and run as WebAssembly">오디오 스레드의 보이스를 Rust로 옮겨 WebAssembly로 실행</span></li>
         <li><b data-ko="WebGPU" data-en="WebGPU">WebGPU</b><span data-ko="사인파 수천 개 악기, 모달 리버브, 파동 방정식 북, 신경망 색소폰, 셰이더 라이브 코딩" data-en="Instruments of thousands of sines, modal reverb, a wave-equation drum, a neural sax, live-coded shaders">사인파 수천 개 악기, 모달 리버브, 파동 방정식 북, 신경망 색소폰, 셰이더 라이브 코딩</span></li>
+        <li><b data-ko="믹스" data-en="Mix">믹스</b><span data-ko="버스와 센드, 트랙마다 EQ·코러스·페이저·디스토션·컴프레서, 마스터 체인까지 코드로" data-en="Buses and sends, EQ, chorus, phaser, distortion and compression on every track, and the master chain, all in code">버스와 센드, 트랙마다 EQ·코러스·페이저·디스토션·컴프레서, 마스터 체인까지 코드로</span></li>
     </ol>
   </section>
 
@@ -523,6 +524,20 @@ const I18N = {
     op_fill: '다음 마디로 드럼 필인', op_impact: '다음 박에 임팩트', op_swell: '다음 마디로 리버스 스웰', op_down: '다운리프터', op_in: '램프 길이 (마디)',
     p_seed: '이 트랙만 다른 시드로', p_dens: '생성 밀도 0–1', p_evolve: 'N마디마다 조금씩 변이 (0 = 고정)', p_bars: '프레이즈 길이 (마디)', ac_seed: '곡 전체 시드', ac_fx: '연주 패드 만들기',
     // v3: WebGPU
+    busFmt: 'bus 다음에 이름, | 다음에 효과를 써요 (예: bus wash | chorus .5 verb .6)', busName: '"{n}"은 이미 파라미터나 키워드 이름이에요. 다른 버스 이름을 써요',
+    mixParam: '"{w}"는 이 줄에서 못 써요. 쓸 수 있는 것: {list}', returnOnly: '{w}는 bus delay · bus verb · master 줄에서만 써요',
+    p_lpf: '로우패스 Hz (트랙 전체)', p_mid: '가운데 대역 dB', p_midf: '가운데 대역 주파수 Hz', p_chorus: '코러스 0–1', p_phaser: '페이저 0–1', p_dist: '디스토션 0–1', p_crush: '비트 크러시 0–1',
+    p_thr: '컴프레서 스레숄드 dB', p_ratio: '컴프레서 비율', p_catk: '컴프레서 어택 ms', p_crel: '컴프레서 릴리스 ms', p_time: '딜레이 시간 (16분음표 단위)', p_fb: '딜레이 피드백 0–.9', p_pre: '리버브 프리딜레이 ms', p_limit: '리미터 천장 dB',
+    ac_bus: '버스: 효과를 거는 채널. 트랙에서 버스 이름으로 보내요', ac_space: '리버브 공간', ac_viz: '배경을 코드로 정하기', ac_shader: 'WGSL 식으로 배경 그리기', ac_send: '이 버스로 보내는 양 0–1',
+    hgMix: '믹스: 이펙트 · 센드 · 컴프레서',
+    hm1d: '트랙 채널에 거는 효과. 로우패스, 가운데 대역 EQ, 디스토션, 비트 크러시, 코러스, 페이저',
+    hm2d: '컴프레서를 직접: 스레숄드 dB, 비율, 어택·릴리스 ms. comp .5 한 손잡이로도 돼요',
+    hm3d: '버스 만들기. 버스도 트랙과 같은 채널(EQ·효과·컴프레서·덕킹)을 가져요',
+    hm4d: '트랙에서 버스 이름을 파라미터처럼 쓰면 그만큼 보내요. 여러 트랙이 같은 효과를 함께 써요',
+    hm5d: '기본 딜레이: 시간(16분음표 단위), 피드백, 필터, 덕킹',
+    hm6d: '기본 리버브: 프리딜레이 ms, 필터, 레벨, 덕킹',
+    hm7d: '마스터: 글루 컴프레서, 3밴드 EQ, 스테레오 폭, 테이프 드라이브, 리미터 천장, 리미터 입력 게인 dB',
+    hm8d: '모든 값은 0~1/4, 300>6000, k1(…), <…> 처럼 움직일 수 있어요. 16분음표마다 다시 읽어요',
     vizSono: '소노그램', vizSonoTitle: '곡 전체의 스펙트럼. 곡이 흐르는 동안 마디 위치마다 채워져요',
     spaceFmt: 'space 는 {list} 중 하나예요', vizFmt: 'viz 다음에 배경 이름을 써요 (예: viz <terrain dots sono>/4)', vizUnknown: '"{n}" 배경이 없어요. {list} 또는 shader 줄의 이름을 써요',
     shaderFmt: 'shader 이름 다음에 WGSL 식을 써요 (예: shader glow sin(length(q) * 20. - t * 4.) * bass)', shaderName: '"{n}"은 이미 있는 배경 이름이에요', shaderErr: '셰이더 오류: {e}',
@@ -680,6 +695,20 @@ const I18N = {
     op_fill: 'drum fill into the next bar', op_impact: 'impact on the next beat', op_swell: 'reverse swell into the next bar', op_down: 'downlifter', op_in: 'ramp length in bars',
     p_seed: 'a different seed for this track', p_dens: 'generator density 0–1', p_evolve: 'mutate a little every N bars (0 = fixed)', p_bars: 'phrase length in bars', ac_seed: 'seed for the whole piece', ac_fx: 'make a performance pad',
     // v3: WebGPU
+    busFmt: 'Write a name after bus and effects after | (e.g. bus wash | chorus .5 verb .6)', busName: '"{n}" is already a parameter or keyword. Pick another bus name',
+    mixParam: '"{w}" does not work on this line. Available: {list}', returnOnly: '{w} only works on bus delay, bus verb and master lines',
+    p_lpf: 'low-pass Hz (whole track)', p_mid: 'mid band dB', p_midf: 'mid band frequency Hz', p_chorus: 'chorus 0–1', p_phaser: 'phaser 0–1', p_dist: 'distortion 0–1', p_crush: 'bit crush 0–1',
+    p_thr: 'compressor threshold dB', p_ratio: 'compressor ratio', p_catk: 'compressor attack ms', p_crel: 'compressor release ms', p_time: 'delay time (in 16ths)', p_fb: 'delay feedback 0–.9', p_pre: 'reverb pre-delay ms', p_limit: 'limiter ceiling dB',
+    ac_bus: 'bus: an effects channel. Tracks send to it by its name', ac_space: 'reverb space', ac_viz: 'pick the backdrop in code', ac_shader: 'draw a backdrop with a WGSL expression', ac_send: 'amount sent to this bus 0–1',
+    hgMix: 'Mix: effects · sends · compressors',
+    hm1d: 'Effects on a track\'s channel: low-pass, mid EQ, distortion, bit crush, chorus, phaser',
+    hm2d: 'The compressor by hand: threshold dB, ratio, attack and release ms. comp .5 still works as one knob',
+    hm3d: 'Make a bus. A bus has the same channel as a track: EQ, effects, compressor, ducking',
+    hm4d: 'Use the bus name like a parameter on a track to send that much. Several tracks can share one effect',
+    hm5d: 'The built-in delay: time in 16ths, feedback, filters, ducking',
+    hm6d: 'The built-in reverb: pre-delay ms, filters, level, ducking',
+    hm7d: 'The master: glue compressor, 3-band EQ, stereo width, tape drive, limiter ceiling, gain into the limiter (dB)',
+    hm8d: 'Every value can move: 0~1/4, 300>6000, k1(…), <…>. It is re-read every 16th',
     vizSono: 'Sonogram', vizSonoTitle: 'The whole song\'s spectrum, filled in at each bar as the song plays',
     spaceFmt: 'space is one of {list}', vizFmt: 'Write backdrop names after viz (e.g. viz <terrain dots sono>/4)', vizUnknown: 'No backdrop "{n}". Use {list} or a shader line\'s name',
     shaderFmt: 'Write a name, then a WGSL expression (e.g. shader glow sin(length(q) * 20. - t * 4.) * bass)', shaderName: '"{n}" is already a backdrop name', shaderErr: 'Shader error: {e}',
@@ -1027,9 +1056,16 @@ const NAME_INST = [
   ['grand', 'piano'], ['vibe', 'vibes'], ['harpsi', 'harpsi'], ['cembalo', 'harpsi'], ['harp', 'harp'], ['sax', 'sax'], ['marimba', 'marimba'], ['kalimba', 'kalimba'], ['dantranh', 'dantranh'], ['jing', 'gong'],
   ['swarm', 'swarm'], ['choir', 'choir'], ['plate', 'plate'], ['membrane', 'membrane'], ['timp', 'membrane'], ['nsax', 'nsax'], ['daegeum', 'flute'], ['flute', 'flute'], ['haegeum', 'bowed'], ['string', 'bowed'], ['keys', 'epiano'], ['rhodes', 'epiano'], ['piano', 'piano'],
 ];
-const PARAMS = ['gain', 'pan', 'oct', 'cut', 'res', 'env', 'atk', 'dec', 'sus', 'rel', 'len', 'delay', 'verb', 'duck', 'shape', 'detune', 'tune', 'slices', 'hpf', 'low', 'high', 'drive', 'width', 'vib', 'slide', 'acc', 'bright', 'wave', 'vel', 'nudge', 'human', 'swing', 'sgrid', 'comp', 'rate', 'tr', 'range', 'seed', 'dens', 'evolve', 'bars'];
-const EXP_PARAMS = new Set(['cut', 'hpf']);
-const GLOBALS = new Set(['bpm', 'key', 'scale', 'swing', 'prog', 'scene', 'song', 'master', 'seed', 'fx', 'space', 'viz', 'shader']);
+const PARAMS = ['gain', 'pan', 'oct', 'cut', 'res', 'env', 'atk', 'dec', 'sus', 'rel', 'len', 'delay', 'verb', 'duck', 'shape', 'detune', 'tune', 'slices', 'hpf', 'low', 'high', 'drive', 'width', 'vib', 'slide', 'acc', 'bright', 'wave', 'vel', 'nudge', 'human', 'swing', 'sgrid', 'comp', 'rate', 'tr', 'range', 'seed', 'dens', 'evolve', 'bars',
+  // channel strip: more EQ, insert effects, compressor detail
+  'lpf', 'mid', 'midf', 'chorus', 'phaser', 'dist', 'crush', 'thr', 'ratio', 'catk', 'crel',
+  // only on 'bus delay', 'bus verb' and 'master' lines
+  'time', 'fb', 'pre', 'limit'];
+const RETURN_ONLY = ['time', 'fb', 'pre', 'limit'];
+// names of the code's own buses: each also works as a send parameter on track lines (set while compiling)
+let BUS_NAMES = new Set();
+const EXP_PARAMS = new Set(['cut', 'hpf', 'lpf', 'midf']);
+const GLOBALS = new Set(['bpm', 'key', 'scale', 'swing', 'prog', 'scene', 'song', 'master', 'seed', 'fx', 'space', 'viz', 'shader', 'bus']);
 // generator parameters shape the notes, so they are part of the pattern rather than the sound
 const GEN_PARAMS = ['seed', 'dens', 'evolve', 'bars'];
 let GEN_SEED = 0;
@@ -1107,6 +1143,25 @@ function parseValue(ch) {
   return null;
 }
 
+// what each mix line takes: a bus is a channel strip without notes; the returns and the master have their own knobs
+const STRIP_PARAMS = ['gain', 'pan', 'hpf', 'lpf', 'low', 'mid', 'midf', 'high', 'chorus', 'phaser', 'dist', 'crush', 'comp', 'thr', 'ratio', 'catk', 'crel', 'duck'];
+const BUS_PARAMS = [...STRIP_PARAMS, 'delay', 'verb'];
+const VERB_PARAMS = ['gain', 'pre', 'hpf', 'lpf', 'duck'];
+const DELAY_PARAMS = ['gain', 'time', 'fb', 'hpf', 'lpf', 'duck'];
+const MASTER_PARAMS = ['thr', 'ratio', 'catk', 'crel', 'low', 'mid', 'midf', 'high', 'width', 'drive', 'limit', 'gain'];
+function mixParams(src, base, allowed) {
+  const chunks = splitChunks(src, base), params = {};
+  for (let i = 0; i < chunks.length; i++) {
+    const w = chunks[i].s;
+    if (!allowed.includes(w)) throw new PErr(t('mixParam', { w, list: allowed.join(' ') }), chunks[i].c0);
+    const c = chunks[++i];
+    if (!c) throw new PErr(t('needVal', { w }), chunks[i - 1].c0);
+    const v = parseValue(c);
+    if (!v) throw new PErr(t('badVal', { v: c.s, w }), c.c0);
+    params[w] = v;
+  }
+  return params;
+}
 function parseParams(src, base) {
   const chunks = splitChunks(src, base);
   const params = {};
@@ -1144,7 +1199,7 @@ function parseParams(src, base) {
       speed *= w === 'fast' ? +c.s : 1 / +c.s;
       continue;
     }
-    if (PARAMS.includes(w)) {
+    if (PARAMS.includes(w) || BUS_NAMES.has(w)) {
       const c = chunks[++i];
       if (!c) throw new PErr(t('needVal', { w }), chunks[i - 1].c0);
       const v = parseValue(c);
@@ -1171,10 +1226,23 @@ function parseLine(text) {
   const name = m[2];
   const restBase = m[0].length;
   const rest = code.slice(restBase);
+  // master warm   ·   master loud | thr -20 ratio 3 low 1 high 1.5 width 1.2 limit -1
   if (name === 'master') {
-    const v = rest.trim();
-    if (!MASTERS.includes(v)) throw new PErr(t('masterFmt', { list: MASTERS.join(' ') }), restBase);
-    return { type: 'master', v };
+    const bar = rest.indexOf('|'), v = (bar >= 0 ? rest.slice(0, bar) : rest).trim();
+    if (v && !MASTERS.includes(v)) throw new PErr(t('masterFmt', { list: MASTERS.join(' ') }), restBase);
+    if (!v && bar < 0) throw new PErr(t('masterFmt', { list: MASTERS.join(' ') }), restBase);
+    const params = bar >= 0 ? mixParams(rest.slice(bar + 1), restBase + bar + 1, MASTER_PARAMS) : {};
+    return { type: 'master', v: v || 'default', params };
+  }
+  // bus wash | chorus .5 verb .6 hpf 300   →   tracks send to it with "wash .4"
+  // bus verb | ... and bus delay | ... set up the built-in returns
+  if (name === 'bus') {
+    const bar = rest.indexOf('|'), nm = (bar >= 0 ? rest.slice(0, bar) : rest).trim();
+    if (!/^[a-zA-Z]\w*$/.test(nm)) throw new PErr(t('busFmt'), restBase);
+    const allowed = nm === 'verb' ? VERB_PARAMS : nm === 'delay' ? DELAY_PARAMS : BUS_PARAMS;
+    if (nm !== 'verb' && nm !== 'delay' && (PARAMS.includes(nm) || GLOBALS.has(nm))) throw new PErr(t('busName', { n: nm }), restBase);
+    const params = bar >= 0 ? mixParams(rest.slice(bar + 1), restBase + bar + 1, allowed) : {};
+    return { type: 'bus', name: nm, params };
   }
   if (name === 'space') {
     const v = rest.trim();
@@ -1278,6 +1346,7 @@ function parseLine(text) {
   const patSrc = bar >= 0 ? rest.slice(0, bar) : rest;
   const parSrc = bar >= 0 ? rest.slice(bar + 1) : '';
   const pr = parseParams(parSrc, restBase + bar + 1);
+  for (const k of RETURN_ONLY) if (pr.params[k]) throw new PErr(t('returnOnly', { w: k }), restBase + bar + 1 + parSrc.indexOf(k));
   for (const k of GEN_PARAMS) if (pr.params[k] && pr.params[k].k !== 'num') throw new PErr(t('needNum', { a: k }), restBase + bar + 1);
   let spec = null;
   try { spec = genSpec(patSrc, name, pr.inst || instForName(name), pr.params, GEN_SEED); } catch (e) { if (e instanceof PErr) e.col = restBase + patSrc.search(/\S/); throw e; }
@@ -1346,7 +1415,10 @@ const DEFAULT_PADS = DEFAULT_PAD_SRC.map(l => { const r = parseLine(l); r.pad.bu
 function compile(text) {
   { const sm = /^\s*seed\s+(-?\d+)\s*(?:\/\/.*)?$/m.exec(text); GEN_SEED = sm ? +sm[1] : 0; }
   const lines = text.split('\n');
-  const out = { pads: new Map(), seed: GEN_SEED, master: null, bpm: null, key: null, scale: null, swing: null, prog: null, progSrc: '', scenes: new Map(), song: null, arrSrc: '', tracks: new Map(), order: [], errors: new Map(), lineNames: new Map(), space: null, viz: null, shaders: new Map() };
+  const out = { pads: new Map(), seed: GEN_SEED, master: null, bpm: null, key: null, scale: null, swing: null, prog: null, progSrc: '', scenes: new Map(), song: null, arrSrc: '', tracks: new Map(), order: [], errors: new Map(), lineNames: new Map(), space: null, viz: null, shaders: new Map(), buses: new Map(), masterParams: {} };
+  // bus names first, so track lines anywhere in the code can send to them
+  BUS_NAMES = new Set();
+  for (const ln of lines) { const m = /^\s*bus\s+([a-zA-Z]\w*)/.exec(stripComment(ln)); if (m && m[1] !== 'verb' && m[1] !== 'delay' && !PARAMS.includes(m[1])) BUS_NAMES.add(m[1]); }
   const sceneLines = [];
   lines.forEach((ln, i) => {
     const hm = HEAD_RE.exec(stripComment(ln));
@@ -1356,7 +1428,8 @@ function compile(text) {
       const r = parseLine(ln);
       if (!r) return;
       if (r.type === 'bpm') out.bpm = r.v;
-      else if (r.type === 'master') out.master = r.v;
+      else if (r.type === 'master') { out.master = r.v; out.masterParams = r.params; }
+      else if (r.type === 'bus') { if (out.buses.has(r.name)) throw new PErr(t('dup', { n: r.name }), 0); r.line = i; out.buses.set(r.name, r); }
       else if (r.type === 'space') out.space = r.v;
       else if (r.type === 'viz') { r.line = i; out.viz = r; }
       else if (r.type === 'shader') { if (out.shaders.has(r.name)) throw new PErr(t('dup', { n: r.name }), 0); r.line = i; out.shaders.set(r.name, r); }
