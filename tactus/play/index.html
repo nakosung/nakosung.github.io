@@ -302,7 +302,7 @@ body.recording .editor { border-color: var(--c-err); }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.12 23:07<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.12 23:25<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -490,6 +490,7 @@ body.recording .editor { border-color: var(--c-err); }
           <dt>throw · echo · verb .8 · pitch 12</dt><dd data-i18n="h41d"></dd>
           <dt>riser · fill · impact · swell · down · scene next</dt><dd data-i18n="h42d"></dd>
           <dt>latch · in 4 · fx throw off</dt><dd data-i18n="h43d"></dd>
+          <dt>auto echo &lt;. . . x&gt; · auto st . . . [x x] | repeat 16</dt><dd data-i18n="h46d"></dd>
         </dl>
         <h3 data-i18n="hgKeys"></h3>
         <dl>
@@ -539,6 +540,7 @@ const I18N = {
     sceneName: 'scene 다음에 씬 이름을 써요 (예: scene drop all)', songFmt: 'song 은 이름:마디 형식이에요 (예: song intro:8 drop:16)',
     noTrack: "'{n}' 트랙이 없어요 (나머지는 그대로 적용돼요)", noScene: "'{n}' 씬이 없어요",
     everyFmt: 'every 는 "every 4 rev", "every 8 +2", "every 4 ply 2" 처럼 써요', masterFmt: 'master 는 {list} 중 하나예요', autoFmt: '씬 오토메이션은 "트랙.파라미터 값" 형식이에요 (예: arp.cut 300>6000)',
+    autoLine: 'auto 는 "auto 패드이름 패턴" 형식이에요 (예: auto echo <. . . x>, auto st . . . [x x] | repeat 16)', noPad: "'{n}' 패드가 없어요. fx 줄로 만들거나 auto {n} 패턴 | 동작 처럼 동작을 직접 쓰세요",
     padFmt: 'fx 는 "fx 이름 키 | 동작" 형식이에요 (예: fx wob P | set bass.cut 200>3000)', padKey: "'{k}' 는 패드 키로 쓸 수 없어요. 쓸 수 있는 키: {list} (또는 latch, off)", padOp: "'{w}' 는 모르는 동작이에요: {list}", killFmt: 'kill 다음에는 low mid high 를 써요', genKind: "'~{k}' 생성기는 없어요: {list}",
     // header
     tagline: 'live instrument', play: '재생', stop: '정지', auto: '자동 반영', autoTitle: '끄면 Ctrl+Enter로만 반영',
@@ -657,11 +659,12 @@ const I18N = {
     h40d: '비트 리피트(마디당 N), 게이트 패턴, 트랙·그룹 빼기 (drums bass synths melody loops all)',
     h41d: '딜레이 던지기, 에코 아웃, 리버브 워시, 멜로디 이조(반음)', h42d: '빌드업, 필인, 임팩트, 스웰, 다운리프터, 씬 이동(next prev 이름)',
     h43d: 'latch 는 눌러서 켜고 다시 눌러 끄기 · in 은 램프 길이(마디) · off 는 기본 패드 지우기',
+    h46d: 'FX 시퀀스: 패턴의 히트마다 패드를 누르고, 히트 길이만큼 누르고 있어요(_ 로 늘려요). 패드 이름만 쓰면 그 패드를, | 뒤에 동작을 쓰면 새 패드를 연주해요. 트랙처럼 씬에 넣고 뺄 수 있어요',
     op_lp: '마스터 로우패스 Hz (a>b 램프)', op_hp: '마스터 하이패스 Hz', op_res: '로우패스 공명', op_repeat: '비트 리피트: 마디당 N조각', op_mute: '트랙·그룹 빼기', op_only: '이것만 남기기',
     op_throw: '딜레이로 던지기 (양)', op_echo: '에코 아웃', op_verb: '리버브로 보내기 (양)', op_gate: '게이트: 마디당 N 또는 x.x. 패턴', op_crush: '비트 수 (낮을수록 거칠게)',
     op_kill: 'low mid high 대역 빼기', op_pitch: '멜로디 이조 (반음)', op_riser: '빌드업 (마디), 놓으면 드롭', op_set: '트랙.파라미터 값 (a>b 램프)', op_scene: 'next prev 또는 씬 이름',
     op_fill: '다음 마디로 드럼 필인', op_impact: '다음 박에 임팩트', op_swell: '다음 마디로 리버스 스웰', op_down: '다운리프터', op_in: '램프 길이 (마디)',
-    p_seed: '이 트랙만 다른 시드로', p_dens: '생성 밀도 0–1', p_evolve: 'N마디마다 조금씩 변이 (0 = 고정)', p_bars: '프레이즈 길이 (마디)', ac_seed: '곡 전체 시드', ac_fx: '연주 패드 만들기',
+    p_seed: '이 트랙만 다른 시드로', p_dens: '생성 밀도 0–1', p_evolve: 'N마디마다 조금씩 변이 (0 = 고정)', p_bars: '프레이즈 길이 (마디)', ac_seed: '곡 전체 시드', ac_fx: '연주 패드 만들기', ac_auto: 'FX 시퀀스: 패드를 패턴대로 자동으로 눌러요',
     // v3: WebGPU
     busFmt: 'bus 다음에 이름, | 다음에 효과를 써요 (예: bus wash | chorus .5 verb .6)', busName: '"{n}"은 이미 파라미터나 키워드 이름이에요. 다른 버스 이름을 써요',
     mixParam: '"{w}"는 이 줄에서 못 써요. 쓸 수 있는 것: {list}', returnOnly: '{w}는 bus delay · bus verb · master 줄에서만 써요',
@@ -715,6 +718,7 @@ const I18N = {
     sceneName: 'Write a scene name after scene (e.g. scene drop all)', songFmt: 'Write song as name:bars (e.g. song intro:8 drop:16)',
     noTrack: "There's no track '{n}' (the rest still applies)", noScene: "There's no scene '{n}'",
     everyFmt: 'Write every like "every 4 rev", "every 8 +2" or "every 4 ply 2"', masterFmt: 'master is one of {list}', autoFmt: 'Scene automation is "track.param value" (e.g. arp.cut 300>6000)',
+    autoLine: 'Write auto as "auto padname pattern" (e.g. auto echo <. . . x>, auto st . . . [x x] | repeat 16)', noPad: "There's no pad '{n}'. Make one with an fx line, or write the actions yourself: auto {n} pattern | actions",
     padFmt: 'Write fx as "fx name key | actions" (e.g. fx wob P | set bass.cut 200>3000)', padKey: "'{k}' can't be a pad key. Keys you can use: {list} (or latch, off)", padOp: "'{w}' isn't an action: {list}", killFmt: 'kill takes low, mid or high', genKind: "There's no '~{k}' generator: {list}",
     tagline: 'live instrument', play: 'Play', stop: 'Stop', auto: 'Live update', autoTitle: 'When off, changes apply only on Ctrl+Enter',
     bpmTitle: 'Scroll to adjust, T or TAP for tap tempo', lang: '한국어', langTitle: '한국어로 전환',
@@ -828,11 +832,12 @@ const I18N = {
     h40d: 'Beat repeat (N per bar), gate pattern, take out tracks or groups (drums bass synths melody loops all)',
     h41d: 'Delay throw, echo out, reverb wash, transpose melodies (semitones)', h42d: 'Build-up, fill, impact, swell, downlifter, change scene (next, prev or a name)',
     h43d: 'latch toggles on each press · in sets ramp length in bars · off removes a built-in pad',
+    h46d: 'FX sequence: every hit of the pattern presses the pad and holds it for the hit (stretch it with _). A pad name alone plays that pad; actions after | make a new one. Scenes take it in and out like a track',
     op_lp: 'master low-pass Hz (a>b ramps)', op_hp: 'master high-pass Hz', op_res: 'low-pass resonance', op_repeat: 'beat repeat: N slices per bar', op_mute: 'take out tracks or groups', op_only: 'keep only these',
     op_throw: 'throw into the delay (amount)', op_echo: 'echo out', op_verb: 'send to reverb (amount)', op_gate: 'gate: N per bar or an x.x. pattern', op_crush: 'bits (lower is rougher)',
     op_kill: 'cut low, mid or high', op_pitch: 'transpose melodies (semitones)', op_riser: 'build-up (bars), drop on release', op_set: 'track.param value (a>b ramps)', op_scene: 'next, prev or a scene name',
     op_fill: 'drum fill into the next bar', op_impact: 'impact on the next beat', op_swell: 'reverse swell into the next bar', op_down: 'downlifter', op_in: 'ramp length in bars',
-    p_seed: 'a different seed for this track', p_dens: 'generator density 0–1', p_evolve: 'mutate a little every N bars (0 = fixed)', p_bars: 'phrase length in bars', ac_seed: 'seed for the whole piece', ac_fx: 'make a performance pad',
+    p_seed: 'a different seed for this track', p_dens: 'generator density 0–1', p_evolve: 'mutate a little every N bars (0 = fixed)', p_bars: 'phrase length in bars', ac_seed: 'seed for the whole piece', ac_fx: 'make a performance pad', ac_auto: 'FX sequence: press a pad from a pattern',
     // v3: WebGPU
     busFmt: 'Write a name after bus and effects after | (e.g. bus wash | chorus .5 verb .6)', busName: '"{n}" is already a parameter or keyword. Pick another bus name',
     mixParam: '"{w}" does not work on this line. Available: {list}', returnOnly: '{w} only works on bus delay, bus verb and master lines',
@@ -1211,7 +1216,7 @@ const RETURN_ONLY = ['time', 'fb', 'pre', 'limit'];
 // names of the code's own buses: each also works as a send parameter on track lines (set while compiling)
 let BUS_NAMES = new Set();
 const EXP_PARAMS = new Set(['cut', 'hpf', 'lpf', 'midf']);
-const GLOBALS = new Set(['bpm', 'key', 'scale', 'swing', 'prog', 'scene', 'song', 'master', 'seed', 'fx', 'space', 'viz', 'shader', 'bus']);
+const GLOBALS = new Set(['bpm', 'key', 'scale', 'swing', 'prog', 'scene', 'song', 'master', 'seed', 'fx', 'auto', 'space', 'viz', 'shader', 'bus']);
 // generator parameters shape the notes, so they are part of the pattern rather than the sound
 const GEN_PARAMS = ['seed', 'dens', 'evolve', 'bars'];
 let GEN_SEED = 0;
@@ -1443,6 +1448,17 @@ function parseLine(text) {
     return { type: 'prog', pat: parseMini(rest, restBase), src: rest.trim() };
   }
   if (name === 'fx') return { type: 'pad', pad: parsePad(rest, restBase) };
+  // auto echo <. . . x>   ·   auto stut . . . [. x] | repeat 16
+  // A pad that plays itself: every hit presses the pad and holds it for the hit's length. Without actions it
+  // plays the pad of that name (built-in or an fx line); with actions after | it is a pad of its own.
+  if (name === 'auto') {
+    const bar = rest.indexOf('|'), head = bar >= 0 ? rest.slice(0, bar) : rest;
+    const nm = /^(\s*)([a-zA-Z]\w*)/.exec(head);
+    if (!nm || !head.slice(nm[0].length).trim()) throw new PErr(t('autoLine'), restBase);
+    const patSrc = head.slice(nm[0].length), pat = parseMini(patSrc, restBase + nm[0].length);
+    const pad = bar >= 0 ? parsePad(nm[0] + ' '.repeat(patSrc.length) + rest.slice(bar), restBase) : null;
+    return { type: 'auto', name: nm[2], pat, pad, src: rest.replace(/\s+/g, ' ').trim(), col: restBase + nm[1].length };
+  }
   if (name === 'scale') {
     let sc = rest.trim().toLowerCase(); sc = SCALE_ALIAS[sc] || sc;
     if (!SCALES[sc]) throw new PErr(t('noScale', { s: rest.trim(), list: Object.keys(SCALES).join(' ') }), restBase);
@@ -1561,7 +1577,7 @@ const DEFAULT_PADS = DEFAULT_PAD_SRC.map(l => { const r = parseLine(l); r.pad.bu
 function compile(text) {
   { const sm = /^\s*seed\s+(-?\d+)\s*(?:\/\/.*)?$/m.exec(text); GEN_SEED = sm ? +sm[1] : 0; }
   const lines = text.split('\n');
-  const out = { pads: new Map(), seed: GEN_SEED, master: null, bpm: null, key: null, scale: null, swing: null, prog: null, progSrc: '', scenes: new Map(), song: null, arrSrc: '', tracks: new Map(), order: [], errors: new Map(), lineNames: new Map(), space: null, viz: null, shaders: new Map(), buses: new Map(), masterParams: {} };
+  const out = { pads: new Map(), autos: new Map(), seed: GEN_SEED, master: null, bpm: null, key: null, scale: null, swing: null, prog: null, progSrc: '', scenes: new Map(), song: null, arrSrc: '', tracks: new Map(), order: [], errors: new Map(), lineNames: new Map(), space: null, viz: null, shaders: new Map(), buses: new Map(), masterParams: {} };
   // bus names first, so track lines anywhere in the code can send to them
   BUS_NAMES = new Set();
   for (const ln of lines) { const m = /^\s*bus\s+([a-zA-Z]\w*)/.exec(stripComment(ln)); if (m && m[1] !== 'verb' && m[1] !== 'delay' && !PARAMS.includes(m[1])) BUS_NAMES.add(m[1]); }
@@ -1581,6 +1597,7 @@ function compile(text) {
       else if (r.type === 'shader') { if (out.shaders.has(r.name)) throw new PErr(t('dup', { n: r.name }), 0); r.line = i; out.shaders.set(r.name, r); }
       else if (r.type === 'seed') out.seed = r.v;
       else if (r.type === 'pad') { r.pad.line = i; if (out.pads.has(r.pad.name)) throw new PErr(t('dup', { n: r.pad.name }), 0); out.pads.set(r.pad.name, r.pad); }
+      else if (r.type === 'auto') { if (out.autos.has(r.name)) throw new PErr(t('dup', { n: r.name }), 0); r.line = i; r.cache = new Map(); out.autos.set(r.name, r); }
       else if (r.type === 'swing') out.swing = r.v;
       else if (r.type === 'key') out.key = r;
       else if (r.type === 'prog') { out.prog = r.pat; out.progSrc = r.src; out.progGen = r.gen || null; }
@@ -1600,7 +1617,7 @@ function compile(text) {
     }
   });
   // cross-checks once every line is known
-  const known = n => out.tracks.has(n) || LOOPS.includes(n);
+  const known = n => out.tracks.has(n) || LOOPS.includes(n) || out.autos.has(n);
   for (const sc of sceneLines) {
     const bad = sc.refs.find(c => !known(c.s.replace(/^-/, '')));
     if (bad && !out.errors.has(sc.line)) out.errors.set(sc.line, { msg: t('noTrack', { n: bad.s.replace(/^-/, '') }), col: bad.c0, keep: true });
@@ -1616,6 +1633,14 @@ function compile(text) {
     pads.set(n, p);
   }
   out.pads = pads;
+  // an auto line plays its own actions or the pad of its name; it can't share a name with a track
+  for (const [n, au] of out.autos) {
+    let err = null;
+    if (out.tracks.has(n)) err = t('dup', { n });
+    else if (!au.pad && !pads.has(n)) err = t('noPad', { n });
+    else if (au.pad) { const bad = au.pad.refs.find(c => !known(c.s)); if (bad) err = t('noTrack', { n: bad.s }); }
+    if (err) { if (!out.errors.has(au.line)) out.errors.set(au.line, { msg: err, col: au.col }); out.autos.delete(n); }
+  }
   if (out.viz) {
     const bad = out.viz.list.find(n => !VIZ_BUILTIN.includes(n) && !out.shaders.has(n));
     if (bad) { out.errors.set(out.viz.line, { msg: t('vizUnknown', { n: bad, list: VIZ_BUILTIN.join(' ') }), col: out.viz.col }); out.viz = null; }
@@ -2182,8 +2207,8 @@ song intro:8 verse:16 build:4 chorus:16 verse:8 build:4 chorus:16 intro:8
   {
     id: 'gdchip', name: 'Neon Steps (GD style)',
     head: {
-      ko: '// Neon Steps — 138 BPM 칩 하우스. Geometry Dash 같은 리듬 게임 음악 스타일로 새로 쓴 곡이에요 (원곡 없음)\n// 사각파 아르페지오, 오프비트 베이스, 사이드체인 슈퍼소 훅. 마지막 드롭에선 사각파가 한 옥타브 위에서 훅을 겹쳐요',
-      en: '// Neon Steps — 138 BPM chip house. An original in the style of rhythm-game music like Geometry Dash (not based on any song)\n// Square-wave arpeggio, offbeat bass, a sidechained supersaw hook. In the last drop a square wave doubles the hook an octave up',
+      ko: '// Neon Steps — 138 BPM 칩 하우스. Geometry Dash 같은 리듬 게임 음악 스타일로 새로 쓴 곡이에요 (원곡 없음)\n// 사각파 아르페지오, 오프비트 베이스, 사이드체인 슈퍼소 훅. 마지막 드롭에선 사각파가 한 옥타브 위에서 훅을 겹쳐요\n// auto 줄은 FX 시퀀스예요: 패드를 패턴대로 자동으로 눌러요 (스터터, 에코 아웃)',
+      en: '// Neon Steps — 138 BPM chip house. An original in the style of rhythm-game music like Geometry Dash (not based on any song)\n// Square-wave arpeggio, offbeat bass, a sidechained supersaw hook. In the last drop a square wave doubles the hook an octave up\n// The auto lines are FX sequences: they press pads from a pattern (a stutter, an echo out)',
     },
     body: `bpm 138
 key F major
@@ -2200,20 +2225,22 @@ chip   [0 2 4 7 4 2 0' 2]*2             | square oct 5 cut 5000 gain .17 duck .5
 pad    0^                               | gain .3 duck .9 verb .5
 lead   <[4 . 4 . 2 4 . 7] [6 _ 4 . 1 _ 4 .] [5 . 5 . 2 5 . 7] [8 _ 7 . 5 _ 3 _]> | supersaw fixed oct 4 gain .62 duck .4 verb .3 delay .2
 lead2  <[4 . 4 . 2 4 . 7] [6 _ 4 . 1 _ 4 .] [5 . 5 . 2 5 . 7] [8 _ 7 . 5 _ 3 _]> | square fixed oct 5 gain .16 cut 6000 delay .3
+auto stut <. . . [. . . x]>       | repeat 16      // FX sequence: a stutter on the last beat of every 4 bars
+auto out  <. . . [. . x _]>       | echo           // echo out at the end of each 4 bars of the break
 
 scene intro chip pad hat
 scene build chip pad clap hat riser | chip.cut 600>6000
-scene drop  kick clap hat ohat crash bass chip pad lead
-scene break pad lead chip filter
-scene last  all
+scene drop  kick clap hat ohat crash bass chip pad lead stut
+scene break pad lead chip out filter
+scene last  all -out
 song intro:8 build:4 drop:16 break:8 build:4 last:16
 `,
   },
   {
     id: 'gddnb', name: 'Hyperdrive (GD style)',
     head: {
-      ko: '// Hyperdrive — 174 BPM 드럼앤베이스. Geometry Dash 같은 리듬 게임 음악 스타일로 새로 쓴 곡이에요 (원곡 없음)\n// 리스 베이스 + 사인 서브, 사각파 훅, 빠른 플럭 아르페지오. k1 리스 필터, k2 훅 필터',
-      en: '// Hyperdrive — 174 BPM drum & bass. An original in the style of rhythm-game music like Geometry Dash (not based on any song)\n// Reese bass over a sine sub, a square-wave hook, a fast pluck arpeggio. k1 opens the reese, k2 the hook',
+      ko: '// Hyperdrive — 174 BPM 드럼앤베이스. Geometry Dash 같은 리듬 게임 음악 스타일로 새로 쓴 곡이에요 (원곡 없음)\n// 리스 베이스 + 사인 서브, 사각파 훅, 빠른 플럭 아르페지오. k1 리스 필터, k2 훅 필터. auto 줄이 4마디마다 리피트, 8마디마다 저음을 빼요',
+      en: '// Hyperdrive — 174 BPM drum & bass. An original in the style of rhythm-game music like Geometry Dash (not based on any song)\n// Reese bass over a sine sub, a square-wave hook, a fast pluck arpeggio. k1 opens the reese, k2 the hook. The auto lines repeat every 4 bars and cut the lows every 8',
     },
     body: `bpm 174
 key D minor
@@ -2229,11 +2256,13 @@ sub    0 _ . 0 _ . . . 0 _ . . <2 4> _ . . | sine oct 1 gain .36 duck .5
 hook   <[0 . 2 . 4 . 7 . 6 . 4 . 2 _ . .] [4 . 2 . 0 . 2 . 4 _ . . -1 _ . .]> | square oct 5 cut k2(1500,7000) gain .28 delay .25 duck .3
 arp    [0 4 7 4]*4                      | pluck oct 4 gain .3 cut 3500 delay .3 duck .4
 pad    0^7                              | gain .22 atk 1 rel 2 verb .6 duck .3
+auto rep  <. . . [. . x x]>       | repeat 8       // FX sequence: an eighth-note repeat closing every 4 bars
+auto kill <. . . . . . . [. . . x]> | kill low    // the lows drop out for the last beat of 8 bars
 
 scene intro pad arp hat
 scene build hat snare arp pad riser
 scene drop  all pause
-scene roll  kick snare ghost hat reese sub hook fill
+scene roll  kick snare ghost hat reese sub hook rep fill
 scene break pad hook arp filter down
 song intro:8 build:8 drop:16 roll:8 break:8 build:4 drop:16
 `,
@@ -2241,8 +2270,8 @@ song intro:8 build:8 drop:16 roll:8 break:8 build:4 drop:16
   {
     id: 'gdstep', name: 'Gravity Flip (GD style)',
     head: {
-      ko: '// Gravity Flip — 150 BPM 하프타임 덥스텝. Geometry Dash 같은 리듬 게임 음악 스타일로 새로 쓴 곡이에요 (원곡 없음)\n// 워블 베이스는 16분음표마다 필터 값을 바꿔서 만들어요 (cut [250 1800 600 3200]*4). 스네어는 3박에 한 번',
-      en: '// Gravity Flip — 150 BPM half-time dubstep. An original in the style of rhythm-game music like Geometry Dash (not based on any song)\n// The wobble bass changes its filter on every sixteenth (cut [250 1800 600 3200]*4). The snare lands once, on beat 3',
+      ko: '// Gravity Flip — 150 BPM 하프타임 덥스텝. Geometry Dash 같은 리듬 게임 음악 스타일로 새로 쓴 곡이에요 (원곡 없음)\n// 워블 베이스는 16분음표마다 필터 값을 바꿔서 만들어요 (cut [250 1800 600 3200]*4). 스네어는 3박에 한 번. auto 줄이 드롭을 게이트로 썰고 필터로 가라앉혀요',
+      en: '// Gravity Flip — 150 BPM half-time dubstep. An original in the style of rhythm-game music like Geometry Dash (not based on any song)\n// The wobble bass changes its filter on every sixteenth (cut [250 1800 600 3200]*4). The snare lands once, on beat 3. The auto lines gate the drop and sink it under a filter',
     },
     body: `bpm 150
 key G minor
@@ -2258,10 +2287,12 @@ sub    0 _ _ _ _ _ . 0 _ _ . . <3 5> _ . .  | sine oct 1 gain .55 duck .6
 chip   <[7 . 4 . 7 . 9 . 7 . 4 . 2 . 4 .] [7 . 4 . 7 . 9 . 11 _ 9 _ 7 _ . .]> | square oct 4 cut 4500 gain .3 delay .25 duck .3
 arp    [0 2 4 2]*4                      | pluck oct 4 gain .15 cut 3000 delay .35
 pad    0^                               | gain .26 atk .8 rel 2 verb .6 duck .4
+auto chop <. [. . . . . . x x] . [. . x _]> | gate 16   // FX sequence: the drop is gated in sixteenths here and there
+auto dive <. . . . . . . [. . . x]> | lp 600>150 in .25 // and dives under a closing filter before the next 8
 
 scene intro pad arp
 scene build arp chip hat snare riser
-scene drop  kick snare clap hat wob sub chip pad
+scene drop  kick snare clap hat wob sub chip pad chop dive
 scene break pad arp chip filter down
 song intro:8 build:4 drop:16 break:8 build:4 drop:16
 `,
@@ -2669,7 +2700,7 @@ const S = {
   errors: new Map(), lineNames: new Map(),
   muted: new Set(), solo: new Set(),
   knobs: [0.5, 0.5, 0.5, 0.5],
-  pads: new Map(), padMute: [], padSet: [], padGate: null, padPitch: 0, padFills: new Set(),
+  pads: new Map(), padMute: [], padSet: [], padGate: null, padPitch: 0, padFills: new Set(), autos: new Map(), autoOff: [],
   stutter: null, breakdown: null, build: null,
   rt: new Map(), vis: [], dirty: true,
   scenes: new Map(), song: null, arrSrc: '', songMode: true, songStart: 0, songFrom: 0, songJump: null, songCue: 0, liveScene: null, nextScene: null,
@@ -3325,6 +3356,7 @@ function playRoll(a, b) {
   }
 }
 function scheduleRange(a, b) {
+  S.schedTo = b;
   sceneFx(a, b);
   padGateSched(a, b);
   sceneLook(a, b);
@@ -3338,6 +3370,7 @@ function scheduleRange(a, b) {
   scheduleRange2(a, b);
 }
 function scheduleRange2(a, b) {
+  autoSched(a, b);
   for (const [pa, pb, off] of mapSpan(a, b))
   {
     for (const name of S.order) { const def = S.tracks.get(name); if (def) playEvents(def, pa, pb, off); }
@@ -3368,6 +3401,7 @@ function tick() {
 // ---------- program state ----------
 function applyState(st) {
   S.tracks = st.tracks; S.order = st.order;
+  if (st.autos) { S.autos = st.autos; S.autoSig = st.autoSig; }
   if (st.key) { S.root = st.key.root; S.scale = st.key.scale; S.keySrc = st.key.src; }
   S.prog = st.prog; S.progSrc = st.progSrc;
   setTimeout(gpuPrewarm, 0);
@@ -3433,7 +3467,7 @@ function resetFx(now) {
   A.crush.curve = null;
   if (typeof FRZ !== 'undefined' && (FRZ.on || FRZ.srcs.length)) freezeStop();
   if (A.riser) { try { A.riser.src.stop(now + 0.1); } catch (e) { } A.riser = null; }
-  S.padMute = []; S.padSet = []; S.padGate = null; S.padPitch = 0; S.padFills = new Set();
+  S.padMute = []; S.padSet = []; S.padGate = null; S.padPitch = 0; S.padFills = new Set(); S.autoOff = [];
   G.held.clear(); G.act.clear();
 }
 function hold(p, now) { p.cancelScheduledValues(now); p.setValueAtTime(p.value, now); }
@@ -3476,16 +3510,22 @@ function padGateSched(a, b) {
   const gt = S.padGate; if (!gt) return;
   const n = gt.g.length, gg = A.fxGate.gain, now = S.ctx.currentTime;
   for (let k = Math.ceil(a * n - EPS); k < b * n - EPS; k++) {
-    const c = k / n; if (c < gt.startC - EPS) continue;
+    const c = k / n; if (c < gt.startC - EPS || c >= (gt.endC ?? Infinity) - EPS) continue;
     const t = Math.max(now, timeOf(c)), on = gt.g[mod(k, n)];
     gg.setTargetAtTime(on ? 1 : 0.0001, t, 0.004);
   }
 }
-function padOn(name) {
-  const pad = S.pads && S.pads.get(name); if (!pad) return;
-  const now = S.ctx.currentTime, bar = 1 / S.cps, beat = bar / 4, dur = padIn(pad) * bar, c = S.lastC;
+function padOn(name) { const pad = S.pads && S.pads.get(name); if (pad) padStart(name, pad, S.lastC, false); }
+function padOff(name) { padStop(name, S.lastC, false); }
+// run fn when the audio clock reaches t (for changes that can't be scheduled on an AudioParam)
+function atTime(t, fn) { const ms = (t - S.ctx.currentTime) * 1000; if (ms < 4) fn(); else setTimeout(fn, ms); }
+// Start a pad's actions at bar position c. A live press (seq false) acts now and lines its release up with the
+// beat or bar; an auto line (seq true) is scheduled ahead, so everything happens exactly at c and at the release.
+function padStart(key, pad, c, seq) {
+  const now = Math.max(S.ctx.currentTime, seq ? timeOf(c) : 0), bar = 1 / S.cps, beat = bar / 4, dur = padIn(pad) * bar;
+  if (G.act.has(key)) padStop(key, c, seq);
   const st = { undo: [] };
-  G.act.set(name, st);
+  G.act.set(key, st);
   for (const a of pad.acts) {
     switch (a.op) {
       case 'lp': padSweep(A.lp.frequency, a.v, 20000, now, dur); st.undo.push(n => { hold(A.lp.frequency, n); A.lp.frequency.setTargetAtTime(20000, n, 0.12); }); break;
@@ -3493,13 +3533,13 @@ function padOn(name) {
       case 'res': hold(A.lp.Q, now); A.lp.Q.setTargetAtTime(Math.max(0.1, a.n), now, 0.2); st.undo.push(n => { hold(A.lp.Q, n); A.lp.Q.setTargetAtTime(0.7, n, 0.1); }); break;
       case 'repeat': {
         const len = 1 / Math.max(1, a.n), T0 = Math.ceil(c / len - 1e-6) * len;
-        S.stutter = { T0, L: T0, len, end: Infinity }; stutterCut(T0);
-        st.undo.push(() => { if (S.stutter) S.stutter.end = Math.max(S.lastC, S.stutter.T0); });
+        const sx = S.stutter = { T0, L: T0, len, end: Infinity }; stutterCut(T0);
+        st.undo.push((n, cEnd) => { if (S.stutter === sx) sx.end = Math.max(cEnd, sx.T0); });
         break;
       }
       case 'mute': case 'only': {
         const m = { list: a.list, only: a.op === 'only', startC: c, endC: Infinity };
-        S.padMute.push(m); st.undo.push(() => { m.endC = Math.ceil(S.lastC - 1e-6); });
+        S.padMute.push(m); st.undo.push((n, cEnd) => { m.endC = seq ? cEnd : Math.ceil(cEnd - 1e-6); });
         break;
       }
       case 'throw': {
@@ -3515,37 +3555,59 @@ function padOn(name) {
         hold(A.throw.gain, now); A.throw.gain.setTargetAtTime(0.9, now, 0.01); A.throw.gain.setTargetAtTime(0, t1, 0.02);
         hold(A.dFb.gain, now); A.dFb.gain.setTargetAtTime(0.8, now, 0.03);
         for (const p of [A.dryG.gain, A.rIn.gain, A.dIn.gain]) { hold(p, now); p.setTargetAtTime(0, t1, 0.03); }
-        st.undo.push(n => {
-          const tb = Math.max(n, timeOf(Math.ceil(S.lastC * 4 - 1e-6) / 4));
+        st.undo.push((n, cEnd) => {
+          const tb = seq ? n : Math.max(n, timeOf(Math.ceil(cEnd * 4 - 1e-6) / 4));
           for (const p of [A.dryG.gain, A.rIn.gain, A.dIn.gain]) { hold(p, n); p.setValueAtTime(p.value, tb); p.setTargetAtTime(1, tb, 0.01); }
           hold(A.throw.gain, n); A.throw.gain.setTargetAtTime(0, n, 0.02); hold(A.dFb.gain, n); A.dFb.gain.setTargetAtTime(S.dlFb ?? 0.42, tb + 0.3, 0.6);
         });
         break;
       }
       case 'verb': hold(A.vthrow.gain, now); A.vthrow.gain.setTargetAtTime(a.n ?? 0.8, now, 0.08); st.undo.push(n => { hold(A.vthrow.gain, n); A.vthrow.gain.setTargetAtTime(0, n, 0.15); }); break;
-      case 'gate': S.padGate = { g: a.g, startC: c }; padGateSched(c, S.lastC); st.undo.push(n => { S.padGate = null; hold(A.fxGate.gain, n); A.fxGate.gain.setTargetAtTime(1, n, 0.01); }); break;
-      case 'crush': A.crush.curve = crushCurve(a.n); st.undo.push(() => { A.crush.curve = null; }); break;
+      case 'gate': {
+        const gt = S.padGate = { g: a.g, startC: c, endC: Infinity };
+        padGateSched(c, Math.max(S.lastC, S.schedTo || 0));
+        st.undo.push((n, cEnd) => { gt.endC = cEnd; if (!seq && S.padGate === gt) S.padGate = null; hold(A.fxGate.gain, n); A.fxGate.gain.setTargetAtTime(1, n, 0.01); });
+        break;
+      }
+      case 'crush': atTime(now, () => { A.crush.curve = crushCurve(a.n); }); st.undo.push(n => atTime(n, () => { A.crush.curve = null; })); break;
       case 'kill': for (const w of a.list) { const p = (w === 'low' ? A.eqL : w === 'mid' ? A.eqM : A.eqH).gain; hold(p, now); p.setTargetAtTime(w === 'mid' ? -28 : -40, now, 0.012); st.undo.push(n => { hold(p, n); p.setTargetAtTime(0, n, 0.012); }); } break;
       case 'pitch': S.padPitch += a.n; st.undo.push(() => { S.padPitch -= a.n; }); break;
-      case 'riser': startBuildAt(c, a.n ?? 4); st.undo.push(() => dropBuildAt(Math.ceil(S.lastC - 1e-6))); break;
-      case 'set': { const x = { track: a.track, param: a.param, v: a.v, startC: c, endC: Infinity, dur: padIn(pad) }; S.padSet.push(x); st.undo.push(() => { x.endC = S.lastC; }); break; }
+      case 'riser': startBuildAt(c, a.n ?? 4); st.undo.push((n, cEnd) => dropBuildAt(seq ? cEnd : Math.ceil(cEnd - 1e-6))); break;
+      case 'set': { const x = { track: a.track, param: a.param, v: a.v, startC: c, endC: Infinity, dur: padIn(pad) }; S.padSet.push(x); st.undo.push((n, cEnd) => { x.endC = cEnd; }); break; }
       case 'scene':
         if (a.w === 'next' || a.w === 'prev') { if (S.song && S.songMode) skipPart(a.w === 'next' ? 1 : -1); else { const names = [...S.scenes.keys()]; if (names.length) { const cur = names.indexOf((sceneNameAt(S.lastC) || {}).name); launchScene(names[mod(cur + (a.w === 'next' ? 1 : -1), names.length)], 'bar'); } } }
         else if (S.scenes.has(a.w)) launchScene(a.w, 'bar');
         break;
       case 'fill': { const n = Math.ceil(c + 0.5 - 1e-6); S.padFills.add(n); break; }
-      case 'impact': impact(Math.max(now, timeOf(Math.ceil(c * 4 - 1e-6) / 4))); break;
+      case 'impact': impact(seq ? now : Math.max(now, timeOf(Math.ceil(c * 4 - 1e-6) / 4))); break;
       case 'swell': { const n = Math.ceil(c - 1e-6) + (c % 1 > 0.6 ? 1 : 0); playSwell(now + 0.01, timeOf(n)); break; }
-      case 'freeze': freezeStart(); st.undo.push(() => freezeStop()); break;
-      case 'down': playDown(Math.max(now, timeOf(Math.ceil(c * 4 - 1e-6) / 4)), 2 * bar); break;
+      case 'freeze': atTime(now, freezeStart); st.undo.push(n => atTime(n, freezeStop)); break;
+      case 'down': playDown(seq ? now : Math.max(now, timeOf(Math.ceil(c * 4 - 1e-6) / 4)), 2 * bar); break;
     }
   }
 }
-function padOff(name) {
-  const st = G.act.get(name); if (!st) return;
-  G.act.delete(name);
-  const now = S.ctx.currentTime;
-  for (const u of st.undo) u(now);
+function padStop(key, cEnd, seq) {
+  const st = G.act.get(key); if (!st) return;
+  G.act.delete(key);
+  const n = Math.max(S.ctx.currentTime, seq ? timeOf(cEnd) : 0);
+  for (const u of st.undo) u(n, cEnd);
+}
+// auto lines: each hit presses its pad at the hit and releases it when the hit ends, in the scenes that have it
+function autoSched(a, b) {
+  const evs = [], keep = [];
+  for (const o of S.autoOff) (o.c < b - EPS ? evs : keep).push(o);
+  S.autoOff = keep;
+  for (const [name, au] of S.autos || []) {
+    const pad = au.pad || (S.pads && S.pads.get(name)); if (!pad) continue;
+    for (const e of eventsIn(au, a, b)) {
+      if (!activeIn(sceneAt(e.s), name) || inPause(e.s)) continue;
+      const key = 'auto:' + name, off = { key, c: e.s + e.d, on: false };
+      evs.push({ key, c: e.s, on: true, pad });
+      (off.c < b - EPS ? evs : S.autoOff).push(off);
+    }
+  }
+  evs.sort((x, y) => x.c - y.c || (x.on - y.on));   // a release before a press at the same moment
+  for (const ev of evs) ev.on ? padStart(ev.key, ev.pad, ev.c, true) : padStop(ev.key, Math.max(a, ev.c), true);
 }
 // hold pads act while held; latch pads toggle on each press
 function gestureOn(g) {
@@ -6115,6 +6177,8 @@ function evaluate(mode = 'bar', opts = {}) {
   if (r.scale) key = { root: key.root, scale: r.scale, src: `${NOTE_NAMES[key.root]} ${r.scale}` };
   if (key.root !== S.root || key.scale !== S.scale) structural = true;
   if (r.progSrc !== S.progSrc) structural = true;
+  const autoSig = [...r.autos.values()].map(a => a.name + ' ' + a.src).join('\n');
+  if (autoSig !== (S.autoSig || '')) structural = true;
   if (r.arrSrc !== S.arrSrc || opts.resetSong) structural = true;
   const newBpm = r.bpm && r.bpm !== S.bpm ? r.bpm : null;
   const deferBpm = newBpm && S.playing && structural && mode === 'phrase';
@@ -6125,7 +6189,7 @@ function evaluate(mode = 'bar', opts = {}) {
   { const sp = r.space || 'hall-default'; if (sp !== (S.space || 'hall-default')) { S.space = sp; if (S.ctx) applySpace(sp); } }
   // backdrops: a changed viz line takes over again from any button pressed before
   { const sig = r.viz ? r.viz.list.join(' ') + '/' + r.viz.per : ''; if (sig !== S.vizSig) { S.vizSig = sig; S.vizManual = false; } S.vizCode = r.viz; S.shaders = r.shaders; }
-  const state = { tracks, order, key, prog: r.prog, progSrc: r.progSrc, bpm: deferBpm ? newBpm : null, scenes: r.scenes, song: r.song, arrSrc: r.arrSrc, resetSong: !!opts.resetSong };
+  const state = { tracks, order, autos: r.autos, autoSig, key, prog: r.prog, progSrc: r.progSrc, bpm: deferBpm ? newBpm : null, scenes: r.scenes, song: r.song, arrSrc: r.arrSrc, resetSong: !!opts.resetSong };
   if (S.playing && structural) {
     const applyAt = mode === 'phrase' ? Math.ceil(S.lastC / 4 - 1e-6) * 4 : Math.ceil(S.lastC - 1e-6);
     S.pending = { applyAt, state, mode };
@@ -6397,7 +6461,7 @@ function acItems(pre, word) {
   const before = pre.slice(0, pre.length - word.length);
   const hm = /^\s*([a-zA-Z]\w*)/.exec(pre), head = hm && hm[1];
   if (/^\s*$/.test(before)) {
-    const g = ['bpm', 'key', 'scale', 'swing', 'prog', 'scene', 'song', 'master', 'seed', 'fx', 'bus', 'space', 'viz', 'shader'].map(n => ({ label: n, ins: n + ' ', desc: t('ac_' + n) }));
+    const g = ['bpm', 'key', 'scale', 'swing', 'prog', 'scene', 'song', 'master', 'seed', 'fx', 'auto', 'bus', 'space', 'viz', 'shader'].map(n => ({ label: n, ins: n + ' ', desc: t('ac_' + n) }));
     const tr = AC_TRACKS.map(n => ({ label: n, ins: n.padEnd(7) + ' ', desc: instForName(n) }));
     return [...tr, ...g];
   }
