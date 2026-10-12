@@ -405,6 +405,10 @@ const I18N = {
     sceneName: 'scene 다음에 씬 이름을 써요 (예: scene drop all)', songFmt: 'song 은 이름:마디 형식이에요 (예: song intro:8 drop:16)',
     noTrack: "'{n}' 트랙이 없어요 (나머지는 그대로 적용돼요)", noScene: "'{n}' 씬이 없어요",
     everyFmt: 'every 는 "every 4 rev", "every 8 +2", "every 4 ply 2" 처럼 써요', masterFmt: 'master 는 {list} 중 하나예요', autoFmt: '씬 오토메이션은 "트랙.파라미터 값" 형식이에요 (예: arp.cut 300>6000)',
+    sampleFmt: 'sample 은 "sample 이름 [hit | 음 이름] [주소]" 형식이에요 (예: sample kick2 https://…/kick.wav, sample pad1 c3 github:사용자/저장소/main/pad.wav)', sampleName: "'{n}' 은 이미 쓰는 이름이라 소리 이름으로 쓸 수 없어요", sampleNone: "'{n}' 소리가 없어요. 주소를 쓰거나 파일을 끌어다 놓으세요",
+    sampleLoadFail: '{n} 소리를 불러오지 못했어요 ({e}). 주소와 공개 여부를 확인해 주세요', soundsAdded: '내 소리 {n}개를 추가했어요: {list}', soundsBad: '읽을 수 없는 파일: {list}',
+    sndMine: '내 소리', sndAdd: '+ 파일 추가', sndRemove: '지우기', sndDrop: '오디오 파일이나 폴더를 페이지에 끌어다 놓아도 돼요. 이 브라우저에 저장돼요. 파일 이름에 음(pad_c3)이 있으면 그 음 기준으로 음정이 바뀌고, 없으면 히트로 울려요', sndDropBig: '놓으면 내 소리로 추가돼요', sndHit: '히트: x 마다 그대로 울려요 (tune 으로 음높이)', sndPitched: '음정 악기: {n} 에서 녹음한 소리', ac_sample: '녹음을 소리로: 주소 또는 끌어다 놓은 파일',
+    h50d: '파일을 끌어다 놓거나 주소로 불러온 녹음이 그 이름의 악기가 돼요. hit 은 그대로, c3 같은 음을 쓰면 그 음 기준으로 음정을 바꿔요',
     letFmt: 'let 은 "let 이름 = 패턴" 형식이에요 (예: let A = c4 e4 g4). 쓸 때는 $A', noVar: "'{n}' 프레이즈가 없어요. let {n} = … 로 만드세요", varLoop: "'{n}' 프레이즈가 자기 자신을 불러요",
     tfFmt: "'{w}' 은 이렇게 써요: off 1/8 +7 · echo 3 1/8 .5 · jux rev · superimpose +2 · sometimes .3 ply 2 · degrade .3 · chunk 4 +7 · iter 4 · palindrome · struct x.xx · mask xx.x · scramble 8 · shuffle 4",
     tf_off: '시간을 밀어서 겹치기 (1/8 = 8분음표)', tf_echo: '횟수 간격 감쇠로 메아리', tf_jux: '왼쪽은 원래대로, 오른쪽은 바꿔서', tf_superimpose: '바꾼 복사본을 위에 겹치기', tf_sometimes: '확률로 일부 음만 바꾸기', tf_often: '75% 확률로 바꾸기', tf_rarely: '25% 확률로 바꾸기', tf_degrade: '확률로 음 빼기', tf_chunk: '마디를 N조각으로, 한 조각씩 돌아가며 바꾸기', tf_iter: '매 마디 시작점을 1/N씩 밀기', tf_palindrome: '한 마디씩 앞뒤로 번갈아', tf_struct: '이 리듬으로 다시 치기 (x와 .)', tf_mask: 'x 칸의 음만 남기기', tf_scramble: 'N조각을 무작위로 (반복 허용)', tf_shuffle: 'N조각을 섞어서 (한 번씩)', ac_var: 'let 으로 만든 프레이즈', ac_let: '프레이즈 이름 붙이기: let A = …', ac_rand: '음마다 a~b 사이 무작위', ac_perlin: 'a~b 사이를 부드럽게 떠도는 값',
@@ -587,6 +591,10 @@ const I18N = {
     sceneName: 'Write a scene name after scene (e.g. scene drop all)', songFmt: 'Write song as name:bars (e.g. song intro:8 drop:16)',
     noTrack: "There's no track '{n}' (the rest still applies)", noScene: "There's no scene '{n}'",
     everyFmt: 'Write every like "every 4 rev", "every 8 +2" or "every 4 ply 2"', masterFmt: 'master is one of {list}', autoFmt: 'Scene automation is "track.param value" (e.g. arp.cut 300>6000)',
+    sampleFmt: 'Write sample as "sample name [hit | note] [address]" (e.g. sample kick2 https://…/kick.wav, sample pad1 c3 github:user/repo/main/pad.wav)', sampleName: "'{n}' is already a word in Tactus, so a sound can't use it", sampleNone: "There's no sound '{n}'. Give an address, or drop the file on the page",
+    sampleLoadFail: "Couldn't load the sound {n} ({e}). Check the address and that it is public", soundsAdded: 'Added {n} sounds: {list}', soundsBad: "Couldn't read: {list}",
+    sndMine: 'My sounds', sndAdd: '+ Add files', sndRemove: 'Remove', sndDrop: 'You can also drop audio files or folders anywhere on the page. They stay in this browser. A note in the file name (pad_c3) makes it play pitched from that note; otherwise it plays as a hit', sndDropBig: 'Drop to add to my sounds', sndHit: 'Hit: plays as recorded on each x (tune changes pitch)', sndPitched: 'Pitched: recorded at {n}', ac_sample: 'a recording as a sound: an address or a dropped file',
+    h50d: 'A recording dropped on the page or loaded from an address becomes an instrument of that name. hit plays it as recorded; a note like c3 re-pitches it from that note',
     letFmt: 'Write let as "let name = pattern" (e.g. let A = c4 e4 g4), then use it as $A', noVar: "There's no phrase '{n}'. Make one with let {n} = …", varLoop: "The phrase '{n}' refers to itself",
     tfFmt: "Write '{w}' like: off 1/8 +7 · echo 3 1/8 .5 · jux rev · superimpose +2 · sometimes .3 ply 2 · degrade .3 · chunk 4 +7 · iter 4 · palindrome · struct x.xx · mask xx.x · scramble 8 · shuffle 4",
     tf_off: 'a copy later by a time (1/8 = an eighth)', tf_echo: 'echoes: count, spacing, decay', tf_jux: 'the pattern left, a changed copy right', tf_superimpose: 'a changed copy on top', tf_sometimes: 'change some of the notes, by chance', tf_often: 'change notes 75% of the time', tf_rarely: 'change notes 25% of the time', tf_degrade: 'drop notes by chance', tf_chunk: 'cut the bar in N, change one part per bar in turn', tf_iter: 'start each bar 1/N further in', tf_palindrome: 'forwards, then backwards, bar by bar', tf_struct: 'replay the notes on this rhythm (x and .)', tf_mask: 'keep only notes on x steps', tf_scramble: 'N parts in random order (may repeat)', tf_shuffle: 'N parts shuffled (each once)', ac_var: 'a phrase made with let', ac_let: 'name a phrase: let A = …', ac_rand: 'a random value from a to b for each note', ac_perlin: 'a value drifting smoothly between a and b',
@@ -1143,7 +1151,7 @@ const RETURN_ONLY = ['time', 'fb', 'pre', 'limit'];
 // names of the code's own buses: each also works as a send parameter on track lines (set while compiling)
 let BUS_NAMES = new Set();
 const EXP_PARAMS = new Set(['cut', 'hpf', 'lpf', 'midf']);
-const GLOBALS = new Set(['bpm', 'key', 'scale', 'swing', 'prog', 'scene', 'song', 'master', 'seed', 'fx', 'auto', 'let', 'space', 'viz', 'shader', 'bus']);
+const GLOBALS = new Set(['bpm', 'key', 'scale', 'swing', 'prog', 'scene', 'song', 'master', 'seed', 'fx', 'auto', 'let', 'sample', 'space', 'viz', 'shader', 'bus']);
 // generator parameters shape the notes, so they are part of the pattern rather than the sound
 const GEN_PARAMS = ['seed', 'dens', 'evolve', 'bars'];
 let GEN_SEED = 0;
@@ -1180,8 +1188,18 @@ const SPACES_LIST = ['hall', 'room', 'chamber', 'cathedral', 'plate'];
 const VIZ_BUILTIN = ['roll', 'grid', 'spiral', 'fft', 'terrain', 'contour', 'dots', 'demo', 'sono', 'off'];
 const TRANSFORMS = ['rev', 'fast', 'slow', 'ply', 'skip', 'inv'];
 
+// sounds the person added: name -> { mode: 'hit' | 'pitched', root (midi), url? }.
+// USER_SOUNDS holds files dropped into the app (set by sounds.js); CODE_SOUNDS comes from sample lines, per compile.
+let USER_SOUNDS = new Map(), CODE_SOUNDS = new Map();
+const soundOf = n => CODE_SOUNDS.get(n) || USER_SOUNDS.get(n) || null;
+const isInst = w => DRUMS.includes(w) || SYNTHS.includes(w) || LOOPS.includes(w) || !!soundOf(w);
+// a hit plays the recording as it is on each x; a pitched sound is re-pitched to the notes
+const isHit = inst => DRUMS.includes(inst) || (soundOf(inst) || {}).mode === 'hit';
+// words a sound can't be called, so it can't hide a keyword
+const RESERVED = () => new Set([...DRUMS, ...SYNTHS, ...LOOPS, ...PARAMS, ...GLOBALS, ...TF_WORDS, ...VOICINGS, ...ARPS, 'fixed', 'fast', 'slow', 'every', 'rev', 'inv', 'skip', 'ply', 'x', 'r']);
 function instForName(name) {
   const n = name.toLowerCase();
+  if (isInst(name)) return name;
   if (DRUMS.includes(n) || SYNTHS.includes(n) || LOOPS.includes(n)) return n;
   for (const [pre, inst] of NAME_INST) if (n.startsWith(pre)) return inst;
   return 'tri';
@@ -1249,7 +1267,7 @@ function parseParams(src, base) {
   const every = [], tf = [];
   for (let i = 0; i < chunks.length; i++) {
     const w = chunks[i].s;
-    if (DRUMS.includes(w) || SYNTHS.includes(w) || LOOPS.includes(w)) { inst = w; continue; }
+    if (isInst(w)) { inst = w; continue; }
     if (w === 'fixed') { fixed = true; continue; }
     if (VOICINGS.includes(w)) { voicing = w; continue; }
     if (ARPS.includes(w)) { arp = w; continue; }
@@ -1347,8 +1365,10 @@ function tfAt(chunks, i) {
   return { fn, i, src: chunks.slice(at, i + 1).map(c => c.s).join(' ') };
 }
 
+// where a // comment starts; the // of an address (https://) is not one
+function commentAt(text) { const m = /(^|[^:])\/\//.exec(text); return m ? m.index + m[1].length : -1; }
 function stripComment(text) {
-  const i = text.indexOf('//');
+  const i = commentAt(text);
   return i >= 0 ? text.slice(0, i) : text;
 }
 
@@ -1432,6 +1452,8 @@ function parseLine(text) {
     return { type: 'prog', pat: parseMini(rest, restBase), src: rest.trim() };
   }
   if (name === 'fx') return { type: 'pad', pad: parsePad(rest, restBase) };
+  // sample NAME [hit | NOTE] [URL]     a recording as a sound: from the web, or a file dropped in (to change how it plays)
+  if (name === 'sample') return parseSample(rest, restBase);
   // let A = e5 d#5 e5 b4   ·   then $A anywhere a pattern goes: lead <$A $A $B>
   if (name === 'let') {
     const lm = /^(\s*)([a-zA-Z_]\w*)\s*=\s*/.exec(rest);
@@ -1513,12 +1535,28 @@ function parseLine(text) {
   const inst = pr.inst || instForName(name);
   return {
     type: 'track', name, pat: p, params: pr.params, inst, fixed: pr.fixed, opts: { voicing: pr.voicing, arp: pr.arp }, gen: spec,
-    kind: DRUMS.includes(inst) ? 'drum' : LOOPS.includes(inst) ? 'loop' : 'synth',
+    kind: isHit(inst) ? 'drum' : LOOPS.includes(inst) ? 'loop' : 'synth',
     chop: patSrc.trim() !== '',
     patKey: inst + '|' + patSrc.replace(/\s+/g, ' ').trim() + '|' + pr.speed + '|' + pr.every.map(x => x.src).join(',') + '|' + pr.tf.map(x => x.src).join(',') + varsUsed.map(n => '|$' + n + '=' + VARS.get(n).src).join('') + (spec ? `|g${spec.seed},${spec.dens},${spec.bars},${spec.evolve},${spec.range}` : ''),
   };
 }
 
+const URL_RE = /^(https?:\/\/\S+|github:\S+)$/;
+function parseSample(rest, restBase) {
+  const ch = splitChunks(rest, restBase);
+  if (!ch.length || !/^[a-zA-Z]\w*$/.test(ch[0].s)) throw new PErr(t('sampleFmt'), restBase);
+  const name = ch[0].s;
+  if (RESERVED().has(name)) throw new PErr(t('sampleName', { n: name }), ch[0].c0);
+  const out = { type: 'sample', name, mode: null, root: null, url: null };
+  for (const c of ch.slice(1)) {
+    if (c.s === 'hit') out.mode = 'hit';
+    else if (/^[a-gA-G][#b]?-?\d$/.test(c.s)) { out.mode = 'pitched'; out.root = atomNotes(c.s.toLowerCase(), 0, 'major', 4, 0)[0]; }
+    else if (URL_RE.test(c.s)) out.url = c.s.startsWith('github:') ? 'https://raw.githubusercontent.com/' + c.s.slice(7) : c.s;
+    else throw new PErr(t('sampleFmt'), c.c0);
+  }
+  if (!out.url && !USER_SOUNDS.has(name)) throw new PErr(t('sampleNone', { n: name }), ch[0].c0);
+  return out;
+}
 function parsePad(rest, restBase) {
   const bar = rest.indexOf('|');
   const head = splitChunks(bar >= 0 ? rest.slice(0, bar) : rest, restBase);
@@ -1570,10 +1608,13 @@ const DEFAULT_PADS = DEFAULT_PAD_SRC.map(l => { const r = parseLine(l); r.pad.bu
 function compile(text) {
   { const sm = /^\s*seed\s+(-?\d+)\s*(?:\/\/.*)?$/m.exec(text); GEN_SEED = sm ? +sm[1] : 0; }
   const lines = text.split('\n');
-  const out = { pads: new Map(), autos: new Map(), seed: GEN_SEED, master: null, bpm: null, key: null, scale: null, swing: null, prog: null, progSrc: '', scenes: new Map(), song: null, arrSrc: '', tracks: new Map(), order: [], errors: new Map(), lineNames: new Map(), space: null, viz: null, shaders: new Map(), buses: new Map(), masterParams: {} };
+  const out = { pads: new Map(), autos: new Map(), samples: new Map(), seed: GEN_SEED, master: null, bpm: null, key: null, scale: null, swing: null, prog: null, progSrc: '', scenes: new Map(), song: null, arrSrc: '', tracks: new Map(), order: [], errors: new Map(), lineNames: new Map(), space: null, viz: null, shaders: new Map(), buses: new Map(), masterParams: {} };
   // bus names first, so track lines anywhere in the code can send to them
   BUS_NAMES = new Set();
   VARS = new Map();
+  // sample lines first too, so a track above one can already play it
+  CODE_SOUNDS = new Map();
+  lines.forEach(ln => { if (!/^\s*sample\s/.test(stripComment(ln))) return; try { const r = parseLine(ln); const u = USER_SOUNDS.get(r.name); CODE_SOUNDS.set(r.name, { mode: r.mode || (u ? u.mode : 'hit'), root: r.root ?? (u ? u.root : 60), url: r.url }); } catch (e) { } });
   lines.forEach((ln, i) => { const m = /^(\s*let\s+([a-zA-Z_]\w*)\s*=\s*)(.*)$/.exec(stripComment(ln)); if (m && !VARS.has(m[2]) && m[3].trim()) VARS.set(m[2], { src: m[3], base: m[1].length, line: i }); });
   for (const ln of lines) { const m = /^\s*bus\s+([a-zA-Z]\w*)/.exec(stripComment(ln)); if (m && m[1] !== 'verb' && m[1] !== 'delay' && !PARAMS.includes(m[1]) && !TF_WORDS.includes(m[1])) BUS_NAMES.add(m[1]); }
   const sceneLines = [];
@@ -1592,6 +1633,7 @@ function compile(text) {
       else if (r.type === 'shader') { if (out.shaders.has(r.name)) throw new PErr(t('dup', { n: r.name }), 0); r.line = i; out.shaders.set(r.name, r); }
       else if (r.type === 'seed') out.seed = r.v;
       else if (r.type === 'pad') { r.pad.line = i; if (out.pads.has(r.pad.name)) throw new PErr(t('dup', { n: r.pad.name }), 0); out.pads.set(r.pad.name, r.pad); }
+      else if (r.type === 'sample') { if (out.samples.has(r.name)) throw new PErr(t('dup', { n: r.name }), 0); out.samples.set(r.name, { ...CODE_SOUNDS.get(r.name), line: i }); }
       else if (r.type === 'let') { if (VARS.get(r.name).line !== i) throw new PErr(t('dup', { n: r.name }), 0); }
       else if (r.type === 'auto') { if (out.autos.has(r.name)) throw new PErr(t('dup', { n: r.name }), 0); r.line = i; r.cache = new Map(); out.autos.set(r.name, r); }
       else if (r.type === 'swing') out.swing = r.v;
