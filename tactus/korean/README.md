@@ -8,7 +8,7 @@ The janggu, buk, jing and kkwaenggwari in [Tactus](../) are synthesized one-shot
 | `deok` | Janggu high head (채편), struck with the thin bamboo stick | Tight head struck near the rim with a narrow contact, plus the stick's dry crack |
 | `buk`, `buktak` | Buk head, and a hit on the wooden shell | Membrane with a stick contact; modal wood shell |
 | `jing` | Large bronze gong | Modal: 15 partials, each split into a slowly beating pair. The upper partials swell in after the hit. |
-| `kkwaeng`, `kkwaengm` | Kkwaenggwari, open and hand-muted | Modal: 19 bright partials and the hard mallet's attack |
+| `kkwaeng`, `kkwaengm` | Kkwaenggwari, open and hand-muted | Resynthesized from measurements of isolated hits: 43 partials (open) and 60 (muted), each with its own level and decay and split into a slowly beating pair, plus 20 third-octave bands of decaying noise matched to the measured levels |
 
 The membrane solver uses the same scheme as Tactus's GPU `membrane` voice:
 
@@ -25,4 +25,4 @@ Octave-band levels were then matched to the same references.
 
 Each instrument has round-robin hits and up to three strengths. They are encoded as MP3 (LAME VBR quality 2) inside the page.
 
-`kr_synth.py` renders every one-shot as a WAV file. It needs only NumPy.
+`kr_synth.py` renders the drums and the jing as WAV files. `kkw_fit.py` measures the kkwaenggwari parameters into `kkw_fit.json`, and `kkw_synth.py` renders the kkwaenggwari hits from that file. They need only NumPy, and `kkw_fit.py` also needs ffmpeg and a reference recording.
