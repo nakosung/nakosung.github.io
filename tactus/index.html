@@ -1489,15 +1489,21 @@ function compile(text) {
   return out;
 }
 
-// events for one whole cycle, cached per track definition
+// Where pattern time starts, in bars. The scheduler points it at the start of the song, so that a piece written
+// out bar by bar (a long <…>) starts on its first bar when it loads during playback, and a jump to a section of
+// the song plays that section's notes. Outside the app (the tests) it stays at 0.
+let patOrigin = () => 0;
+function setPatOrigin(f) { patOrigin = f; }
+// events for one whole cycle (n in song time), cached per track definition in pattern time
 function cycleEvents(def, n) {
-  let ev = def.cache.get(n);
+  const o = patOrigin(n), k = n - o;
+  let ev = def.cache.get(k);
   if (!ev) {
-    ev = def.pat.q(n, n + 1).filter(e => e.s >= n - EPS && e.s < n + 1 - EPS);
-    def.cache.set(n, ev);
+    ev = def.pat.q(k, k + 1).filter(e => e.s >= k - EPS && e.s < k + 1 - EPS);
+    def.cache.set(k, ev);
     if (def.cache.size > 64) def.cache.delete(def.cache.keys().next().value);
   }
-  return ev;
+  return o ? ev.map(e => ({ ...e, s: e.s + o })) : ev;
 }
 function eventsIn(def, a, b) {
   const out = [];
@@ -1507,13 +1513,14 @@ function eventsIn(def, a, b) {
 }
 // value of a (mini) pattern at time s, numeric
 function patValueAt(p, s) {
+  s -= patOrigin(s);
   const n = Math.floor(s + EPS);
   let v = null;
   for (const e of p.q(n, n + 1)) if (e.s <= s + EPS && s < e.s + e.d - EPS) v = e.v;
   return v === null ? null : parseFloat(v);
 }
 
-if (false) module.exports = { ply, rev, polymeter, accentOf, parseChord, progValue, parseMini, parseLine, compile, eventsIn, atomNotes, patValueAt, PErr, tokenize, SCALES };
+if (false) module.exports = { ply, rev, polymeter, accentOf, parseChord, progValue, parseMini, parseLine, compile, eventsIn, cycleEvents, setPatOrigin, atomNotes, patValueAt, PErr, tokenize, SCALES };
 
 // ===================== Tactus procedural composition =====================
 // Generators write ordinary mini-notation from a seed, so everything they make can be read, edited and baked.

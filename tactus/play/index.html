@@ -302,7 +302,7 @@ body.recording .editor { border-color: var(--c-err); }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.12 22:00<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.12 22:32<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -1627,15 +1627,21 @@ function compile(text) {
   return out;
 }
 
-// events for one whole cycle, cached per track definition
+// Where pattern time starts, in bars. The scheduler points it at the start of the song, so that a piece written
+// out bar by bar (a long <…>) starts on its first bar when it loads during playback, and a jump to a section of
+// the song plays that section's notes. Outside the app (the tests) it stays at 0.
+let patOrigin = () => 0;
+function setPatOrigin(f) { patOrigin = f; }
+// events for one whole cycle (n in song time), cached per track definition in pattern time
 function cycleEvents(def, n) {
-  let ev = def.cache.get(n);
+  const o = patOrigin(n), k = n - o;
+  let ev = def.cache.get(k);
   if (!ev) {
-    ev = def.pat.q(n, n + 1).filter(e => e.s >= n - EPS && e.s < n + 1 - EPS);
-    def.cache.set(n, ev);
+    ev = def.pat.q(k, k + 1).filter(e => e.s >= k - EPS && e.s < k + 1 - EPS);
+    def.cache.set(k, ev);
     if (def.cache.size > 64) def.cache.delete(def.cache.keys().next().value);
   }
-  return ev;
+  return o ? ev.map(e => ({ ...e, s: e.s + o })) : ev;
 }
 function eventsIn(def, a, b) {
   const out = [];
@@ -1645,13 +1651,14 @@ function eventsIn(def, a, b) {
 }
 // value of a (mini) pattern at time s, numeric
 function patValueAt(p, s) {
+  s -= patOrigin(s);
   const n = Math.floor(s + EPS);
   let v = null;
   for (const e of p.q(n, n + 1)) if (e.s <= s + EPS && s < e.s + e.d - EPS) v = e.v;
   return v === null ? null : parseFloat(v);
 }
 
-if (false) module.exports = { ply, rev, polymeter, accentOf, parseChord, progValue, parseMini, parseLine, compile, eventsIn, atomNotes, patValueAt, PErr, tokenize, SCALES };
+if (false) module.exports = { ply, rev, polymeter, accentOf, parseChord, progValue, parseMini, parseLine, compile, eventsIn, cycleEvents, setPatOrigin, atomNotes, patValueAt, PErr, tokenize, SCALES };
 
 // ===================== Tactus procedural composition =====================
 // Generators write ordinary mini-notation from a seed, so everything they make can be read, edited and baked.
@@ -2294,6 +2301,127 @@ song piano:11 cembalo:11
 `,
   },
   {
+    id: 'elise', name: 'Für Elise (Lo-fi)',
+    head: {
+      ko: '// 베토벤, 엘리제를 위하여 WoO 59 (1810, 퍼블릭 도메인) 첫 부분 44마디를 음 하나하나 옮겼어요. 3/8박자 두 마디가 한 칸(16분음표 12칸)\n// 처음 8칸은 피아노만, 그다음은 6/8 로파이 비트와 업라이트 베이스가 들어와요. 악보: Mutopia Project (퍼블릭 도메인 판)',
+      en: '// Beethoven, Für Elise WoO 59 (1810, public domain): the first 44 bars, note for note. Each step of <> is two 3/8 bars (twelve sixteenths)\n// Piano alone for 8 steps, then a 6/8 lo-fi beat and upright bass. Score: Mutopia Project (public domain edition)',
+    },
+    body: `bpm 90
+key A minor
+master warm
+space room
+
+rh     <[e5 d#5 e5 b4 d5 c5 a4 _ . c4 e4 a4] [b4 _ . e4 g#4 b4 c5 _ . e4 e5 d#5] [e5 d#5 e5 b4 d5 c5 a4 _ . c4 e4 a4] [b4 _ . e4 c5 b4 a4@4 e5 d#5] [e5 d#5 e5 b4 d5 c5 a4 _ . c4 e4 a4] [b4 _ . e4 g#4 b4 c5 _ . e4 e5 d#5] [e5 d#5 e5 b4 d5 c5 a4 _ . c4 e4 a4] [b4 _ . e4 c5 b4 a4 _ . b4 c5 d5] [e5@3 g4 f5 e5 d5@3 f4 e5 d5] [c5@3 e4 d5 c5 b4 _ . e4 e5 .] [. e5 e6 . . d#5 e5 _ . d#5 e5 d#5] [e5 d#5 e5 b4 d5 c5 a4 _ . c4 e4 a4] [b4 _ . e4 g#4 b4 c5 _ . e4 e5 d#5] [e5 d#5 e5 b4 d5 c5 a4 _ . c4 e4 a4] [b4 _ . e4 c5 b4 a4 _ . b4 c5 d5] [e5@3 g4 f5 e5 d5@3 f4 e5 d5] [c5@3 e4 d5 c5 b4 _ . e4 e5 .] [. e5 e6 . . d#5 e5 _ . d#5 e5 d#5] [e5 d#5 e5 b4 d5 c5 a4 _ . c4 e4 a4] [b4 _ . e4 g#4 b4 c5 _ . e4 e5 d#5] [e5 d#5 e5 b4 d5 c5 a4 _ . c4 e4 a4] [b4 _ . e4 c5 b4 a4@4 e5 d#5]> | piano gain .6 len 1.6 rel .8 verb .2 human .15
+lh     <[.@6 a2 e3 a3 .@3] [e2 e3 g#3 .@3 a2 e3 a3 .@3] [.@6 a2 e3 a3 .@3] [e2 e3 g#3 .@3 a2 e3 a3 .@3] [.@6 a2 e3 a3 .@3] [e2 e3 g#3 .@3 a2 e3 a3 .@3] [.@6 a2 e3 a3 .@3] [e2 e3 g#3 .@3 a2 e3 a3 .@3] [c3 g3 c4 .@3 g2 g3 b3 .@3] [a2 e3 a3 .@3 e2 e3 e4 . . e4] [e5 . . d#5 e5 . . d#5 e5 .@3] [.@6 a2 e3 a3 .@3] [e2 e3 g#3 .@3 a2 e3 a3 .@3] [.@6 a2 e3 a3 .@3] [e2 e3 g#3 .@3 a2 e3 a3 .@3] [c3 g3 c4 .@3 g2 g3 b3 .@3] [a2 e3 a3 .@3 e2 e3 e4 . . e4] [e5 . . d#5 e5 . . d#5 e5 .@3] [.@6 a2 e3 a3 .@3] [e2 e3 g#3 .@3 a2 e3 a3 .@3] [.@6 a2 e3 a3 .@3] [e2 e3 g#3 .@3 a2 e3 a3 .@3]> | piano gain .42 len 2.5 rel 1 pan -.15 human .15
+bass   <[. a2] [e2 a2] [. a2] [e2 a2] [. a2] [e2 a2] [. a2] [e2 a2] [c3 g2] [a2 e2] . [. a2] [e2 a2] [. a2] [e2 a2] [c3 g2] [a2 e2] . [. a2] [e2 a2] [. a2] [e2 a2]> | upright gain .75 human .1
+kick   x . . . . . . . . x . .    | gain .8 tune .85 dec .9
+snare  . . . . . . x . . . . .    | asnare gain .45 nudge 12 human .2
+hat    x*6                        | ahat gain .3 vel [1 .55 .8 .55 .9 .55] human .3
+vinyl  x*24?.8                    | hat gain .05 tune .5 dec .4 pan -.4
+
+scene piano rh lh vinyl
+scene lofi  all
+song piano:8 lofi:14
+`,
+  },
+  {
+    id: 'gymno', name: 'Gymnopédie No.1',
+    head: {
+      ko: '// 사티, 짐노페디 1번 (1888, 퍼블릭 도메인) 앞 39마디. 3/4박자 한 마디가 한 칸(8분음표 6칸)\n// 선율·화음·베이스를 피아노 세 줄로 나눴고, 19마디부터 GPU 합창(choir)과 사인 베이스가 화음을 감싸요. 악보: Mutopia Project (퍼블릭 도메인 판)',
+      en: '// Satie, Gymnopédie No. 1 (1888, public domain): the first 39 bars. Each step of <> is one 3/4 bar (six eighths)\n// Melody, chords and bass on three piano lines; from bar 19 a GPU choir and a sine bass wrap the chords. Score: Mutopia Project (public domain edition)',
+    },
+    body: `bpm 88
+key D major
+master open
+space hall
+
+mel     <. . . . [. f#5 a5] [g5 f#5 c#5] [b4 c#5 d5] a4 f#4 . . . [. f#5 a5] [g5 f#5 c#5] [b4 c#5 d5] a4 c#5 f#5 e4 . . [a4 b4 c5] [e5 d5 b4] [d5 c5 b4] d5 [. . d5] [e5 f5 g5] [a5 c5 d5] [e5 d5 b4] d5 [. . d5] g5 f#5 [b4 a4 b4] [c#5 d5 e5] [c#5 d5 e5] f#4 . .> | piano gain .85 len 2 rel 2 verb .35 human .1
+chords  <[. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [g3,b3] _] [. [b3,d4,g4] _] [. [f3,a3,d4] _] [. [a3,c4,e4] _] [. [g3,b3,e4] _] [. [d3,g3,b3,e4] _] [. [c3,e3,a3,d4] _] [. [c3,f#3,a3,d4] _] [. [a3,c4,f4] _] [. [a3,c4,e4] _] [. [d3,g3,b3,e4] _] [. [c3,e3,a3,d4] _] [. [c3,f#3,a3,d4] _] [. [b3,e4,g4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [c#4,e4,a4] _] [. [a3,c#4,f#4,a4] _] [. [a3,d4] [e3,b3,d4,g4]] [g3,c4,e4,a4,c5] [d3,d4,f#4,a4,d5]> | piano gain .46 len 1.2 rel 1.5 verb .3 human .1
+bass    <g2 d2 g2 d2 g2 d2 g2 d2 g2 d2 g2 d2 g2 d2 g2 d2 f#2 b1 e2 e2 d2 a1 d2 d2 d2 d2 d2 d2 d2 d2 d2 e2 f#2 b1 e2 e2 [. b2 ., e2] a2 [d2,a2]> | piano gain .68 len 1.1 rel 2 verb .3
+air     <[. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [a3,c#4,f#4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [g3,b3] _] [. [b3,d4,g4] _] [. [f3,a3,d4] _] [. [a3,c4,e4] _] [. [g3,b3,e4] _] [. [d3,g3,b3,e4] _] [. [c3,e3,a3,d4] _] [. [c3,f#3,a3,d4] _] [. [a3,c4,f4] _] [. [a3,c4,e4] _] [. [d3,g3,b3,e4] _] [. [c3,e3,a3,d4] _] [. [c3,f#3,a3,d4] _] [. [b3,e4,g4] _] [. [a3,c#4,f#4] _] [. [b3,d4,f#4] _] [. [c#4,e4,a4] _] [. [a3,c#4,f#4,a4] _] [. [a3,d4] [e3,b3,d4,g4]] [g3,c4,e4,a4,c5] [d3,d4,f#4,a4,d5]> | choir gain .16 atk 1 rel 2.5 verb .6
+sub     <g2 d2 g2 d2 g2 d2 g2 d2 g2 d2 g2 d2 g2 d2 g2 d2 f#2 b1 e2 e2 d2 a1 d2 d2 d2 d2 d2 d2 d2 d2 d2 e2 f#2 b1 e2 e2 [. b2 ., e2] a2 [d2,a2]> | sine gain .3 atk .3 rel 1.5
+
+scene piano mel chords bass
+scene air   all
+song piano:18 air:21
+`,
+  },
+  {
+    id: 'rag', name: 'The Entertainer',
+    head: {
+      ko: '// 스콧 조플린, 디 엔터테이너 (1902, 퍼블릭 도메인)의 A·B 스트레인 32마디. 2/4박자 두 마디가 한 칸(16분음표 16칸)\n// A는 피아노 솔로, B에서 업라이트 베이스와 브러시 스네어가 들어와 래그타임 밴드가 돼요. 악보: Mutopia Project (퍼블릭 도메인 판)',
+      en: '// Scott Joplin, The Entertainer (1902, public domain): the A and B strains, 32 bars. Each step of <> is two 2/4 bars (sixteen sixteenths)\n// Solo piano for A; in B an upright bass and a brushed snare turn it into a ragtime band. Score: Mutopia Project (public domain edition)',
+    },
+    body: `bpm 76
+key C major
+master warm
+space room
+
+rh     <[e4 c5 _ e4 c5 _ e4 c5@6 [c5,e5,c6] [d5,f5,d6] [d#5,f#5,d#6]] [[e5,g5,e6] [c5,e5,c6] [d5,f5,d6] [e5,g5,e6] _ [b4,d5,b5] [d5,f5,d6] _ [c5,e5,c6]@6 d4 d#4] [e4 c5 _ e4 c5 _ e4 c5@7 [a4,c5,a5] [g4,c5,g5]] [[f#4,c5,f#5] [a4,a5] [c5,c6] [e5,e6] _ [d5,d6] [c5,c6] [a4,a5] [d5,f5,d6]@6 d4 d#4] [e4 c5 _ e4 c5 _ e4 c5@6 [c5,e5,c6] [d5,f5,d6] [d#5,f#5,d#6]] [[e5,g5,e6] [c5,e5,c6] [d5,f5,d6] [e5,g5,e6] _ [b4,d5,b5] [d5,f5,d6] _ [c5,e5,c6]@6 [c5,c6] [d5,d6]] [[e5,e6] [c5,c6] [d5,d6] [e5,e6] _ [c5,c6] [d5,d6] [c5,c6] [e5,e6] [c5,c6] [d5,d6] [e5,e6] _ [c5,c6] [d5,d6] [c5,c6]] [[e5,g5,e6] [c5,e5,c6] [d5,f5,d6] [e5,g5,e6] _ [b4,d5,b5] [d5,f5,d6] _ [c5,e5,c6]@5 [e4,c5,e5] [f4,d5,f5] [f#4,d#5,f#5]] [[g4,e5,g5] _ [a4,e5,a5] [g4,e5,g5] _ [e4,c5,e5] [f4,d5,f5] [f#4,d#5,f#5] [g4,e5,g5] _ [a4,e5,a5] [g4,e5,g5] _ e5 c5 g4] [a4 b4 c5 d5 e5 d5 c5 d5 g4 e5 f5 g5 a5 g5 e5 f5] [[g4,e5,g5] _ [a4,e5,a5] [g4,e5,g5] _ [e4,c5,e5] [f4,d5,f5] [f#4,d#5,f#5] [g4,e5,g5] _ [a4,e5,a5] [g4,e5,g5] _ g5 a5 bb5] [[d5,g5,b5] [d5,g5,b5] _ [c5,f#5,b5] _ a5 [c5,f#5] d5 [b4,g5]@5 [e4,c5,e5] [f4,d5,f5] [f#4,d#5,f#5]] [[g4,e5,g5] _ [a4,e5,a5] [g4,e5,g5] _ [e4,c5,e5] [f4,d5,f5] [f#4,d#5,f#5] [g4,e5,g5] _ [a4,e5,a5] [g4,e5,g5] _ e5 c5 g4] [a4 b4 c5 d5 e5 d5 c5 d5 c5@5 g4 f#4 g4] [c5 _ a4 c5 _ a4 c5 a4 g4 c5 e5 g5 _ e5 c5 g4] [[f#4,a4] _ [f#4,c5] _ [f4,e5] [f4,d5] _ [e4,c5]@7 d4 d#4]> | piano gain .5 len 1.2 rel .35 human .1
+lh     <[c3 [e3,g3,c4] [g2,g3] [g3,bb3,c4] [f2,f3] [a3,c4] [e2,e3] [g3,c4]] [g2 [e3,g3,c4] g2 [f3,g3,b3] c3 [e3,g3,c4] [e3,g3,c4] [g3,b3]] [c3 [e3,g3,c4] [g2,g3] [g3,bb3,c4] [f2,f3] [a3,c4] [e2,e3] [d#2,d#3]] [[d2,d3] [d3,f#3,a3,c4] d3 [f#3,a3,c4] [g3,b3] [g2,g3] [a2,a3] [b2,b3]] [c3 [e3,g3,c4] [g2,g3] [g3,bb3,c4] [f2,f3] [a3,c4] [e2,e3] [g3,c4]] [g2 [e3,g3,c4] g2 [f3,g3,b3] c3 [e3,g3,c4] [g3,c4,e4] .] [[c3,c4] [g3,c4,e4] [bb2,bb3] [g3,c4,e4] [a2,a3] [a3,c4,f4] [ab2,ab3] [ab3,c4,f4]] [[g2,g3] [g3,c4,e4] g2 [g3,b3] [c3,g3,c4] [g2,g3] [c2,c3] .] [[c2,c3] [g3,c4,e4] g2 [g3,c4,e4] c3 [g3,c4,e4] g2 [g3,c4,e4]] [f2 [a3,c4,f4] f3 [ab3,c4,f4] e3 [g3,c4,e4] g2 [g3,c4,e4]] [c3 [g3,c4,e4] g2 [g3,c4,e4] c3 [g3,c4,e4] e3 d#3] [d3 [g3,b3,d4] d3 [a3,c4,d4] [g3,b3,d4] [f2,f3] [e2,e3] [d2,d3]] [[c2,c3] [g3,c4,e4] g2 [g3,c4,e4] c3 [g3,c4,e4] g2 [g3,c4,e4]] [f2 [a3,c4,f4] f3 [ab3,c4,f4] e3 [g3,c4,e4] c3 [bb3,c4,e4]] [[f3,a3,c4,f4] [f3,a3,c4,f4] [f#3,a3,c4,d#4] [f#3,a3,c4,d#4] [g3,c4,e4] [g3,c4,e4] [g3,c4,e4] [g3,c4,e4]] [[d3,c4] [d3,a3] [g3,b3] [g3,b3] [c3,c4] [g2,g3] [c2,c3] .]> | piano gain .42 len 1.1 rel .3 pan -.1 human .1
+bass   <[c3 . g2 . f2 . e2 .] [g2 . g2 . c3 .@3] [c3 . g2 . f2 . e2 .] [d2 . d3 .@3 a2 .] [c3 . g2 . f2 . e2 .] [g2 . g2 . c3 .@3] [c3 . bb2 . a2 . ab2 .] [g2 . g2 . c3 . c2 .] [c2 . g2 . c3 . g2 .] [f2 .@5 g2 .] [c3 . g2 . c3 .@3] [d3 . d3 .@3 e2 .] [c2 . g2 . c3 . g2 .] [f2 .@5 c3 .] . [d3 .@3 c3 . c2 .]> | upright gain .7 human .1
+kick   x . . . . . . . x . . . . . . .   | gain .45 tune .9 dec .6
+brush  . . . . x . . . . . . . x . . .   | asnare gain .32 human .3 verb .15
+
+scene solo rh lh
+scene band all
+song solo:8 band:8
+`,
+  },
+  {
+    id: 'mountain', name: 'Mountain King (Techno)',
+    head: {
+      ko: '// 그리그, 산왕의 궁전에서 (페르 귄트, 1875, 퍼블릭 도메인)의 주제 16마디: B단조 두 번, F# 두 번. 한 마디가 한 칸(8분음표 8칸)\n// 원곡처럼 조용히 숨어 들어와 점점 쌓여요: 피치카토 → 킥 → 애시드 → 라이저 → 슈퍼소 리드. 악보: Mutopia Project (퍼블릭 도메인 판)',
+      en: '// Grieg, In the Hall of the Mountain King (Peer Gynt, 1875, public domain): the 16-bar theme, twice in B minor and twice in F#. Each step of <> is one bar (eight eighths)\n// It creeps in and piles up like the original: pizzicato, then kick, acid, a riser and a supersaw lead. Score: Mutopia Project (public domain edition)',
+    },
+    body: `bpm 128
+key B minor
+master loud
+space chamber
+
+theme  <[b2 c#3 d3 e3 f#3 d3 f#3 .] [f3 c#3 f3 . e3 c3 e3 .] [b2 c#3 d3 e3 f#3 d3 f#3 b3] [a3 f#3 d3 f#3 [a2,a3]@4] [b2 c#3 d3 e3 f#3 d3 f#3 .] [f3 c#3 f3 . e3 c3 e3 .] [b2 c#3 d3 e3 f#3 d3 f#3 b3] [a3 f#3 d3 f#3 [a2,a3]@4] [f#3 g#3 a#3 b3 c#4 a#3 c#4 .] [d4 a#3 d4 . c#4 a#3 c#4 .] [f#3 g#3 a#3 b3 c#4 a#3 c#4 .] [d4 a#3 d4 . [c#3,c#4]@4] [f#3 g#3 a#3 b3 c#4 a#3 c#4 .] [d4 a#3 d4 . c#4 a#3 c#4 .] [f#3 g#3 a#3 b3 c#4 a#3 c#4 .] [d4 a#3 d4 . [c#3,c#4]@4]> | pluck gain .5 len .6 cut k1(900,6000) verb .2 delay .15
+acid   <[b2 c#3 d3 e3 f#3 d3 f#3 .] [f3 c#3 f3 . e3 c3 e3 .] [b2 c#3 d3 e3 f#3 d3 f#3 b3] [a3 f#3 d3 f#3 a2@4] [b2 c#3 d3 e3 f#3 d3 f#3 .] [f3 c#3 f3 . e3 c3 e3 .] [b2 c#3 d3 e3 f#3 d3 f#3 b3] [a3 f#3 d3 f#3 a2@4] [f#3 g#3 a#3 b3 c#4 a#3 c#4 .] [d4 a#3 d4 . c#4 a#3 c#4 .] [f#3 g#3 a#3 b3 c#4 a#3 c#4 .] [d4 a#3 d4 . c#3@4] [f#3 g#3 a#3 b3 c#4 a#3 c#4 .] [d4 a#3 d4 . c#4 a#3 c#4 .] [f#3 g#3 a#3 b3 c#4 a#3 c#4 .] [d4 a#3 d4 . c#3@4]> | acid gain .45 cut k2(300,2600) res 8 env .6 len .7 duck .3
+lead   <[b4 c#5 d5 e5 f#5 d5 f#5 .] [f5 c#5 f5 . e5 c5 e5 .] [b4 c#5 d5 e5 f#5 d5 f#5 b5] [a5 f#5 d5 f#5 [a4,a5]@4] [b4 c#5 d5 e5 f#5 d5 f#5 .] [f5 c#5 f5 . e5 c5 e5 .] [b4 c#5 d5 e5 f#5 d5 f#5 b5] [a5 f#5 d5 f#5 [a4,a5]@4] [f#5 g#5 a#5 b5 c#6 a#5 c#6 .] [d6 a#5 d6 . c#6 a#5 c#6 .] [f#5 g#5 a#5 b5 c#6 a#5 c#6 .] [d6 a#5 d6 . [c#5,c#6]@4] [f#5 g#5 a#5 b5 c#6 a#5 c#6 .] [d6 a#5 d6 . c#6 a#5 c#6 .] [f#5 g#5 a#5 b5 c#6 a#5 c#6 .] [d6 a#5 d6 . [c#5,c#6]@4]> | supersaw gain .28 len .8 verb .3 duck .4
+bass   <[b1 . f#2 . b1 . f#2 .] [b1 . f#2 . b1 . f#2 .] [b1 . f#2 . b1 . f#2 .] [d2 . a2 . d2 . a2 .] [b1 . f#2 . b1 . f#2 .] [b1 . f#2 . b1 . f#2 .] [b1 . f#2 . b1 . f#2 .] [d2 . a2 . d2 . a2 .] [f#2 c#3 f#2 c#3] [d2 a#2 f#2 c#3] [f#2 c#3 f#2 c#3] [d2 a#2 f#2 c#3] [f#2 c#3 f#2 c#3] [d2 a#2 f#2 c#3] [f#2 c#3 f#2 c#3] [d2 a#2 f#2 c#3]> | bass gain .75 len .5 duck .6
+kick   x*4                       | gain 1 drive .15
+hat    [. x]*4                   | gain .4 human .15
+clap   . x . x                   | gain .5 verb .2
+ohat   . . x . . . x .           | gain .25
+
+scene creep  theme bass
+scene march  theme bass kick hat
+scene acid   acid bass kick hat clap ohat
+scene build  acid bass hat clap riser
+scene full   lead acid bass kick hat clap ohat
+song creep:16 march:16 acid:12 build:4 full:16
+`,
+  },
+  {
+    id: 'canon', name: 'Canon in D',
+    head: {
+      ko: '// 파헬벨, 카논 D장조 (1700년 무렵, 퍼블릭 도메인) 앞 18마디. 한 마디가 한 칸(16분음표 16칸)\n// 첼로의 2마디 바소 오스티나토 위로 세 성부가 2마디씩 늦게 같은 선율을 따라가요(현·플루트·하프). 11마디부터 로파이 비트\n// 악보: Mutopia Project, Michael Fischer v. Mollard 판 (CC BY 4.0)',
+      en: '// Pachelbel, Canon in D (c. 1700, public domain): the first 18 bars. Each step of <> is one bar (sixteen sixteenths)\n// Over the two-bar ground bass of the cello, three voices play the same line two bars apart (strings, flute, harp). A lo-fi beat from bar 11\n// Score: Mutopia Project, edition by Michael Fischer v. Mollard (CC BY 4.0)',
+    },
+    body: `bpm 72
+key D major
+master warm
+space hall
+
+cello  <[d3 a2 b2 f#2] [g2 d2 g2 a2]> | upright gain .8 human .1
+v1     <. . [f#5 e5 d5 c#5] [b4 a4 b4 c#5] [d5 c#5 b4 a4] [g4 f#4 g4 e4] [d4 f#4 a4 g4 f#4 d4 f#4 e4] [d4 b3 d4 a4 g4 b4 a4 g4] [f#4 d4 e4 c#5 d5 f#5 a5 a4] [b4 _ g4 _ a4 _ f#4 _ d4 _ d5 _ d5@3 c#5] [d5 c#5 d5 d4 c#4 a4 e4 f#4 d4 d5 c#5 b4 c#5 f#5 a5 b5] [g5 f#5 e5 g5 f#5 e5 d5 c#5 b4 a4 g4 f#4 e4 g4 f#4 e4] [d4 e4 f#4 g4 a4 e4 a4 g4 f#4 b4 a4 g4 a4 g4 f#4 e4] [d4 b3 b4 c#5 d5 c#5 b4 a4 g4 f#4 e4 b4 a4 b4 a4 g4] [f#4 f#5 e5 _ . d5 f#5 _] [b5 a5 b5 c#6] [d6 d5 c#5 _ . b4 d5 _] [d5@3 d5 d5 g5 e5 a5]> | bowed gain .42 pan -.35 verb .35 human .1
+v2     <. . . . [f#5 e5 d5 c#5] [b4 a4 b4 c#5] [d5 c#5 b4 a4] [g4 f#4 g4 e4] [d4 f#4 a4 g4 f#4 d4 f#4 e4] [d4 b3 d4 a4 g4 b4 a4 g4] [f#4 d4 e4 c#5 d5 f#5 a5 a4] [b4 _ g4 _ a4 _ f#4 _ d4 _ d5 _ d5@3 c#5] [d5 c#5 d5 d4 c#4 a4 e4 f#4 d4 d5 c#5 b4 c#5 f#5 a5 b5] [g5 f#5 e5 g5 f#5 e5 d5 c#5 b4 a4 g4 f#4 e4 g4 f#4 e4] [d4 e4 f#4 g4 a4 e4 a4 g4 f#4 b4 a4 g4 a4 g4 f#4 e4] [d4 b3 b4 c#5 d5 c#5 b4 a4 g4 f#4 e4 b4 a4 b4 a4 g4] [f#4 f#5 e5 _ . d5 f#5 _] [b5 a5 b5 c#6]> | flute gain .38 pan .35 verb .35 human .1
+v3     <. . . . . . [f#5 e5 d5 c#5] [b4 a4 b4 c#5] [d5 c#5 b4 a4] [g4 f#4 g4 e4] [d4 f#4 a4 g4 f#4 d4 f#4 e4] [d4 b3 d4 a4 g4 b4 a4 g4] [f#4 d4 e4 c#5 d5 f#5 a5 a4] [b4 _ g4 _ a4 _ f#4 _ d4 _ d5 _ d5@3 c#5] [d5 c#5 d5 d4 c#4 a4 e4 f#4 d4 d5 c#5 b4 c#5 f#5 a5 b5] [g5 f#5 e5 g5 f#5 e5 d5 c#5 b4 a4 g4 f#4 e4 g4 f#4 e4] [d4 e4 f#4 g4 a4 e4 a4 g4 f#4 b4 a4 g4 a4 g4 f#4 e4] [d4 b3 b4 c#5 d5 c#5 b4 a4 g4 f#4 e4 b4 a4 b4 a4 g4]> | harp gain .5 verb .3 human .1
+keys   <[D A Bm F#m] [G D G A]>   | epiano oct 3 gain .28 verb .3 human .2
+kick   x . . . . . . x . . x . . . . .  | gain .8 tune .85 dec .8
+snare  . . . . x . . . . . . . x . . .  | asnare gain .45 nudge 10 human .2
+hat    x*8                              | ahat gain .3 vel [1 .6]*4 human .3
+
+scene strings cello v1 v2 v3
+scene beat    all
+song strings:10 beat:8
+`,
+  },
+  {
     id: 'mathrock', name: 'Math Rock 7/8',
     head: {
       ko: '// Math Rock — 한 마디 = 7/8 (8분음표 7칸). 태핑 기타는 현 튕김 모델, 10:7 폴리리듬 하프가 엇갈려요\n// prog 에 maj7·m7·6 코드를 직접 써요',
@@ -2733,8 +2861,8 @@ const INST = {
 function valueAt(v, s, key) {
   switch (v.k) {
     case 'num': return v.v;
-    case 'lfo': return v.a + (v.b - v.a) * (0.5 - 0.5 * Math.cos(2 * Math.PI * s / v.per));
-    case 'ramp': return v.a + (v.b - v.a) * ((s % v.per + v.per) % v.per) / v.per;
+    case 'lfo': s -= patOrigin(s); return v.a + (v.b - v.a) * (0.5 - 0.5 * Math.cos(2 * Math.PI * s / v.per));
+    case 'ramp': s -= patOrigin(s); return v.a + (v.b - v.a) * ((s % v.per + v.per) % v.per) / v.per;
     case 'knob': {
       const x = S.knobs[v.i];
       if (EXP_PARAMS.has(key) && v.a > 0 && v.b > 0) return v.a * Math.pow(v.b / v.a, x);
@@ -2992,11 +3120,14 @@ function mapSpan(a, b) {
 }
 function progAt(s) {
   if (!S.prog) return 0;
+  s -= patOrigin(s);
   const n = Math.floor(s + EPS);
   let raw = null;
   for (const e of S.prog.q(n, n + 1)) if (e.s <= s + EPS && s < e.s + e.d - EPS) raw = e.v;
   return progValue(raw);
 }
+// pattern time follows the song: it starts where the song starts, and moves with a jump once the jump lands
+setPatOrigin(c => (S.songJump && c >= S.songJump.at - EPS ? S.songJump.start : S.songStart) || 0);
 // ---------- scenes & song ----------
 function sceneNameAt(c) {
   if (!S.scenes.size) return null;
@@ -6056,7 +6187,7 @@ function genPreview(li) {
   if (/^\s*prog\s+~gen/.test(code) && S.progGen) return { label: t('genNow', { k: 'prog ~gen' }), txt: S.progGen };
   const def = defAtLine(li);
   if (!def || !def.gen || !/~[a-z]/.test(code)) return null;
-  const g = genAt(def.gen, nowBar());
+  const g = genAt(def.gen, nowBar() - patOrigin(nowBar()));
   return { label: t('genNow', { k: '~' + def.gen.kind }) + (def.gen.evolve ? ' ' + t('genGen', { g: g + 1 }) : ''), txt: genText(def.gen, g) };
 }
 // replace a generator with the notes it is playing right now, so the line can be edited by hand
@@ -6068,7 +6199,7 @@ function bakeLine() {
   else {
     const def = defAtLine(li), hm = HEAD_RE.exec(code);
     if (!def || !def.gen || !hm) { loopMsg(t('bakeNone'), 'bad', 2400); return; }
-    const txt = genText(def.gen, genAt(def.gen, nowBar()));
+    const txt = genText(def.gen, genAt(def.gen, nowBar() - patOrigin(nowBar())));
     const base = hm[0].length, bar = code.indexOf('|', base);
     let params = bar >= 0 ? code.slice(bar + 1) : '';
     params = params.replace(/\s*\b(seed|dens|evolve|bars)\s+-?[\d.]+/g, '');
