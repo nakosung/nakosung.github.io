@@ -326,7 +326,7 @@ body.recording .editor { border-color: var(--c-err); }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.13 07:47<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.13 08:03<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -2327,7 +2327,7 @@ shaker x*16                             | gain .3 vel [.35 .95 .55 1]*4 pan -.3 
 bass   [. 0 . 0] [. . 0 4]              | cut k2(300,1500) res 4 duck .6
 stab   [. . 0^7 .] [. 0^7 . .] . [. . 0^7 .] | oct 3 cut k1(500,4000) res 3 env .5 dec .3 verb .3 duck .5 gain .5 echo 3 3/16 .45   // dub echoes of each stab
 pad    0^7                              | gain .2 atk .8 rel 1.5 verb .6 duck .7
-bell   <. [. . 4 .] . [. 6 . 4]>        | oct 5 gain .2 delay .5 verb k3(.2,.8)
+bell   <. [. . 4 .] . [. 6 . 4]>        | oct 5 gain .2 delay .5 verb k3(.2,.8) pan perlin(-.6,.6,4)
 
 scene intro  kick hat shaker
 scene groove kick clap hat shaker bass
@@ -2575,6 +2575,66 @@ song intro:8 a:8 b:8 a:8 last:8
 `,
   },
   {
+    id: 'puffball', name: 'Puffball Parade (bouncy platformer)',
+    head: {
+      ko: '// Puffball Parade — 통통 튀는 액션 게임 음악 감성으로 새로 쓴 곡이에요 (원곡 없음). F장조 156 BPM, maj7·m7 코드와 반음 경과음\n// 브라스 같은 사각파 선율($tune), 옥타브로 통통 튀는 베이스, 오프비트 스탭. 두 번째 바퀴엔 벨이 한 옥타브 위로 겹치고 16분 아르페지오가 좌우로 대답해요\n// auto 줄이 8마디 끝마다 드럼 필을 넣어요. B단락 끝의 Bbm6 는 장조 곡에서 잠깐 빌려 오는 단조 화음이에요',
+      en: '// Puffball Parade — an original in the spirit of bouncy platformer music (not based on any song). F major at 156 BPM, maj7 and m7 chords with chromatic passing notes\n// A brassy square tune ($tune), an octave-bouncing bass, offbeat stabs. On the second pass a bell doubles the tune an octave up and a sixteenth arpeggio answers left and right\n// An auto line plays a drum fill before every 8th bar. The Bbm6 near the end is a minor chord borrowed for a moment',
+    },
+    body: `bpm 156
+key F major
+prog <Fmaj7 Dm7 Gm7 C7 Fmaj7 Am7 Bbmaj7 C7 Bbmaj7 C7 Am7 D7 Gm7 Bbm6 F F>
+master loud
+space room
+
+let tune = <[c5 . a4 c5 . f5 . e5] [d5 . f5 _ e5 d5 c5 a4] [bb4 . d5 bb4 . g5 . f5] [e5 . d5 c5 bb4 . g4 .] [c5 . a4 c5 . f5 . a5] [g5 _ e5 c5 . e5 g#5 a5] [f5 . d5 bb4 . d5 f5 a5] [g5@4 e5 _ c5 _] [d6 . c6 a5 . f5 . d5] [e5 _ g5 _ bb5 _ a5 g5] [c6 . a5 e5 . c5 . e5] [f#5 _ a5 _ c6 _ a5 f#5] [g5 . bb5 d6 . bb5 . g5] [f5 . db5 _ bb4 _ g4 .] [a4 _ c5 _ f5 _ a5 _] [g5 . f5 e5 d5 . c5 .]>
+
+lead   $tune                              | square cut 3600 env .3 dec .2 vib 10 gain .4 delay .15 verb .2
+bell   $tune                              | bell oct 6 gain .14 verb .3
+stab   [. 0^ . . 0^' . 0^ .]              | saw oct 4 cut 2400 env .4 dec .12 gain .11 duck .3
+arp    [0 2 4 7]*4                        | pluck oct 5 gain .16 cut 4000 jux rev
+bass   [0 . 7 0 . 4 . 2]                  | bass oct 2 cut 1200 env .4 dec .15 gain .62 duck .3
+kick   x . . . . . x . x . . . . . . .    | gain .95
+snare  . . . . x . . . . . . . x . . x?   | gain .7 verb .2
+hat    x*8                                | gain .28 vel [1 .55]*4 sometimes .15 ply 2
+tamb   [. x]*4                            | gain .08 pan .3
+crash  <x . . . . . . .>                  | gain .3
+auto roll <. . . . . . . x>               | fill        // a drum fill into every 8th bar
+
+scene stroll lead stab bass kick snare hat crash roll
+scene parade all
+song stroll:16 parade:16
+`,
+  },
+  {
+    id: 'village', name: 'Lazy Afternoon (cozy village)',
+    head: {
+      ko: '// Lazy Afternoon — 아기자기한 마을 생활 게임 음악 감성으로 새로 쓴 곡이에요 (원곡 없음). G장조 100 BPM, 살짝 스윙\n// 휘파람 같은 플루트 선율($tune), 기타 줄 퉁기기, 업라이트 베이스, 브러시. B단락의 Cm6 는 잠깐 빌려 오는 단조 화음이라 저녁 느낌이 나요\n// 두 번째 바퀴엔 칼림바가 가끔씩(degrade) 반짝이고, 비브라폰이 오른쪽에서 거꾸로 대답해요. 플루트 떨림은 perlin 으로 천천히 바뀌어요',
+      en: '// Lazy Afternoon — an original in the spirit of cozy village life-sim music (not based on any song). G major at 100 BPM, a little swing\n// A whistle-like flute tune ($tune), plucked guitar, upright bass, brushes. The Cm6 in the B part is a borrowed minor chord with an evening feel\n// On the second pass a kalimba sparkles now and then (degrade) and vibes answer reversed on the right. The flute vibrato drifts with perlin',
+    },
+    body: `bpm 100
+key G major
+prog <Gmaj7 Em7 Am7 D7 Bm7 E7 Am7 D7 Cmaj7 Cm6 Bm7 E7 Am7 D7 Gmaj7 Gmaj7>
+swing .18
+master warm
+space room
+
+let tune = <[. d5 _ b4 . a4 g4 .] [e4 . g4 b4 _ _ . .] [. c5 _ e5 . d5 c5 .] [a4 _ _ _ f#4 . . .] [. d5 _ f#5 . e5 d5 .] [b4 _ g#4 _ e4 . . .] [. e5 _ c5 . b4 a4 .] [c5 _ _ _ . . . .] [. e5 _ g5 . b5 a5 .] [. eb5 _ g5 . a5 g5 .] [f#5 _ d5 _ b4 . . .] [. g#4 _ b4 . d5 e5 .] [c5 _ _ a4 . e5 . c5] [d5 _ f#4 _ a4 . c5 .] [b4 _ _ _ _ _ . .] [. . d5 . b4 . g4 .]>
+
+flute  $tune                              | flute gain .42 vib perlin(6,20,4) atk .04 verb .35 delay .15 human .1
+guitar [0^7 . . 0^7] [. 0^7 . .]          | zither oct 3 bright .45 dec .8 gain .26 pan -.2 human .25
+bass   [0 _ 4 _]                          | upright gain .8 human .15
+kalim  [0 . 4 . 2 . 7 .]                  | kalimba oct 5 gain .4 degrade .45 pan rand(-.6,.6)
+vibes  <. [4 . 2 .] . [6 . 4 2]>          | vibes oct 5 gain .26 verb .3 jux rev
+brush  [. x]*2                            | asnare gain .4 vel .5 dec .4 human .3
+ride   x x x x                            | aride gain .14 human .2
+kick   x . . . x . . .                    | gain .25 dec .6
+
+scene day     flute guitar bass brush kick
+scene evening all
+song day:16 evening:16
+`,
+  },
+  {
     id: 'gutgeori', name: '굿거리 Gutgeori',
     head: {
       ko: '// 굿거리 — 계면조, 한 마디 = 굿거리 한 장단 (3칸 × 4박 = 12칸). 장구 궁편(kung)·채편(deok), 징, 가야금, 대금\n// 구음: 덩 - 기덕 | 쿵 - 더러러러 | 쿵 - 기덕 | 쿵 - 더러러러',
@@ -2585,7 +2645,7 @@ key D gyemyeonjo
 master open
 
 kung     x' . . x . . x . . x . .                       | gain 1.1 verb .2 human .3
-deok     x' . [x x] . . [x x x x] . . [x x] . . [x x x x] | gain .65 pan .2 verb .15 human .3 vel [1 .8 .9 .8]
+deok     x' . [x x] . . [x x x x] . . [x x] . . [x x x x] | gain .65 pan .2 verb .15 human .3 vel [1 .8 .9 .8] sometimes .12 ply 2
 buk      x . . . . . x . . . . .                        | gain .8
 jing     <x . . .>                                      | gain .85 verb .4
 gayageum [0 . 2] [3 . 2] [4 . 3] [2 . 0]                | dantranh oct 4 cut k1(1500,12000) vib 14 delay .25 pan -.2 gain .75
@@ -2612,11 +2672,11 @@ prog <0 0 3 4>
 kick     x x x x                                 | gain 1
 kung     x . . x . . x .                         | gain 1 verb .15
 deok     [. x] [x x] [. x] [x [x x]]             | gain .5 pan .25
-kkwang   x . x x . x x . x . x x . x x .         | kkwaeng gain [.4 .3 .34 .3]*4 pan -.3 human .2
+kkwang   x . x x . x x . x . x x . x x .         | kkwaeng gain [.4 .3 .34 .3]*4 pan -.3 human .2 sometimes .15 ply 2
 kkwangm  . x . . x . . x . x . . x . . x         | kkwaengm gain .22 pan -.3 human .2
 jing     <x . . . . . . .>                       | gain .65 verb .35
 bass     [0 . 0 4] [. 0 3 .]                     | cut k2(300,1600) res 4 duck .6
-gayageum [0 2 3 4]*4                             | oct 4 dec .7 bright k1(.2,.9) delay .25 gain .45
+gayageum [0 2 3 4]*4                             | oct 4 dec .7 bright k1(.2,.9) delay .25 gain .45 iter 4
 haegeum  <[4 _ 3 2] [3 _ _ _] [4 4 3 2] [0 _ _ _]> | oct 4 delay .3 verb .3 gain .5
 
 scene intro  kkwang kkwangm jing gayageum
@@ -2638,7 +2698,7 @@ master open
 
 daegeum  <[0 _ _ _] [2 _ 1 _] [3 _ _ _] [2 _ _ _] [1 _ 0 _] [4 _ _ 3] [2 _ _ _] [0 _ _ _]> | oct 5 atk .3 rel 1.5 delay .4 verb k3(.4,.95) gain .45
 haegeum  <[. . 3 _] . [2 _ _ _] .>               | oct 4 cut k1(900,3500) atk .4 rel 1.2 verb .6 gain .4
-gayageum [0 . . 2 . . 4 .]?.3                    | dantranh oct 3 vib 16 rel 1.6 delay .4 verb .5 gain .7 human .4
+gayageum [0 . . 2 . . 4 .]                       | dantranh oct 3 vib 16 rel 1.6 delay .4 verb .5 gain .7 human .4 degrade .3 pan rand(-.5,.5)
 jing     <x . . .>                               | gain .65 verb .6
 buk      x . . . . . . . . . x . . . . .         | gain .55 verb .4
 drone    0/4                                     | pad oct 2 gain .15 atk 3 rel 4 verb .8
@@ -2664,11 +2724,11 @@ ride     [x _ _] [x' _ x] [x _ _] [x' _ x]        | aride gain .3 pan .2 human .
 foot     . x . x                                  | ahat gain .45 vel .6 dec .4
 brush    [. . x] . [. . x] [. x x]?.4             | asnare gain .3 vel .5 dec .45 pan -.15 human .4
 kick     x?.3 . . .                               | gain .3 dec .8
-bass     <[0 2 4 6] [0 4 2 -1] [0 2 4 2] [0 2 4 6]> | upright gain .9 human .2 vel [1 .85 .95 .85]
+bass     <[0 2 4 6] [0 4 2 -1] [0 2 4 2] [0 2 4 6]> | upright gain .9 human .2 vel [1 .85 .95 .85] sometimes .12 +7
 comp     0^7 [. . 0^7'] . .                       | piano oct 4 gain .36 rel .25 cut k1(1500,12000) pan -.2 drop2 human .3
 sax      <[4 _ 5] [6 _ 4] [2 _ 4] [5 _ 6]>/1      | sax oct 4 gain .5 verb .25
 head     <[[4 _ 5] [6 _ 4] [2 _ 4] [5 _ 6]] [[7 _ 6] [4 _ 2] [3 _ 1] [0 _ .]] [[2 _ _] [4 _ 6] [7 _ _] .] [[6 _ 5] [4 _ 3] [1 _ 2] [3 _ .]]> | sax oct 4 gain .55 verb k3(.1,.5) rel .1
-vibes    [[r _ r] [r' _ r] [r _ r] [r' _ r]]?.2   | oct 5 gain .35 delay .25 verb .3 range 9 human .3
+vibes    [[r _ r] [r' _ r] [r _ r] [r' _ r]]?.2   | oct 5 gain .35 delay .25 verb .3 range 9 human .3 pan perlin(-.5,.5,4)
 
 scene intro  ride foot bass comp
 scene head   ride foot brush kick bass comp head fill
@@ -2811,12 +2871,13 @@ kick   x*4                       | gain 1 drive .15
 hat    [. x]*4                   | gain .4 human .15
 clap   . x . x                   | gain .5 verb .2
 ohat   . . x . . . x .           | gain .25
+auto stut <. . . [. . . x]>      | repeat 16   // the last beat of every 4 bars stutters (full scene only)
 
 scene creep  theme bass
 scene march  theme bass kick hat
 scene acid   acid bass kick hat clap ohat
 scene build  acid bass hat clap riser
-scene full   lead acid bass kick hat clap ohat
+scene full   lead acid bass kick hat clap ohat stut
 song creep:16 march:16 acid:12 build:4 full:16
 `,
   },
@@ -2860,7 +2921,7 @@ snare    . . x . . . x'                           | asnare gain .6 human .2
 hat      x*7                                      | ahat gain .5 vel [1.25 .6 .85 .6 1 .6 .85] human .2
 crash    <x . . .>                                | acrash gain .35
 tap      [0 4 7 9 7 4 2]*2                        | zither oct 4 bright k1(.4,.95) dec .9 gain .5 pan .3 delay .15 every 4 rev
-tap2     [9 . 7 . 4 . 2 . 4 . 7 . 9 .]            | zither oct 4 bright .7 dec .7 gain .35 pan -.35
+tap2     [9 . 7 . 4 . 2 . 4 . 7 . 9 .]            | zither oct 4 bright .7 dec .7 gain .35 pan -.35 palindrome
 poly     [0 2 4 6 4]*2                            | harp oct 5 gain .35 verb .3 pan -.2 iter 5
 bass     0 _ _ 4 _ 2 _                            | bass oct 2 cut k2(500,2000) gain .7 duck .3
 
@@ -2885,10 +2946,10 @@ master open
 rim      x . . x . . x . . . x . . x . .          | gain .35 pan .2 human .2
 kick     [x . . x] [x . . x] [x . . x] [x . . x]  | gain .4 dec .7
 shake    x*16                                     | gain [.4 .15 .25 .15]*4 pan -.3
-guitar   [0^7 . . 0^7] [. 0^7 . .] [0^7 . . 0^7] [. . 0^7 .] | zither oct 3 bright .5 dec .8 gain .26 pan -.15 human .25
+guitar   [0^7 . . 0^7] [. 0^7 . .] [0^7 . . 0^7] [. . 0^7 .] | zither oct 3 bright .5 dec .8 gain .26 pan -.15 human .25 degrade .08
 bass     0 _ 4 _                                  | upright gain .85 human .15
-flute    <[4 _ _ 5] [6 _ 4 _] [2 _ _ 1] [0 _ _ _]> | oct 5 gain .4 verb .35 delay .2
-vibes    <. [. 4 . 2] . [6 . 4 .]>                | oct 5 gain .3 verb .3
+flute    <[4 _ _ 5] [6 _ 4 _] [2 _ _ 1] [0 _ _ _]> | oct 5 gain .4 verb .35 delay .2 vib perlin(6,18,4)
+vibes    <. [. 4 . 2] . [6 . 4 .]>                | oct 5 gain .3 verb .3 jux rev
 
 scene intro  rim shake guitar
 scene band   rim kick shake guitar bass
@@ -2937,7 +2998,7 @@ kick   x . . . . . . . x . . . . . . .    | gain .75 tune .8 dec 1.2
 hat    [. x]*4?.3                          | gain .2 human .3
 swarm  0^7                                 | gain .55 atk .6 rel 2 duck .4 verb .3
 choir  <[0^ _ _ _] [2^ _ _ _]>/2           | gain .5 bright .3 verb .5
-plate  [0 . . 4 . . 7 .] [. 9 . . 4 . . .] | oct 5 gain .55 dec .6 delay .3 verb .4
+plate  [0 . . 4 . . 7 .] [. 9 . . 4 . . .] | oct 5 gain .55 dec .6 delay .3 verb .4 jux rev
 bass   0 _ _ _ . . . .                     | sine oct 2 gain .6
 
 scene air   swarm choir
@@ -2962,7 +3023,7 @@ shader glow  vec3f(1., .55, .3) * (1. - smoothstep(0., .02, abs(length(q) - .22 
 timp   0 . . . 0 . 4 . 0 . . . [4 0] . . .   | oct 2 gain .9 dec .6 human .2
 kick   x . . . . . . . x . . . . . . .       | gain .7 tune .8
 hat    [. x]*4                               | gain .18 human .3
-sax    <[0 _ 2 _ 4 _ _ 2] [5 _ 4 2 _ 0 _ _]> | nsax gain .7 rel .3 vib .3 verb .3 delay .2
+sax    <[0 _ 2 _ 4 _ _ 2] [5 _ 4 2 _ 0 _ _]> | nsax gain .7 rel .3 vib .3 verb .3 delay .2 echo 2 3/16 .35
 choir  <0^ 3^>/2                             | gain .4 verb .5 bright .3
 bass   0 _ . . 0 . . .                       | sine oct 2 gain .6
 
@@ -3020,6 +3081,7 @@ hat    [. x]*4                     | gain .35 phaser .5
 keys   <0^7 _ . [. 0^7]>           | epiano gain .5 wash .5 thr -24 ratio 4
 bass   [0 . . 0] [. 0 . .]         | bass oct 2 gain .8 dist .2 duck .6
 lead   <[4 . 2 .] [. 7 . 4]>       | pluck gain .4 delay .35 wash .2 chorus .4 lpf k1(1200,9000)
+auto throw <. [. . . x] . [. . x _]> | throw .7   // delay throws on the last beats, from a pattern
 `,
   },
 ];
