@@ -7,12 +7,16 @@
 //   choir  24 detuned voices with vowel formants (about 1,000 partials per note)
 //   plate  a struck metal plate: every inharmonic mode split into six beating neighbours, each with its own decay
 //          (a few hundred partials in the middle register, more for low notes)
+//   membrane  a drum head simulated as the 2-D wave equation on a 96 x 96 grid, one time step per sample,
+//          four velocities at once (one GPU workgroup each)
+//   nsax   a small neural network trained on the sax recordings drives an additive voice (see 'neural voice')
 //   fx ... | freeze   spectral freeze: the live mix's spectrum resynthesized as ~2,000 sines
+//   space hall        modal reverb: up to 65,536 room modes rendered into the reverb's impulse response
 // and it draws four backdrops behind the code (terrain, contour, dots, demo) as full-screen shaders.
 // Without WebGPU every part falls back: the GPU instruments to CPU voices, freeze to a looped grain.
 
 const GPU = { state: 'idle', dev: null, name: '', err: '', synth: null, cache: new Map(), bytes: 0, jobs: new Map(), chain: Promise.resolve(), renders: 0, lastMs: 0 };
-const GPU_INSTS = { swarm: 'supersaw', choir: 'pad', plate: 'bell' };   // and their CPU fallbacks
+const GPU_INSTS = { swarm: 'supersaw', choir: 'pad', plate: 'bell', membrane: 'pluck', nsax: 'sax' };   // and their CPU fallbacks
 const GPU_CACHE_BYTES = 160 << 20;
 
 function gpuInit() {
@@ -183,9 +187,317 @@ function gpuVoice(inst, midi, dur, P, sr) {
   o.gain = 0.22 / Math.sqrt(Math.max(1e-9, sum2 / 2));
   return { parts, np, n, o };
 }
-const gpuKey = (inst, midi, dur, P) => [inst, midi, inst === 'plate' ? 0 : Math.round(dur * 8) / 8, (P.bright ?? 0).toFixed(2), (P.detune ?? 0).toFixed(0), (P.dec ?? 0).toFixed(2), (P.width ?? 0).toFixed(2), (P.atk ?? 0).toFixed(2), (P.rel ?? 0).toFixed(2)].join('|');
+// ---------- membrane: the wave equation on a drum head ----------
+// Finite differences on a 96 x 96 grid; cells outside a circle stay at zero, which is the rim. Each GPU
+// workgroup owns one head and steps it once per output sample: every thread updates its share of the
+// cells, then all wait at a barrier before the next step. Three buffers rotate (previous, current, next).
+// Loss is a plain damping term plus a stiffness-like term that damps high modes faster. A hard hit
+// tightens the skin for a moment, so the pitch starts high and settles: the tension term follows the hit.
+const MEM_N = 96, MEM_LAYERS = 4, MEM_STEPS = 2048;
+const MEMBRANE_WGSL = `
+struct MP { n: u32, steps: u32, start: u32, N: u32, lam2: f32, sig: f32, kap: f32, glide: f32, gtau: f32, p0: f32, p1: f32, p2: f32 };
+@group(0) @binding(0) var<uniform> mp: MP;
+@group(0) @binding(1) var<storage, read_write> st: array<f32>;
+@group(0) @binding(2) var<storage, read> mask: array<f32>;
+@group(0) @binding(3) var<storage, read_write> outb: array<f32>;
+@group(0) @binding(4) var<storage, read> vp: array<vec4f>;
+@compute @workgroup_size(256)
+fn main(@builtin(workgroup_id) wg: vec3u, @builtin(local_invocation_index) li: u32) {
+  let v = wg.x;
+  let NN = mp.N * mp.N;
+  let base = v * 3u * NN;
+  let pk = vp[v];
+  for (var s = 0u; s < mp.steps; s++) {
+    let gs = mp.start + s;
+    let prv = base + (gs % 3u) * NN;
+    let cur = base + ((gs + 1u) % 3u) * NN;
+    let nxt = base + ((gs + 2u) % 3u) * NN;
+    let l2 = mp.lam2 * (1.0 + pk.w * mp.glide * exp(-f32(gs) / mp.gtau));
+    for (var c = li; c < NN; c += 256u) {
+      if (mask[c] == 0.0) { continue; }
+      let uc = st[cur + c];
+      let lap = st[cur + c - 1u] + st[cur + c + 1u] + st[cur + c - mp.N] + st[cur + c + mp.N] - 4.0 * uc;
+      let up = st[prv + c];
+      let lapP = st[prv + c - 1u] + st[prv + c + 1u] + st[prv + c - mp.N] + st[prv + c + mp.N] - 4.0 * up;
+      st[nxt + c] = (2.0 * uc - (1.0 - mp.sig) * up + l2 * lap + mp.kap * (lap - lapP)) / (1.0 + mp.sig);
+    }
+    storageBarrier();
+    if (li == 0u && gs < mp.n) {
+      // the pickups hear the skin's velocity
+      let a = u32(pk.x); let b = u32(pk.y);
+      outb[v * mp.n * 2u + gs] = (st[nxt + a] - st[cur + a]) * pk.z;
+      outb[v * mp.n * 2u + mp.n + gs] = (st[nxt + b] - st[cur + b]) * pk.z;
+    }
+    storageBarrier();
+  }
+}`;
+function gpuBuildMembrane() {
+  const d = GPU.dev;
+  GPU.mem = d.createComputePipeline({ layout: 'auto', compute: { module: d.createShaderModule({ code: MEMBRANE_WGSL }), entryPoint: 'main' } });
+}
+// set-up shared by the GPU and the JavaScript reference: grid, strike shapes, pickups, coefficients
+function membraneSetup(midi, P, sr) {
+  const N = MEM_N, f0 = mtof(midi);
+  const dec = Math.max(0.05, P.dec ?? 1), bright = Math.max(0, Math.min(1, P.bright ?? 0.5));
+  const T60 = 0.18 + 0.9 * dec, sig = 6.9078 / (T60 * sr) * 0.5;
+  const kap = 0.004 + 0.03 * (1 - bright);
+  // the note is the (1,1) mode, as on a timpani, where it is the tone you hear: f11 = 3.832 c / (2 pi R).
+  // Pick the radius and Courant number to hit it; this scheme stays stable while lam^2 + 4 kap <= 1/2.
+  const lamMax = Math.sqrt(0.48 - 4 * kap), J = 3.832;
+  let R = 45, lam = 2 * Math.PI * R * f0 / (J * sr);
+  if (lam > lamMax) { R = Math.max(8, Math.floor(lamMax * J * sr / (2 * Math.PI * f0))); lam = Math.min(lamMax, 2 * Math.PI * R * f0 / (J * sr)); }
+  const c0 = (N - 1) / 2, mask = new Float32Array(N * N);
+  for (let y = 1; y < N - 1; y++) for (let x = 1; x < N - 1; x++) if (Math.hypot(x - c0, y - c0) < R) mask[y * N + x] = 1;
+  const n = Math.round(Math.min(4, T60 * 1.1) * sr);
+  const idx = (dx, dy) => Math.round(c0 + dy * R) * N + Math.round(c0 + dx * R);
+  const st = new Float32Array(MEM_LAYERS * 3 * N * N), vp = new Float32Array(MEM_LAYERS * 4);
+  for (let L = 0; L < MEM_LAYERS; L++) {
+    // harder hits: more force, a smaller contact patch (brighter), more tension glide
+    const amp = [0.35, 0.6, 0.85, 1.1][L], w = (4.6 - L * 0.8) * (0.6 + 0.4 * R / 45) * (1.3 - 0.6 * bright);
+    const sx = c0 - 0.62 * R, sy = c0 + 0.1 * R, base = L * 3 * N * N;   // struck about 40% in from the rim, as on a timpani
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      const r = Math.hypot(x - sx, y - sy);
+      if (r < w && mask[y * N + x]) st[base + y * N + x] = -amp * 0.5 * (1 + Math.cos(Math.PI * r / w)) * lam;   // u(-1): initial velocity
+    }
+    vp.set([idx(-0.38, 0.12), idx(0.36, -0.15), 1, [0.25, 0.5, 0.75, 1][L]], L * 4);
+  }
+  return { N, R, lam2: lam * lam, sig, kap, n, mask, st, vp, glide: 0.12, gtau: 0.06 * sr };
+}
+async function gpuMembrane(midi, P, sr) {
+  const d = GPU.dev, m = membraneSetup(midi, P, sr), t0 = performance.now();
+  if (!GPU.mem) gpuBuildMembrane();
+  const mk = (data, usage) => { const b = d.createBuffer({ size: Math.max(16, data.byteLength), usage: usage | GPUBufferUsage.COPY_DST }); d.queue.writeBuffer(b, 0, data); return b; };
+  const sb = mk(m.st, GPUBufferUsage.STORAGE), mb = mk(m.mask, GPUBufferUsage.STORAGE), vb = mk(m.vp, GPUBufferUsage.STORAGE);
+  const ob = d.createBuffer({ size: MEM_LAYERS * m.n * 8, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC });
+  const rb = d.createBuffer({ size: MEM_LAYERS * m.n * 8, usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST });
+  const unis = [];
+  for (let s0 = 0; s0 < m.n; s0 += MEM_STEPS) {
+    const u = new ArrayBuffer(48), dv = new DataView(u);
+    dv.setUint32(0, m.n, true); dv.setUint32(4, Math.min(MEM_STEPS, m.n - s0), true); dv.setUint32(8, s0, true); dv.setUint32(12, m.N, true);
+    dv.setFloat32(16, m.lam2, true); dv.setFloat32(20, m.sig, true); dv.setFloat32(24, m.kap, true); dv.setFloat32(28, m.glide, true); dv.setFloat32(32, m.gtau, true);
+    const ub = mk(new Uint8Array(u), GPUBufferUsage.UNIFORM); unis.push(ub);
+    const bg = d.createBindGroup({ layout: GPU.mem.getBindGroupLayout(0), entries: [ub, sb, mb, ob, vb].map((b, i) => ({ binding: i, resource: { buffer: b } })) });
+    const enc = d.createCommandEncoder(), pass = enc.beginComputePass();
+    pass.setPipeline(GPU.mem); pass.setBindGroup(0, bg); pass.dispatchWorkgroups(MEM_LAYERS); pass.end();
+    d.queue.submit([enc.finish()]);
+    await d.queue.onSubmittedWorkDone();
+  }
+  const enc = d.createCommandEncoder(); enc.copyBufferToBuffer(ob, 0, rb, 0, MEM_LAYERS * m.n * 8); d.queue.submit([enc.finish()]);
+  await rb.mapAsync(GPUMapMode.READ);
+  const out = new Float32Array(rb.getMappedRange().slice(0)); rb.unmap();
+  for (const b of [sb, mb, vb, ob, rb, ...unis]) b.destroy();
+  GPU.renders++; GPU.lastMs = performance.now() - t0;
+  return { out, n: m.n };
+}
+// the same simulation in JavaScript, for the benchmark and as a reference (one layer, first `steps` samples)
+function cpuMembrane(m, L, steps) {
+  const N = m.N, NN = N * N, B = [m.st.slice(L * 3 * NN, L * 3 * NN + NN), m.st.slice(L * 3 * NN + NN, L * 3 * NN + 2 * NN), new Float32Array(NN)];
+  const out = new Float32Array(steps * 2), a = m.vp[L * 4], b = m.vp[L * 4 + 1], gw = m.vp[L * 4 + 3];
+  for (let s = 0; s < steps; s++) {
+    const prv = B[s % 3], cur = B[(s + 1) % 3], nxt = B[(s + 2) % 3], l2 = m.lam2 * (1 + gw * m.glide * Math.exp(-s / m.gtau));
+    for (let c = 0; c < NN; c++) {
+      if (!m.mask[c]) continue;
+      const uc = cur[c], up = prv[c];
+      const lap = cur[c - 1] + cur[c + 1] + cur[c - N] + cur[c + N] - 4 * uc, lapP = prv[c - 1] + prv[c + 1] + prv[c - N] + prv[c + N] - 4 * up;
+      nxt[c] = (2 * uc - (1 - m.sig) * up + l2 * lap + m.kap * (lap - lapP)) / (1 + m.sig);
+    }
+    out[s] = nxt[a] - cur[a]; out[steps + s] = nxt[b] - cur[b];
+  }
+  return out;
+}
+// ---------- neural voice: nsax ----------
+// A small network (14 -> 64 -> 64 -> 1, tanh) learned the sax's spectral envelope from the kit's recordings:
+// given a frequency, whether it is a harmonic or breath noise, the note, the dynamic layer, the loudness at
+// that moment and the time since the attack, it predicts that component's level. Because it is asked one
+// frequency at a time it learns a smooth envelope instead of a table per recorded note; on notes left out
+// of training it is off by about 9.5 dB per harmonic, where re-pitching the nearest recording is off by 13-20.
+// The GPU runs the network for every 5 ms frame x 64 components, then an additive pass sums 48 harmonics
+// (with vibrato) and 16 bands of breath noise (64 random sines each) for every sample.
+const NS = { K: 48, NB: 16, NOISE: 64, FPS: 200, H: 64, IN: 14, ST: 16, w: null };
+const NS_BANDS = (() => { const e = []; for (let b = 0; b <= 16; b++) e.push(150 * Math.pow(16000 / 150, b / 16)); return e; })();
+function nsWeights() {
+  if (NS.w) return NS.w;
+  const bin = atob(NSAX_NET_B64), u = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+  return NS.w = new Float32Array(u.buffer);
+}
+// loudness (dB) over the note: breath attack, a slight swell and sag while held, then the release
+function nsLoudness(nF, hold, rel, atk, rnd) {
+  const L = new Float32Array(nF), dt = 1 / NS.FPS;
+  let drift = 0;
+  for (let j = 0; j < nF; j++) {
+    const t = j * dt;
+    let db = t < atk ? -45 + 45 * Math.pow(t / atk, 0.6) : -1.2 * Math.min(1, (t - atk) / 0.4) + 1.2 * Math.sin(Math.min(1, (t - atk) / 1.5) * Math.PI) * 0.5 - 0.6 * (t - atk);
+    drift += (rnd() - 0.5) * 0.15; drift *= 0.97; db += drift;
+    if (t > hold) db -= 60 * (t - hold) / rel;
+    L[j] = Math.max(-80, Math.min(0, db));
+  }
+  return L;
+}
+// the inputs for every (frame, component); the GPU and the JavaScript reference share them
+function nsPlan(midi, dur, P, sr) {
+  const f0 = mtof(midi), hold = Math.max(0.08, dur), rel = Math.max(0.08, Math.min(1.5, P.rel)), atk = Math.max(0.02, P.atk);
+  const nF = Math.ceil((hold + rel) * NS.FPS) + 2, n = Math.ceil((hold + rel) * sr), rnd = rngOf(midi * 131 + 7);
+  const L = nsLoudness(nF, hold, rel, atk, rnd), layer = (P.vel ?? 1) < 0.75 ? 0 : 1;
+  const C = NS.K + NS.NB, X = new Float32Array(nF * C * NS.ST);
+  const bandC = k => Math.sqrt(NS_BANDS[k] * NS_BANDS[k + 1]);
+  for (let j = 0; j < nF; j++) for (let c = 0; c < C; c++) {
+    const noise = c >= NS.K, fq = noise ? bandC(c - NS.K) : (c + 1) * f0, q = (j * C + c) * NS.ST, lf = Math.log2(fq / 1000) / 3;
+    X.set([lf, noise ? 1 : -1, (midi - 66) / 22, layer * 2 - 1, Math.max(-60, L[j]) / 30 + 1, Math.min(j / NS.FPS, 0.4) / 0.4 * 2 - 1], q);
+    // sines of the log-frequency at four scales, so the network can draw sharp formants
+    for (let m = 0; m < 4; m++) { X[q + 6 + m * 2] = Math.sin(Math.PI * 2 ** m * lf); X[q + 7 + m * 2] = Math.cos(Math.PI * 2 ** m * lf); }
+    X[q + 14] = Math.pow(10, L[j] / 20) * (noise || fq < Math.min(16000, sr * 0.45) ? 1 : 0);
+  }
+  // breath noise as clusters of random sines inside each band; level matched to the analysis (per-bin magnitude)
+  const ns = new Float32Array(NS.NB * NS.NOISE * 4);
+  for (let b = 0; b < NS.NB; b++) {
+    const lo = NS_BANDS[b], hi = Math.min(NS_BANDS[b + 1], sr * 0.45), bins = Math.max(1, (hi - lo) / (48000 / 2048));
+    for (let s = 0; s < NS.NOISE; s++) { const f = lo + (hi - lo) * rnd(); ns.set([f / sr, (f * 4096 / sr) % 1, rnd(), Math.sqrt(bins / NS.NOISE)], (b * NS.NOISE + s) * 4); }
+  }
+  const vib = { rate: 5.1 + rnd() * 0.4, depth: (10 + 30 * (P.vib || 0)) / 1200, start: 0.32 };
+  return { f0, n, nF, C, X, ns, vib, sr };
+}
+function nsEvalJS(X, nF, C) {
+  const w = nsWeights(), H = NS.H, IN = NS.IN, W1 = 0, b1 = IN * H, W2 = b1 + H, b2 = W2 + H * H, W3 = b2 + H, b3 = W3 + H;
+  const A = new Float32Array(nF * C), h1 = new Float32Array(H), h2 = new Float32Array(H);
+  for (let r = 0; r < nF * C; r++) {
+    const q = r * NS.ST;
+    if (!X[q + 14]) continue;
+    for (let o = 0; o < H; o++) { let s = w[b1 + o]; for (let i = 0; i < IN; i++) s += X[q + i] * w[W1 + i * H + o]; h1[o] = Math.tanh(s); }
+    for (let o = 0; o < H; o++) { let s = w[b2 + o]; for (let i = 0; i < H; i++) s += h1[i] * w[W2 + i * H + o]; h2[o] = Math.tanh(s); }
+    let y = w[b3]; for (let i = 0; i < H; i++) y += h2[i] * w[W3 + i];
+    A[r] = Math.exp(Math.max(-11.5, Math.min(0, y))) * X[q + 14];
+  }
+  return A;
+}
+const NSAX_WGSL = `
+struct NP { nF: u32, C: u32, n: u32, off: u32, f0: f32, sr: f32, fps: f32, vrate: f32, vdepth: f32, vstart: f32, gain: f32, cpb: f32 };
+@group(0) @binding(0) var<uniform> np: NP;
+@group(0) @binding(1) var<storage, read> X: array<f32>;
+@group(0) @binding(2) var<storage, read> W: array<f32>;
+@group(0) @binding(3) var<storage, read_write> A: array<f32>;
+@group(0) @binding(4) var<storage, read> NZ: array<vec4f>;
+@group(0) @binding(5) var<storage, read_write> outb: array<f32>;
+const HN = 64u;
+// one thread per (frame, component): the network
+@compute @workgroup_size(64)
+fn net(@builtin(global_invocation_id) gid: vec3u) {
+  let r = gid.x;
+  if (r >= np.nF * np.C) { return; }
+  let q = r * 16u;
+  if (X[q + 14u] == 0.0) { A[r] = 0.0; return; }
+  var h1: array<f32, 64>;
+  let b1 = 14u * HN; let W2 = b1 + HN; let b2 = W2 + HN * HN; let W3 = b2 + HN; let b3 = W3 + HN;
+  for (var o = 0u; o < HN; o++) {
+    var s = W[b1 + o];
+    for (var i = 0u; i < 14u; i++) { s += X[q + i] * W[i * HN + o]; }
+    h1[o] = tanh(s);
+  }
+  var y = W[b3];
+  for (var o = 0u; o < HN; o++) {
+    var s = W[b2 + o];
+    for (var i = 0u; i < HN; i++) { s += h1[i] * W[W2 + i * HN + o]; }
+    y += tanh(s) * W[W3 + o];
+  }
+  A[r] = exp(clamp(y, -11.5, 0.0)) * X[q + 14u];
+}
+// one thread per sample: 48 harmonics with vibrato plus the breath noise, levels interpolated between frames
+@compute @workgroup_size(256)
+fn synth(@builtin(global_invocation_id) gid: vec3u) {
+  let i = gid.x + np.off;
+  if (i >= np.n) { return; }
+  let t = f32(i) / np.sr;
+  let fp = t * np.fps; let j = min(u32(fp), np.nF - 2u); let w = fp - f32(j);
+  let ramp = clamp((t - np.vstart) / 0.4, 0.0, 1.0);
+  let wv = 6.2831853 * np.vrate;
+  // phase in cycles, kept precise over long notes by splitting the sample index into 4096-sample blocks
+  let hi = f32(i >> 12u); let lo = f32(i & 4095u);
+  let fps = np.f0 / np.sr;
+  let vph = np.f0 * np.vdepth * ramp * (1.0 - cos(wv * max(0.0, t - np.vstart))) / wv;
+  var s = 0.0;
+  for (var k = 0u; k < 48u; k++) {
+    let a = mix(A[j * np.C + k], A[(j + 1u) * np.C + k], w);
+    let kf = f32(k + 1u);
+    if (a > 0.0) { s += a * sin(6.2831853 * fract(fract(fract(kf * np.cpb) * hi) + kf * fps * lo + kf * vph + f32(k) * 0.137)); }
+  }
+  for (var b = 0u; b < 16u; b++) {
+    let a = mix(A[j * np.C + 48u + b], A[(j + 1u) * np.C + 48u + b], w);
+    if (a <= 0.0) { continue; }
+    for (var z = 0u; z < 64u; z++) {
+      let nz = NZ[b * 64u + z];
+      s += a * nz.w * sin(6.2831853 * fract(fract(nz.y * hi) + nz.x * lo + nz.z));
+    }
+  }
+  outb[i] = s * np.gain;
+}`;
+function nsSynthJS(pl, A, a = 0, b = pl.n) {
+  const { f0, sr, nF, C, vib, ns } = pl, out = new Float32Array(b - a), TAU = Math.PI * 2, wv = TAU * vib.rate;
+  for (let i = a; i < b; i++) {
+    const t = i / sr, fp = t * NS.FPS, j = Math.min(Math.floor(fp), nF - 2), w = fp - j, ramp = Math.max(0, Math.min(1, (t - vib.start) / 0.4));
+    const ph = f0 * t + f0 * vib.depth * ramp * (1 - Math.cos(wv * Math.max(0, t - vib.start))) / wv;
+    let s = 0;
+    for (let k = 0; k < NS.K; k++) { const am = A[j * C + k] + (A[(j + 1) * C + k] - A[j * C + k]) * w; if (am > 0) s += am * Math.sin(TAU * ((ph * (k + 1) + k * 0.137) % 1)); }
+    for (let bb = 0; bb < NS.NB; bb++) {
+      const am = A[j * C + NS.K + bb] + (A[(j + 1) * C + NS.K + bb] - A[j * C + NS.K + bb]) * w; if (am <= 0) continue;
+      for (let z = 0; z < NS.NOISE; z++) { const q = (bb * NS.NOISE + z) * 4; s += am * ns[q + 3] * Math.sin(TAU * ((ns[q] * i + ns[q + 2]) % 1)); }
+    }
+    out[i - a] = s;
+  }
+  return out;
+}
+async function gpuNeural(midi, dur, P, sr) {
+  const d = GPU.dev, pl = nsPlan(midi, dur, P, sr), t0 = performance.now();
+  if (!GPU.ns) {
+    const mod = d.createShaderModule({ code: NSAX_WGSL });
+    GPU.ns = { net: d.createComputePipeline({ layout: 'auto', compute: { module: mod, entryPoint: 'net' } }), synth: d.createComputePipeline({ layout: 'auto', compute: { module: mod, entryPoint: 'synth' } }) };
+  }
+  const mk = (data, usage) => { const b = d.createBuffer({ size: Math.max(16, data.byteLength), usage: usage | GPUBufferUsage.COPY_DST }); d.queue.writeBuffer(b, 0, data); return b; };
+  const xb = mk(pl.X, GPUBufferUsage.STORAGE), wb = mk(nsWeights(), GPUBufferUsage.STORAGE), zb = mk(pl.ns, GPUBufferUsage.STORAGE);
+  const ab = d.createBuffer({ size: pl.nF * pl.C * 4, usage: GPUBufferUsage.STORAGE });
+  const ob = d.createBuffer({ size: pl.n * 4, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC });
+  const rb = d.createBuffer({ size: pl.n * 4, usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST });
+  const uni = off => { const u = new ArrayBuffer(48), dv = new DataView(u); dv.setUint32(0, pl.nF, true); dv.setUint32(4, pl.C, true); dv.setUint32(8, pl.n, true); dv.setUint32(12, off, true);
+    [pl.f0, sr, NS.FPS, pl.vib.rate, pl.vib.depth, pl.vib.start, 1, (pl.f0 * 4096 / sr) % 1].forEach((v, k) => dv.setFloat32(16 + k * 4, v, true)); return mk(new Uint8Array(u), GPUBufferUsage.UNIFORM); };
+  const unis = [];
+  const run = (pipe, entries, groups) => {
+    const bg = d.createBindGroup({ layout: pipe.getBindGroupLayout(0), entries: entries.map(([i, b]) => ({ binding: i, resource: { buffer: b } })) });
+    const enc = d.createCommandEncoder(), pass = enc.beginComputePass(); pass.setPipeline(pipe); pass.setBindGroup(0, bg); pass.dispatchWorkgroups(groups); pass.end(); d.queue.submit([enc.finish()]);
+  };
+  { const u = uni(0); unis.push(u); run(GPU.ns.net, [[0, u], [1, xb], [2, wb], [3, ab]], Math.ceil(pl.nF * pl.C / 64)); }
+  for (let off = 0; off < pl.n; off += GPU_SLICE) {
+    const u = uni(off); unis.push(u);
+    run(GPU.ns.synth, [[0, u], [3, ab], [4, zb], [5, ob]], Math.ceil(Math.min(GPU_SLICE, pl.n - off) / 256));
+    await d.queue.onSubmittedWorkDone();
+  }
+  const enc = d.createCommandEncoder(); enc.copyBufferToBuffer(ob, 0, rb, 0, pl.n * 4); d.queue.submit([enc.finish()]);
+  await rb.mapAsync(GPUMapMode.READ);
+  const out = new Float32Array(rb.getMappedRange().slice(0)); rb.unmap();
+  for (const b of [xb, wb, zb, ab, ob, rb, ...unis]) b.destroy();
+  GPU.renders++; GPU.lastMs = performance.now() - t0;
+  return { out, n: pl.n };
+}
+function gpuRequestNeural(key, midi, dur, P) {
+  if (GPU.cache.has(key) || GPU.jobs.has(key)) return key;
+  const job = GPU.chain = GPU.chain.then(async () => {
+    if (GPU.state !== 'ok') return;
+    const sr = S.ctx.sampleRate, { out, n } = await gpuNeural(midi, dur, P, sr);
+    const buf = S.ctx.createBuffer(2, n, sr);
+    for (let i = 0; i < n; i++) out[i] *= 0.2;
+    buf.copyToChannel(out, 0); buf.copyToChannel(out, 1);
+    gpuCachePut(key, buf);
+  }).catch(e => { GPU.err = String(e.message || e); }).finally(() => GPU.jobs.delete(key));
+  GPU.jobs.set(key, job);
+  return key;
+}
+const gpuKey = (inst, midi, dur, P) => [inst, midi, inst === 'nsax' ? ((P.vel ?? 1) < 0.75 ? 0 : 1) + '|' + (P.vib || 0).toFixed(2) : '', inst === 'plate' || inst === 'membrane' ? 0 : Math.round(dur * 8) / 8, (P.bright ?? 0).toFixed(2), (P.detune ?? 0).toFixed(0), (P.dec ?? 0).toFixed(2), (P.width ?? 0).toFixed(2), (P.atk ?? 0).toFixed(2), (P.rel ?? 0).toFixed(2)].join('|');
+function gpuCachePut(key, buf) {
+  GPU.cache.set(key, buf); GPU.bytes += buf.length * 8;
+  while (GPU.bytes > GPU_CACHE_BYTES && GPU.cache.size > 1) { const [k0, b0] = GPU.cache.entries().next().value; GPU.cache.delete(k0); GPU.bytes -= b0.length * 8; }
+}
 function gpuRequest(inst, midi, dur, P) {
   const key = gpuKey(inst, midi, dur, P);
+  if (inst === 'membrane') return gpuRequestMembrane(key, midi, P);
+  if (inst === 'nsax') return gpuRequestNeural(key, midi, dur, P);
   if (GPU.cache.has(key) || GPU.jobs.has(key)) return key;
   const job = GPU.chain = GPU.chain.then(async () => {
     if (GPU.state !== 'ok') return;
@@ -193,8 +505,26 @@ function gpuRequest(inst, midi, dur, P) {
     const pcm = await gpuRender(v.parts, v.np, v.n, v.o);
     const buf = S.ctx.createBuffer(2, v.n, sr);
     buf.copyToChannel(pcm.subarray(0, v.n), 0); buf.copyToChannel(pcm.subarray(v.n), 1);
-    GPU.cache.set(key, buf); GPU.bytes += v.n * 8;
-    while (GPU.bytes > GPU_CACHE_BYTES && GPU.cache.size > 1) { const [k0, b0] = GPU.cache.entries().next().value; GPU.cache.delete(k0); GPU.bytes -= b0.length * 8; }
+    gpuCachePut(key, buf);
+  }).catch(e => { GPU.err = String(e.message || e); }).finally(() => GPU.jobs.delete(key));
+  GPU.jobs.set(key, job);
+  return key;
+}
+// one render gives all four velocity layers; they are cached as key|0 .. key|3
+function gpuRequestMembrane(key, midi, P) {
+  if (GPU.cache.has(key + '|2') || GPU.jobs.has(key)) return key;
+  const job = GPU.chain = GPU.chain.then(async () => {
+    if (GPU.state !== 'ok') return;
+    const sr = S.ctx.sampleRate, { out, n } = await gpuMembrane(midi, P, sr);
+    let pk = 0; for (let i = 0; i < out.length; i++) pk = Math.max(pk, Math.abs(out[i]));
+    const g = 0.6 / Math.max(1e-9, pk);
+    for (let L = 0; L < MEM_LAYERS; L++) {
+      const buf = S.ctx.createBuffer(2, n, sr), o = L * n * 2;
+      const a = out.subarray(o, o + n), b = out.subarray(o + n, o + 2 * n);
+      for (let i = 0; i < n; i++) { a[i] *= g; b[i] *= g; }
+      buf.copyToChannel(a, 0); buf.copyToChannel(b, 1);
+      gpuCachePut(key + '|' + L, buf);
+    }
   }).catch(e => { GPU.err = String(e.message || e); }).finally(() => GPU.jobs.delete(key));
   GPU.jobs.set(key, job);
   return key;
@@ -204,11 +534,14 @@ function gpuPlay(def, notes, time, dur, P, vel, r) {
   if (GPU.state !== 'ok') return notes;
   const miss = [];
   for (const m of notes) {
-    const key = gpuRequest(def.inst, m, dur, P), buf = GPU.cache.get(key);
+    let key = gpuRequest(def.inst, m, dur, def.inst === 'nsax' ? { ...P, vel } : P), gv = vel;
+    // the drum head was rendered at four strengths: take the nearest, and only trim the level around it
+    if (def.inst === 'membrane') { const L = vel < 0.55 ? 0 : vel < 0.8 ? 1 : vel < 1.05 ? 2 : 3; key += '|' + L; gv = 0.85 + 0.15 * vel; }
+    const buf = GPU.cache.get(key);
     if (!buf) { miss.push(m); continue; }
     GPU.cache.delete(key); GPU.cache.set(key, buf);   // keep recently used notes
     const src = S.ctx.createBufferSource(), g = S.ctx.createGain();
-    src.buffer = buf; g.gain.value = P.gain * vel * (INST[def.inst].lvl || 0.5);
+    src.buffer = buf; g.gain.value = P.gain * gv * (INST[def.inst].lvl || 0.5);
     src.connect(g).connect(r.input);
     src.start(time); src.onended = () => { try { g.disconnect(); } catch (e) { } };
     registerVoice(r, { filters: [], kt: 1, tEnd: time + buf.duration });
@@ -228,6 +561,79 @@ function gpuPrewarm() {
       if (notes) for (const m of notes) gpuRequest(def.inst, m, ev.d / S.cps * P.len, P);
     }
   }
+}
+
+// ---------- modal reverb ----------
+// A space is rendered as the sum of its resonant modes, each a decaying sine (the approach studied for
+// GPUs and FPGAs in Frontiers in Signal Processing, 2025). Low room modes are exact for the room's size,
+// so a small room booms where a real one would; higher up the modes are placed at random with just enough
+// density that neighbours overlap, and every mode decays at its own frequency-dependent rate. Each mode
+// gets independent left and right gains, so the tail is wide. Up to 65,536 modes and several seconds:
+// minutes of work in JavaScript, well under a second on a GPU. The result loads into a ConvolverNode.
+const SPACES = {
+  room:      { dims: [6.4, 4.8, 3.0], t60: 0.8, air: 6000, pre: 0.004 },
+  chamber:   { dims: [11, 7.6, 5.2], t60: 1.5, air: 7000, pre: 0.01 },
+  hall:      { dims: [32, 21, 14], t60: 2.5, air: 6500, pre: 0.022 },
+  cathedral: { dims: [72, 34, 30], t60: 5.5, air: 5000, pre: 0.04 },
+  plate:     { plate: true, t60: 3.4, air: 10000, pre: 0.001 },
+};
+const SPACE_MAXMODES = 65536;
+function modalModes(sp, sr) {
+  const c = 343, rnd = rngOf(sp.t60 * 1000 | 0), fTop = Math.min(15000, sr * 0.45);
+  const T = f => sp.t60 * (1 + 0.35 * Math.exp(-f / 180)) / (1 + Math.pow(f / sp.air, 1.6));
+  const need = f => 3 * T(f) / 2.2;             // modes per Hz for ~3 inside each mode's bandwidth
+  const modes = [];
+  let fEx = 30;
+  if (sp.dims) {
+    // exact room modes (nx, ny, nz) below fEx
+    const [X, Y, Z] = sp.dims, V = X * Y * Z;
+    const phys = f => 4 * Math.PI * V * f * f / (c * c * c);
+    while (fEx < 2000 && phys(fEx) < need(fEx)) fEx += 5;
+    for (let a = 0; a * c / (2 * X) < fEx; a++) for (let b = 0; b * c / (2 * Y) < fEx; b++) for (let d = 0; d * c / (2 * Z) < fEx; d++) {
+      if (!a && !b && !d) continue;
+      const f = c / 2 * Math.hypot(a / X, b / Y, d / Z);
+      if (f >= 30 && f < fEx && modes.length < 8000) modes.push(f);
+    }
+  }
+  // above: jittered spacing at the needed density, thinned if the total would pass the cap
+  let est = 0; for (let f = fEx; f < fTop; f += 10) est += need(f) * 10 * (sp.plate ? 1.4 : 1);
+  const thin = Math.min(1, (SPACE_MAXMODES - modes.length) / Math.max(1, est));
+  for (let f = fEx; f < fTop && modes.length < SPACE_MAXMODES;) { modes.push(f); f += (0.3 + rnd() * 1.4) / (need(f) * (sp.plate ? 1.4 : 1) * thin); }
+  return { modes, T, rnd };
+}
+function gauss(rnd) { return Math.sqrt(-2 * Math.log(Math.max(1e-9, rnd()))) * Math.cos(2 * Math.PI * rnd()); }
+async function modalIR(name, sr) {
+  const sp = SPACES[name], { modes, T, rnd } = modalModes(sp, sr);
+  const np = modes.length, parts = new Float32Array(np * 8);
+  let s2 = 0, tMax = 0;
+  for (let k = 0; k < np; k++) {
+    const f = modes[k], t60 = T(f), fn = k + 1 < np ? modes[k + 1] - f : 1;
+    // energy per Hz stays even: each mode's power follows the spacing to its neighbour; very low end rolled off
+    const amp = Math.sqrt(Math.max(0.02, fn)) / (1 + Math.pow(45 / f, 4)), q = k * 8;
+    partial(parts, k, f, sr, amp, rnd(), t60, 0);
+    parts[q + 5] = gauss(rnd); parts[q + 6] = gauss(rnd);
+    s2 += amp * amp; tMax = Math.max(tMax, t60);
+  }
+  const n = Math.round(Math.min(9, tMax * 1.05) * sr);
+  const pcm = await gpuRender(parts, np, n, { atk: 0.002 * sr, gain: 0.5 / Math.sqrt(s2) });
+  // early reflections: first and second-order image sources of the box (none for the plate)
+  if (sp.dims) {
+    const [X, Y, Z] = sp.dims, src = [X * 0.31, Y * 0.42, 1.4], mic = [X * 0.62, Y * 0.55, 1.6];
+    let e2 = 0; for (let i = 0; i < Math.min(n, sr * 0.05); i++) e2 += pcm[i] * pcm[i];
+    const lvl = Math.sqrt(e2 / (sr * 0.05)) * 6;
+    for (let a = -2; a <= 2; a++) for (let b = -2; b <= 2; b++) for (let d = -1; d <= 1; d++) {
+      const ord = Math.abs(a) + Math.abs(b) + Math.abs(d);
+      if (!ord || ord > 2) continue;
+      const img = [a * X + (a & 1 ? X - src[0] : src[0]), b * Y + (b & 1 ? Y - src[1] : src[1]), d * Z + (d & 1 ? Z - src[2] : src[2])];
+      const dist = Math.hypot(img[0] - mic[0], img[1] - mic[1], img[2] - mic[2]), direct = Math.hypot(src[0] - mic[0], src[1] - mic[1], src[2] - mic[2]);
+      const at = Math.round((dist - direct) / 343 * sr), gain = lvl * Math.pow(0.72, ord) * direct / dist * (rnd() < 0.5 ? -1 : 1);
+      const side = Math.sign(img[0] - mic[0]) * 0.35;
+      for (let j = 0; j < 24 && at + j < n; j++) { const w = gain * Math.exp(-j / 5); pcm[at + j] += w * (1 - side); pcm[n + at + j] += w * (1 + side); }
+    }
+  }
+  const buf = S.ctx.createBuffer(2, n, sr);
+  buf.copyToChannel(pcm.subarray(0, n), 0); buf.copyToChannel(pcm.subarray(n), 1);
+  return { buf, modes: np, ms: GPU.lastMs };
 }
 
 // ---------- spectral freeze ----------
@@ -286,8 +692,10 @@ function freezeStop() {
 //   contour  a topographic map: spectrogram + slow drift + ripples from track hits, index line every fifth
 //   dots     an LED matrix: hits send rings out from their code line, the spectrum lights columns
 //   demo     a demoscene tunnel with copper bars and a sine scroller
-const SCENE_BANDS = 64, SCENE_ROWS = 160, SCENE_MAXE = 24, SCENE_MODES = ['terrain', 'contour', 'dots', 'demo'];
-const SCENE_WGSL = `
+//   sono     the whole song as one sonogram, filled in by song position as it plays
+// and any `shader name <WGSL expression>` line in the code becomes a scene too (see sceneCustomWGSL).
+const SCENE_BANDS = 64, SCENE_ROWS = 160, SCENE_MAXE = 24, SCENE_MODES = ['terrain', 'contour', 'dots', 'demo', 'sono'];
+const SCENE_PRE = `
 struct U {
   res: vec2f, time: f32, beat: f32,
   bass: f32, mid: f32, high: f32, kick: f32,
@@ -295,11 +703,14 @@ struct U {
   ink: vec4f, accent: vec4f,
   em: array<vec4f, 24>,
   pal: array<vec4f, 10>,
+  sono: vec4f,
+  cuts: array<vec4f, 4>,
 };
 @group(0) @binding(0) var<uniform> u: U;
-@group(0) @binding(1) var spec: texture_2d<f32>;
+@group(0) @binding(1) var specT: texture_2d<f32>;
 @group(0) @binding(2) var samp: sampler;
 @group(0) @binding(3) var txt: texture_2d<f32>;
+@group(0) @binding(4) var sonoT: texture_2d<f32>;
 struct VO { @builtin(position) p: vec4f, @location(0) uv: vec2f };
 @vertex fn vs(@builtin(vertex_index) i: u32) -> VO {
   var o: VO;
@@ -310,9 +721,23 @@ struct VO { @builtin(position) p: vec4f, @location(0) uv: vec2f };
 // band in [0,1] (low to high), age in [0,1] (now to ~5 s ago)
 fn specAt(band: f32, age: f32) -> f32 {
   let v = (u.head - clamp(age, 0.0, 1.0) * (u.rows - 2.0) + 0.5) / u.rows;
-  return textureSampleLevel(spec, samp, vec2f(clamp(band, 0.0, 1.0), v), 0.0).r;
+  return textureSampleLevel(specT, samp, vec2f(clamp(band, 0.0, 1.0), v), 0.0).r;
 }
 fn premul(c: vec3f, a: f32) -> vec4f { return vec4f(c * a, a); }
+fn rot(a: f32) -> mat2x2f { let c = cos(a); let s = sin(a); return mat2x2f(c, s, -s, c); }
+// helpers for shader lines written in the code
+fn spec(band: f32, age: f32) -> f32 { return specAt(band, age); }
+fn hash(p: vec2f) -> f32 { return fract(sin(dot(p, vec2f(127.1, 311.7))) * 43758.5453); }
+fn noise(p: vec2f) -> f32 {
+  let i = floor(p); let f = fract(p); let w = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hash(i), hash(i + vec2f(1.0, 0.0)), w.x), mix(hash(i + vec2f(0.0, 1.0)), hash(i + vec2f(1.0, 1.0)), w.x), w.y);
+}
+fn fbm(p: vec2f) -> f32 { var v = 0.0; var a = 0.5; var q = p; for (var k = 0; k < 5; k++) { v += a * noise(q); q = q * 2.03 + 1.7; a *= 0.5; } return v; }
+fn pal(k: i32) -> vec3f { return u.pal[u32(k) % 10u].rgb; }
+// how recently track k (in code order) played: 1 on the hit, fading over about a second
+fn hit(k: i32) -> f32 { if (u32(k) >= u.ne) { return 0.0; } return exp(-u.em[u32(k)].w * 3.0); }
+`;
+const SCENE_WGSL = SCENE_PRE + `
 
 // one ridgeline: row k of R, at screen x
 fn ridge(x: f32, kf: f32, R: f32) -> f32 {
@@ -406,7 +831,6 @@ fn height(p: vec2f, asp: f32) -> f32 {
   return premul(col, a);
 }
 
-fn rot(a: f32) -> mat2x2f { let c = cos(a); let s = sin(a); return mat2x2f(c, s, -s, c); }
 fn tunnel(p: vec3f) -> f32 {
   let r = 1.5 + 0.18 * sin(p.z * 0.7 + u.time * 0.6) + u.kick * 0.12;
   var q = p;
@@ -459,8 +883,42 @@ fn tunnel(p: vec3f) -> f32 {
     c = mix(c, grad, g);
   }
   return vec4f(c, 1.0);
+}
+
+// the whole song: x is the song position, y the frequency; filled in as the song plays
+@fragment fn sono(i: VO) -> @location(0) vec4f {
+  let x = i.uv.x;
+  let fy = clamp((1.0 - i.uv.y - 0.04) / 0.92, 0.0, 1.0);
+  let v = textureSampleLevel(sonoT, samp, vec2f(fy, x), 0.0).r;
+  var a = pow(v, 1.8) * 0.45;
+  var c = mix(u.ink.rgb, u.accent.rgb, smoothstep(0.7, 0.98, v) * 0.7);
+  let bx = x * max(1.0, u.sono.y);
+  let bl = 1.0 - smoothstep(0.0, fwidth(bx) * 1.2, abs(fract(bx + 0.5) - 0.5));
+  a = max(a, bl * 0.05);
+  for (var k = 0u; k < 16u; k++) {
+    let cx = u.cuts[k / 4u][k % 4u];
+    if (cx >= 0.0 && abs(x - cx) * u.res.x < 1.0 * u.dpr) { a = max(a, 0.28); c = u.ink.rgb; }
+  }
+  if (u.sono.z > 0.5 && abs(x - u.sono.x) * u.res.x < 1.5 * u.dpr) { return premul(u.accent.rgb, 0.85); }
+  return premul(c, a);
 }`;
-const SCENE = { ready: false, failed: false, loading: false, hits: new Map(), bins: null, rowT: 0, head: 0 };
+// a shader line from the code, wrapped as a full-screen scene. p: 0..1 with y up; q: centred, square units.
+function sceneCustomWGSL(expr, kind) {
+  const out = kind === 'f32' ? 'premul(u.ink.rgb, clamp(v, 0.0, 1.0) * 0.55)' : 'vec4f(clamp(v, vec3f(0.0), vec3f(1.0)) * 0.6, clamp(max(v.x, max(v.y, v.z)), 0.0, 1.0) * 0.6)';
+  return SCENE_PRE + `
+@fragment fn custom(i: VO) -> @location(0) vec4f {
+  let asp = u.res.x / u.res.y;
+  let p = vec2f(i.uv.x, 1.0 - i.uv.y);
+  let q = (p - 0.5) * vec2f(asp, 1.0);
+  let t = u.time; let beat = u.beat; let bar = u.beat / 4.0;
+  let bass = u.bass; let mid = u.mid; let high = u.high; let kick = u.kick;
+  let ink = u.ink.rgb; let accent = u.accent.rgb;
+  let v: ${kind} = ${expr};
+  return ${out};
+}`;
+}
+const SCENE = { ready: false, failed: false, loading: false, hits: new Map(), bins: null, rowT: 0, head: 0, custom: new Map(), sonoKey: '', sonoLast: -1 };
+const SONO_ROWS = 2048, SCENE_UBYTES = 704;
 // own device, as with the audio renders: a canvas problem must never take the sound with it.
 // offscreen: draw into a texture (tests and headless browsers, where presenting a WebGPU canvas fails)
 async function sceneInit(canvas, offscreen) {
@@ -479,8 +937,9 @@ async function sceneInit(canvas, offscreen) {
     const mod = d.createShaderModule({ code: SCENE_WGSL });
     const info = await mod.getCompilationInfo(); const bad = info.messages.find(m => m.type === 'error');
     if (bad) throw new Error('shader: ' + bad.message + ' at line ' + bad.lineNum);
-    const uni = d.createBuffer({ size: 624, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
-    const spec = d.createTexture({ size: [SCENE_BANDS, SCENE_ROWS], format: 'r8unorm', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST });
+    const uni = d.createBuffer({ size: SCENE_UBYTES, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+    const tex = (w, h) => d.createTexture({ size: [w, h], format: 'r8unorm', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST });
+    const spec = tex(SCENE_BANDS, SCENE_ROWS), sono = tex(SCENE_BANDS, SONO_ROWS);
     const samp = d.createSampler({ magFilter: 'linear', minFilter: 'linear', addressModeU: 'clamp-to-edge', addressModeV: 'repeat', addressModeW: 'repeat' });
     // the scroller text, drawn once with the page's own font
     const tc = document.createElement('canvas'); tc.width = 4096; tc.height = 128;
@@ -490,19 +949,45 @@ async function sceneInit(canvas, offscreen) {
     g.fillText(msg, 8, 64);
     const txt = d.createTexture({ size: [tc.width, tc.height], format: 'rgba8unorm', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT });
     d.queue.copyExternalImageToTexture({ source: tc }, { texture: txt }, [tc.width, tc.height]);
+    // one explicit layout for every scene, so the code's own shaders can use any input
+    const F = GPUShaderStage.FRAGMENT, V = GPUShaderStage.VERTEX;
+    const bgl = d.createBindGroupLayout({ entries: [
+      { binding: 0, visibility: F | V, buffer: { type: 'uniform' } },
+      { binding: 1, visibility: F, texture: {} }, { binding: 2, visibility: F, sampler: {} },
+      { binding: 3, visibility: F, texture: {} }, { binding: 4, visibility: F, texture: {} }] });
+    const layout = d.createPipelineLayout({ bindGroupLayouts: [bgl] });
     const blend = { color: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' } };
+    const pipe = (module, entryPoint) => d.createRenderPipeline({ layout, vertex: { module, entryPoint: 'vs' }, fragment: { module, entryPoint, targets: [{ format: fmt, blend }] }, primitive: { topology: 'triangle-list' } });
     const pipes = {};
-    for (const m of SCENE_MODES) pipes[m] = d.createRenderPipeline({ layout: 'auto', vertex: { module: mod, entryPoint: 'vs' }, fragment: { module: mod, entryPoint: m, targets: [{ format: fmt, blend }] }, primitive: { topology: 'triangle-list' } });
-    const bgs = {};
-    for (const m of SCENE_MODES) {
-      // 'auto' layouts only include what each entry point uses, so build each bind group from its own layout
-      const entries = [{ binding: 0, resource: { buffer: uni } }, { binding: 2, resource: samp }];
-      entries.push(m === 'demo' ? { binding: 3, resource: txt.createView() } : { binding: 1, resource: spec.createView() });
-      bgs[m] = d.createBindGroup({ layout: pipes[m].getBindGroupLayout(0), entries });
-    }
-    Object.assign(SCENE, { ctx, fmt, canvas, uni, spec, pipes, bgs, specData: new Uint8Array(SCENE_BANDS * SCENE_ROWS), ready: true });
+    for (const m of SCENE_MODES) pipes[m] = pipe(mod, m);
+    const bg = d.createBindGroup({ layout: bgl, entries: [{ binding: 0, resource: { buffer: uni } }, { binding: 1, resource: spec.createView() }, { binding: 2, resource: samp }, { binding: 3, resource: txt.createView() }, { binding: 4, resource: sono.createView() }] });
+    Object.assign(SCENE, { ctx, fmt, canvas, uni, spec, sono, pipes, bg, pipe, ready: true });
   } catch (e) { SCENE.failed = true; SCENE.err = String(e.message || e); }
   SCENE.loading = false;
+}
+// a shader line from the code: compile it (as a number, then as a colour) and report the first error
+async function sceneCustom(name, expr) {
+  const have = SCENE.custom.get(name);
+  if (have && have.expr === expr) return have;
+  const ent = { expr, pipe: null, err: null, pending: true };
+  SCENE.custom.set(name, ent);
+  if (!SCENE.ready) { ent.pending = false; ent.err = SCENE.err || 'WebGPU'; return ent; }
+  const d = SCENE.dev; let first = null;
+  for (const kind of ['f32', 'vec3f']) {
+    d.pushErrorScope('validation');
+    const mod = d.createShaderModule({ code: sceneCustomWGSL(expr, kind) });
+    const info = await mod.getCompilationInfo();
+    const bad = info.messages.find(m => m.type === 'error');
+    if (bad) { await d.popErrorScope(); first = first || bad.message; continue; }
+    const p = SCENE.pipe(mod, 'custom');
+    const ve = await d.popErrorScope();
+    if (ve) { first = first || ve.message; continue; }
+    ent.pipe = p; break;
+  }
+  if (SCENE.custom.get(name) !== ent) return ent;   // replaced while compiling
+  ent.err = ent.pipe ? null : String(first || 'shader error').split('\n')[0].slice(0, 160);
+  ent.pending = false;
+  return ent;
 }
 // '#rrggbb' → [r, g, b] in 0..1
 function sceneRgb(hex, fb) { const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '').trim()); if (!m) return fb; const v = parseInt(m[1], 16); return [(v >> 16 & 255) / 255, (v >> 8 & 255) / 255, (v & 255) / 255]; }
@@ -510,13 +995,18 @@ function sceneRgb(hex, fb) { const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '
 function sceneHit(line) { SCENE.hits.set(line, performance.now() / 1000); }
 let sceneKick = 0;
 // opts.ink / opts.accent: [r, g, b] in 0..1, so lines follow the page theme
+// opts.sono: { pos, bars, cuts, key, live } — where the song is, for the whole-song sonogram
 function sceneFrame(mode, emitters, beat, opts) {
   opts = opts || {};
-  if (!SCENE.ready || !SCENE.pipes[mode]) return;
+  // mode null: only keep the spectrum and the sonogram up to date, draw nothing
+  if (!SCENE.ready) return false;
+  const custom = mode && SCENE.custom.get(mode), pipe = mode && (SCENE.pipes[mode] || (custom && custom.pipe));
+  if (!pipe && mode !== null) return false;
   const d = SCENE.dev, off = SCENE.offscreen, cv = SCENE.canvas, dpr = devicePixelRatio || 1;
   const w = off ? off.w : Math.max(1, Math.round(cv.clientWidth * dpr)), h = off ? off.h : Math.max(1, Math.round(cv.clientHeight * dpr));
   if (!off && (cv.width !== w || cv.height !== h)) { cv.width = w; cv.height = h; }
-  const now = performance.now() / 1000;
+  const now = performance.now() / 1000, so = opts.sono;
+  if (so && so.key !== SCENE.sonoKey) { SCENE.sonoKey = so.key; SCENE.sonoLast = -1; d.queue.writeTexture({ texture: SCENE.sono }, new Uint8Array(SCENE_BANDS * SONO_ROWS), { bytesPerRow: SCENE_BANDS }, [SCENE_BANDS, SONO_ROWS]); }
   // spectrum: 64 log-spaced bands, one new row every 1/30 s
   let bass = 0, mid = 0, high = 0;
   if (now - SCENE.rowT > 1 / 30) {
@@ -537,11 +1027,22 @@ function sceneFrame(mode, emitters, beat, opts) {
     SCENE.head = (SCENE.head + 1) % SCENE_ROWS;
     d.queue.writeTexture({ texture: SCENE.spec, origin: [0, SCENE.head] }, row, { bytesPerRow: SCENE_BANDS }, [SCENE_BANDS, 1]);
     SCENE.lastRow = row;
+    // the sonogram keeps the spectrum by song position, so every bar has its own place
+    if (so && so.live && S.playing) {
+      const r = Math.max(0, Math.min(SONO_ROWS - 1, Math.floor(so.pos * SONO_ROWS)));
+      let from = r;
+      if (SCENE.sonoLast >= 0 && r > SCENE.sonoLast && r - SCENE.sonoLast < 48) from = SCENE.sonoLast + 1;
+      const cnt = r - from + 1, rows = new Uint8Array(SCENE_BANDS * cnt);
+      for (let k = 0; k < cnt; k++) rows.set(row, k * SCENE_BANDS);
+      d.queue.writeTexture({ texture: SCENE.sono, origin: [0, from] }, rows, { bytesPerRow: SCENE_BANDS }, [SCENE_BANDS, cnt]);
+      SCENE.sonoLast = r;
+    }
   }
+  if (!pipe) return false;
   const lr = SCENE.lastRow || new Uint8Array(SCENE_BANDS), avg = (a, b) => { let s = 0; for (let k = a; k < b; k++) s += lr[k]; return s / (b - a) / 255; };
   bass = avg(0, 12); mid = avg(20, 40); high = avg(44, 60);
   sceneKick = Math.max(sceneKick * 0.9, bass > 0.62 ? (bass - 0.62) * 2.6 : 0);
-  const buf = new ArrayBuffer(624), f = new Float32Array(buf), ui = new Uint32Array(buf);
+  const buf = new ArrayBuffer(SCENE_UBYTES), f = new Float32Array(buf), ui = new Uint32Array(buf);
   f[0] = w; f[1] = h; f[2] = now % 1000; f[3] = beat || 0;
   f[4] = bass; f[5] = mid; f[6] = high; f[7] = Math.min(1, sceneKick);
   const em = emitters.slice(0, SCENE_MAXE);
@@ -549,11 +1050,14 @@ function sceneFrame(mode, emitters, beat, opts) {
   f.set([...(opts.ink || [0.9, 0.91, 0.93]), 1], 12); f.set([...(opts.accent || [1, 0.6, 0.3]), 1], 16);
   em.forEach((e, k) => { const t0 = SCENE.hits.get(e.line); f.set([e.y, e.x, e.col, t0 ? Math.min(30, now - t0) : 30], 20 + k * 4); });
   TRACK_COLORS.forEach((hx, k) => { const v = parseInt(hx.slice(1), 16); f.set([(v >> 16 & 255) / 255, (v >> 8 & 255) / 255, (v & 255) / 255, 1], 116 + k * 4); });
+  f.set([so ? so.pos : 0, so ? so.bars : 1, so && S.playing ? 1 : 0, 0], 156);
+  for (let k = 0; k < 16; k++) f[160 + k] = so && so.cuts && k < so.cuts.length ? so.cuts[k] : -1;
   d.queue.writeBuffer(SCENE.uni, 0, buf);
   const enc = d.createCommandEncoder();
   const rp = enc.beginRenderPass({ colorAttachments: [{ view: off ? off.tex.createView() : SCENE.ctx.getCurrentTexture().createView(), loadOp: 'clear', clearValue: { r: 0, g: 0, b: 0, a: 0 }, storeOp: 'store' }] });
-  rp.setPipeline(SCENE.pipes[mode]); rp.setBindGroup(0, SCENE.bgs[mode]); rp.draw(3); rp.end();
+  rp.setPipeline(pipe); rp.setBindGroup(0, SCENE.bg); rp.draw(3); rp.end();
   d.queue.submit([enc.finish()]);
+  return true;
 }
 
 // ---------- benchmark: the same note on the GPU and in JavaScript ----------

@@ -152,6 +152,7 @@ button, select, input { font: inherit; color: inherit; }
 #vizgpu { opacity: .95; }
 .vizbar { position: absolute; top: 8px; right: 12px; z-index: 4; display: flex; gap: 2px; padding: 2px; border-radius: 8px; background: rgba(19, 22, 26, .88); border: 1px solid var(--scr-line); }
 .vizbar button { border: 0; background: transparent; color: var(--scr-dim); font-size: 11px; padding: 4px 8px; border-radius: 6px; cursor: pointer; }
+.vizbar button.bycode { box-shadow: inset 0 -2px 0 var(--k-orange); }
 .vizbar .vsep { width: 1px; align-self: stretch; margin: 3px 2px; background: var(--scr-line); }
 .vizbar { flex-wrap: wrap; max-width: calc(100% - 24px); justify-content: flex-end; }
 .vizbar button[aria-pressed="true"] { background: var(--scr-line); color: var(--scr-fg); }
@@ -298,7 +299,7 @@ body.recording .editor { border-color: var(--c-err); }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.12 10:10<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.12 10:42<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -331,7 +332,7 @@ body.recording .editor { border-color: var(--c-err); }
         <canvas id="viz" aria-hidden="true"></canvas>
         <pre id="hl" aria-hidden="true"></pre>
         <div class="vizbar" id="vizbar" role="group" data-i18n-aria="vizTitle">
-          <button data-v="roll" data-i18n="vizRoll"></button><button data-v="grid" data-i18n="vizGrid"></button><button data-v="spiral" data-i18n="vizSpiral"></button><button data-v="fft" data-i18n="vizFft"></button><span class="vsep" aria-hidden="true"></span><button data-v="terrain" data-i18n="vizTerrain" data-i18n-title="vizGpuTitle"></button><button data-v="contour" data-i18n="vizContour" data-i18n-title="vizGpuTitle"></button><button data-v="dots" data-i18n="vizDots" data-i18n-title="vizGpuTitle"></button><button data-v="demo" data-i18n="vizDemo" data-i18n-title="vizGpuTitle"></button><span class="vsep" aria-hidden="true"></span><button data-v="off" data-i18n="vizOff"></button>
+          <button data-v="roll" data-i18n="vizRoll"></button><button data-v="grid" data-i18n="vizGrid"></button><button data-v="spiral" data-i18n="vizSpiral"></button><button data-v="fft" data-i18n="vizFft"></button><span class="vsep" aria-hidden="true"></span><button data-v="terrain" data-i18n="vizTerrain" data-i18n-title="vizGpuTitle"></button><button data-v="contour" data-i18n="vizContour" data-i18n-title="vizGpuTitle"></button><button data-v="dots" data-i18n="vizDots" data-i18n-title="vizGpuTitle"></button><button data-v="demo" data-i18n="vizDemo" data-i18n-title="vizGpuTitle"></button><button data-v="sono" data-i18n="vizSono" data-i18n-title="vizSonoTitle"></button><span class="vsep" aria-hidden="true"></span><button data-v="off" data-i18n="vizOff"></button>
         </div>
         <textarea id="src" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off" wrap="off" data-i18n-aria="codeLabel"></textarea>
       </div>
@@ -418,6 +419,12 @@ body.recording .editor { border-color: var(--c-err); }
             <dt>swarm · choir · plate</dt><dd data-i18n="gpuInst"></dd>
             <dt>fx freeze P | freeze</dt><dd data-i18n="gpuFreeze"></dd>
             <dt data-i18n="gpuScenesT"></dt><dd data-i18n="gpuScenes"></dd>
+            <dt>membrane · timp</dt><dd data-i18n="gpuMem"></dd>
+            <dt>nsax</dt><dd data-i18n="gpuNsax"></dd>
+            <dt>space hall</dt><dd data-i18n="gpuSpace"></dd>
+            <dt>viz &lt;terrain dots&gt;/4</dt><dd data-i18n="gpuViz"></dd>
+            <dt>shader glow sin(length(q)*20.-t*4.)*bass</dt><dd data-i18n="gpuShader"></dd>
+            <dt>sono</dt><dd data-i18n="gpuSono"></dd>
           </dl>
           <div class="row-btns"><button class="btn" id="gpuBench" data-i18n="gpuBench"></button></div>
           <p class="gpu-res" id="gpuResult" hidden></p>
@@ -641,6 +648,15 @@ const I18N = {
     op_fill: '다음 마디로 드럼 필인', op_impact: '다음 박에 임팩트', op_swell: '다음 마디로 리버스 스웰', op_down: '다운리프터', op_in: '램프 길이 (마디)',
     p_seed: '이 트랙만 다른 시드로', p_dens: '생성 밀도 0–1', p_evolve: 'N마디마다 조금씩 변이 (0 = 고정)', p_bars: '프레이즈 길이 (마디)', ac_seed: '곡 전체 시드', ac_fx: '연주 패드 만들기',
     // v3: WebGPU
+    vizSono: '소노그램', vizSonoTitle: '곡 전체의 스펙트럼. 곡이 흐르는 동안 마디 위치마다 채워져요',
+    spaceFmt: 'space 는 {list} 중 하나예요', vizFmt: 'viz 다음에 배경 이름을 써요 (예: viz <terrain dots sono>/4)', vizUnknown: '"{n}" 배경이 없어요. {list} 또는 shader 줄의 이름을 써요',
+    shaderFmt: 'shader 이름 다음에 WGSL 식을 써요 (예: shader glow sin(length(q) * 20. - t * 4.) * bass)', shaderName: '"{n}"은 이미 있는 배경 이름이에요', shaderErr: '셰이더 오류: {e}',
+    gpuMem: '북 가죽을 96×96 격자의 파동 방정식으로 시뮬레이션해요. 한 샘플마다 한 걸음, 세기 네 가지를 GPU 워크그룹 넷이 동시에. 음높이를 따라가는 팀파니 같은 북. 준비 전엔 pluck이 대신해요',
+    gpuNsax: '키트의 색소폰 녹음으로 학습한 작은 신경망이 음높이·세기·시간에 따라 배음 48개와 숨소리 16밴드를 정하고, GPU가 그걸 소리로 합성해요. 준비 전엔 녹음 sax가 대신해요',
+    gpuSpace: '잔향 공간: room · chamber · hall · cathedral · plate. 공간의 공진 모드 최대 65,536개를 GPU가 합쳐 리버브 응답을 만들어요. GPU가 없으면 같은 길이의 알고리즘 잔향',
+    gpuViz: '배경을 코드로 정해요. <> 안의 배경을 /N 마디마다 바꿔요. 버튼을 누르면 줄을 고칠 때까지 버튼이 우선해요',
+    gpuShader: '직접 쓴 WGSL 식이 배경이 돼요. p(0~1), q(가운데 기준), t, beat, bar, bass, mid, high, kick, spec(x, age), noise, fbm, rot, hit(k), pal(k), ink, accent를 쓸 수 있어요. 숫자면 밝기, vec3f면 색',
+    gpuSono: '곡 전체 소노그램: 곡 모드에서 마디 위치마다 스펙트럼을 쌓아 한 장의 지도로 보여 줘요. 파트 경계와 지금 위치를 함께 그려요',
     vizTerrain: '지형', vizContour: '등고선', vizDots: '도트', vizDemo: '데모', vizGpuTitle: 'WebGPU로 그리는 배경. 트랙이 칠 때마다 그 코드 줄에서 반응해요', sceneOff: '이 배경은 WebGPU가 필요해요: {e}',
     gFreeze: '프리즈', gFreezeD: '지금 소리를 GPU로 얼려 화음으로 붙잡고 드럼만 남겨요', gRep8: '비트 리피트 1/8', gRep8D: '8분음표 반복', gUp: '옥타브 업', gUpD: '멜로디를 한 옥타브 올려요', gDrop: '드롭', gDropD: '다음 박에 임팩트',
     gpuIntro: 'GPU가 하는 일: 오디오 스레드에서는 WebGPU를 쓸 수 없어서, GPU가 음표를 미리 통째로 렌더링해 두면 스케줄러가 정확한 시간에 틀어요.',
@@ -789,6 +805,15 @@ const I18N = {
     op_fill: 'drum fill into the next bar', op_impact: 'impact on the next beat', op_swell: 'reverse swell into the next bar', op_down: 'downlifter', op_in: 'ramp length in bars',
     p_seed: 'a different seed for this track', p_dens: 'generator density 0–1', p_evolve: 'mutate a little every N bars (0 = fixed)', p_bars: 'phrase length in bars', ac_seed: 'seed for the whole piece', ac_fx: 'make a performance pad',
     // v3: WebGPU
+    vizSono: 'Sonogram', vizSonoTitle: 'The whole song\'s spectrum, filled in at each bar as the song plays',
+    spaceFmt: 'space is one of {list}', vizFmt: 'Write backdrop names after viz (e.g. viz <terrain dots sono>/4)', vizUnknown: 'No backdrop "{n}". Use {list} or a shader line\'s name',
+    shaderFmt: 'Write a name, then a WGSL expression (e.g. shader glow sin(length(q) * 20. - t * 4.) * bass)', shaderName: '"{n}" is already a backdrop name', shaderErr: 'Shader error: {e}',
+    gpuMem: 'A drum head simulated as the wave equation on a 96×96 grid, one step per sample, four strengths at once in four GPU workgroups. A timpani-like drum that follows the notes. pluck stands in until it is ready',
+    gpuNsax: 'A small neural network trained on the kit\'s sax recordings sets 48 harmonics and 16 bands of breath for each pitch, strength and moment, and the GPU turns them into sound. The recorded sax stands in until it is ready',
+    gpuSpace: 'Reverb spaces: room · chamber · hall · cathedral · plate. The GPU sums up to 65,536 resonant modes of the space into the reverb\'s response. Without a GPU, an algorithmic tail of the same length',
+    gpuViz: 'Pick the backdrop in code. The names inside <> change every /N bars. A pressed button wins until you edit the line',
+    gpuShader: 'Your own WGSL expression becomes the backdrop. Use p (0–1), q (centred), t, beat, bar, bass, mid, high, kick, spec(x, age), noise, fbm, rot, hit(k), pal(k), ink, accent. A number is brightness, a vec3f is colour',
+    gpuSono: 'Whole-song sonogram: in song mode the spectrum is stacked at each bar position into one map, with the part boundaries and where you are',
     vizTerrain: 'Terrain', vizContour: 'Contour', vizDots: 'Dots', vizDemo: 'Demo', vizGpuTitle: 'Drawn with WebGPU. Reacts on each track\'s code line when it plays', sceneOff: 'This backdrop needs WebGPU: {e}',
     gFreeze: 'Freeze', gFreezeD: 'Freezes the mix into a held chord on the GPU and leaves only drums', gRep8: 'Beat repeat 1/8', gRep8D: 'Eighth-note repeat', gUp: 'Octave up', gUpD: 'Raises melodies an octave', gDrop: 'Drop', gDropD: 'Impact on the next beat',
     gpuIntro: 'What the GPU does: WebGPU is not available on the audio thread, so the GPU renders whole notes ahead of time and the scheduler plays them at the exact moment.',
@@ -1119,7 +1144,7 @@ function atomNotes(raw, root, scale, oct, prog, tr = 0, inv = false) {
 const DRUMS = ['kick', 'snare', 'clap', 'hat', 'ohat', 'rim', 'tom', 'ride', 'crash', 'shaker',
   'asnare', 'ahat', 'aohat', 'atom', 'afloor', 'aride', 'acrash', 'handclap', 'conga', 'bongo', 'cajon', 'cajonslap', 'tamb', 'shake', 'claves', 'cowbell', 'woodblock', 'triangle', 'agogo', 'framedrum', 'darbuka', 'gong'];
 const LOOPS = ['loop1', 'loop2', 'loop3', 'loop4'];
-const SYNTHS = ['sine', 'tri', 'saw', 'square', 'supersaw', 'pad', 'bass', 'acid', 'pluck', 'bell', 'flute', 'bowed', 'epiano', 'zither', 'piano', 'vibes', 'harp', 'sax', 'dantranh', 'harpsi', 'marimba', 'kalimba', 'swarm', 'choir', 'plate'];
+const SYNTHS = ['sine', 'tri', 'saw', 'square', 'supersaw', 'pad', 'bass', 'acid', 'pluck', 'bell', 'flute', 'bowed', 'epiano', 'zither', 'piano', 'vibes', 'harp', 'sax', 'dantranh', 'harpsi', 'marimba', 'kalimba', 'swarm', 'choir', 'plate', 'membrane', 'nsax'];
 const NAME_INST = [
   ['kick', 'kick'], ['bd', 'kick'], ['snare', 'snare'], ['sd', 'snare'], ['clap', 'clap'], ['cp', 'clap'],
   ['ohat', 'ohat'], ['open', 'ohat'], ['oh', 'ohat'], ['hat', 'hat'], ['hh', 'hat'], ['rim', 'rim'], ['tom', 'tom'],
@@ -1128,11 +1153,11 @@ const NAME_INST = [
   ['ride', 'ride'], ['crash', 'crash'], ['cym', 'crash'], ['shaker', 'shaker'], ['shk', 'shaker'],
   ['gayageum', 'zither'], ['zither', 'zither'], ['koto', 'zither'], ['guitar', 'zither'],
   ['grand', 'piano'], ['vibe', 'vibes'], ['harpsi', 'harpsi'], ['cembalo', 'harpsi'], ['harp', 'harp'], ['sax', 'sax'], ['marimba', 'marimba'], ['kalimba', 'kalimba'], ['dantranh', 'dantranh'], ['jing', 'gong'],
-  ['swarm', 'swarm'], ['choir', 'choir'], ['plate', 'plate'], ['daegeum', 'flute'], ['flute', 'flute'], ['haegeum', 'bowed'], ['string', 'bowed'], ['keys', 'epiano'], ['rhodes', 'epiano'], ['piano', 'piano'],
+  ['swarm', 'swarm'], ['choir', 'choir'], ['plate', 'plate'], ['membrane', 'membrane'], ['timp', 'membrane'], ['nsax', 'nsax'], ['daegeum', 'flute'], ['flute', 'flute'], ['haegeum', 'bowed'], ['string', 'bowed'], ['keys', 'epiano'], ['rhodes', 'epiano'], ['piano', 'piano'],
 ];
 const PARAMS = ['gain', 'pan', 'oct', 'cut', 'res', 'env', 'atk', 'dec', 'sus', 'rel', 'len', 'delay', 'verb', 'duck', 'shape', 'detune', 'tune', 'slices', 'hpf', 'low', 'high', 'drive', 'width', 'vib', 'slide', 'acc', 'bright', 'wave', 'vel', 'nudge', 'human', 'swing', 'sgrid', 'comp', 'rate', 'tr', 'range', 'seed', 'dens', 'evolve', 'bars'];
 const EXP_PARAMS = new Set(['cut', 'hpf']);
-const GLOBALS = new Set(['bpm', 'key', 'scale', 'swing', 'prog', 'scene', 'song', 'master', 'seed', 'fx']);
+const GLOBALS = new Set(['bpm', 'key', 'scale', 'swing', 'prog', 'scene', 'song', 'master', 'seed', 'fx', 'space', 'viz', 'shader']);
 // generator parameters shape the notes, so they are part of the pattern rather than the sound
 const GEN_PARAMS = ['seed', 'dens', 'evolve', 'bars'];
 let GEN_SEED = 0;
@@ -1163,6 +1188,10 @@ const SCENE_FX = ['riser', 'filter', 'fill', 'pause', 'swell', 'down', 'impact']
 const VOICINGS = ['root', 'close', 'open', 'drop2', 'spread'];
 const ARPS = ['up', 'down', 'updown', 'random'];
 const MASTERS = ['default', 'loud', 'warm', 'open'];
+// reverb spaces: modal (GPU-rendered room modes) when WebGPU is there, an algorithmic tail otherwise
+const SPACES_LIST = ['hall', 'room', 'chamber', 'cathedral', 'plate'];
+// backdrops the viz line can name, besides the code's own shader lines
+const VIZ_BUILTIN = ['roll', 'grid', 'spiral', 'fft', 'terrain', 'contour', 'dots', 'demo', 'sono', 'off'];
 const TRANSFORMS = ['rev', 'fast', 'slow', 'ply', 'skip', 'inv'];
 
 function instForName(name) {
@@ -1274,6 +1303,28 @@ function parseLine(text) {
     const v = rest.trim();
     if (!MASTERS.includes(v)) throw new PErr(t('masterFmt', { list: MASTERS.join(' ') }), restBase);
     return { type: 'master', v };
+  }
+  if (name === 'space') {
+    const v = rest.trim();
+    if (!SPACES_LIST.includes(v)) throw new PErr(t('spaceFmt', { list: SPACES_LIST.join(' ') }), restBase);
+    return { type: 'space', v };
+  }
+  // viz terrain   ·   viz <terrain dots sono>/4   (one backdrop per 4 bars)
+  if (name === 'viz') {
+    let v = rest.trim(), per = 1;
+    const m2 = /\/\s*(\d+)\s*$/.exec(v);
+    if (m2) { per = Math.max(1, +m2[1]); v = v.slice(0, m2.index).trim(); }
+    v = v.replace(/^<|>$/g, '').trim();
+    const list = v.split(/\s+/).filter(Boolean);
+    if (!list.length) throw new PErr(t('vizFmt'), restBase);
+    return { type: 'viz', list, per, col: restBase };
+  }
+  // shader glow  sin(length(q) * 20. - t * 4.) * bass      (a WGSL expression, run for every pixel)
+  if (name === 'shader') {
+    const m2 = /^\s*([a-zA-Z]\w*)\s+(.+)$/.exec(rest);
+    if (!m2) throw new PErr(t('shaderFmt'), restBase);
+    if (VIZ_BUILTIN.includes(m2[1])) throw new PErr(t('shaderName', { n: m2[1] }), restBase);
+    return { type: 'shader', name: m2[1], expr: m2[2].trim() };
   }
   if (name === 'bpm' || name === 'swing') {
     const v = rest.trim();
@@ -1423,7 +1474,7 @@ const DEFAULT_PADS = DEFAULT_PAD_SRC.map(l => { const r = parseLine(l); r.pad.bu
 function compile(text) {
   { const sm = /^\s*seed\s+(-?\d+)\s*(?:\/\/.*)?$/m.exec(text); GEN_SEED = sm ? +sm[1] : 0; }
   const lines = text.split('\n');
-  const out = { pads: new Map(), seed: GEN_SEED, master: null, bpm: null, key: null, scale: null, swing: null, prog: null, progSrc: '', scenes: new Map(), song: null, arrSrc: '', tracks: new Map(), order: [], errors: new Map(), lineNames: new Map() };
+  const out = { pads: new Map(), seed: GEN_SEED, master: null, bpm: null, key: null, scale: null, swing: null, prog: null, progSrc: '', scenes: new Map(), song: null, arrSrc: '', tracks: new Map(), order: [], errors: new Map(), lineNames: new Map(), space: null, viz: null, shaders: new Map() };
   const sceneLines = [];
   lines.forEach((ln, i) => {
     const hm = HEAD_RE.exec(stripComment(ln));
@@ -1434,6 +1485,9 @@ function compile(text) {
       if (!r) return;
       if (r.type === 'bpm') out.bpm = r.v;
       else if (r.type === 'master') out.master = r.v;
+      else if (r.type === 'space') out.space = r.v;
+      else if (r.type === 'viz') { r.line = i; out.viz = r; }
+      else if (r.type === 'shader') { if (out.shaders.has(r.name)) throw new PErr(t('dup', { n: r.name }), 0); r.line = i; out.shaders.set(r.name, r); }
       else if (r.type === 'seed') out.seed = r.v;
       else if (r.type === 'pad') { r.pad.line = i; if (out.pads.has(r.pad.name)) throw new PErr(t('dup', { n: r.pad.name }), 0); out.pads.set(r.pad.name, r.pad); }
       else if (r.type === 'swing') out.swing = r.v;
@@ -1471,6 +1525,10 @@ function compile(text) {
     pads.set(n, p);
   }
   out.pads = pads;
+  if (out.viz) {
+    const bad = out.viz.list.find(n => !VIZ_BUILTIN.includes(n) && !out.shaders.has(n));
+    if (bad) { out.errors.set(out.viz.line, { msg: t('vizUnknown', { n: bad, list: VIZ_BUILTIN.join(' ') }), col: out.viz.col }); out.viz = null; }
+  }
   if (out.song) {
     const bad = out.song.parts.find(p => !out.scenes.has(p.name));
     if (bad) { out.errors.set(out.song.line, { msg: t('noScene', { n: bad.name }), col: bad.c0 }); out.song = null; }
@@ -2244,6 +2302,31 @@ scene pulse all fill
 song air:8 ring:8 pulse:16 ring:8
 `,
   },
+  {
+    id: 'gpulab', name: 'GPU Lab',
+    head: {
+      ko: '// GPU Lab — 92 BPM, D 마이너. timp는 파동 방정식으로 시뮬레이션한 북, sax는 신경망 색소폰(nsax), space cathedral은 공진 모드 수만 개로 만든 성당 잔향\n// viz 줄이 8마디마다 배경을 바꾸고, shader 줄의 glow는 직접 쓴 WGSL 식이에요. 식을 고치면 바로 다시 그려요',
+      en: '// GPU Lab — 92 BPM, D minor. timp is a drum simulated as the wave equation, sax is the neural sax (nsax), space cathedral is a reverb made of tens of thousands of modes\n// The viz line changes the backdrop every 8 bars, and glow on the shader line is a WGSL expression you can edit live',
+    },
+    body: `bpm 92
+key D minor
+prog <0 5 3 4>
+space cathedral
+viz <terrain glow sono>/8
+shader glow  vec3f(1., .55, .3) * (1. - smoothstep(0., .02, abs(length(q) - .22 - bass * .2))) + ink * fbm(q * 3. + t * .1) * .12
+
+timp   0 . . . 0 . 4 . 0 . . . [4 0] . . .   | oct 2 gain .9 dec .6 human .2
+kick   x . . . . . . . x . . . . . . .       | gain .7 tune .8
+hat    [. x]*4                               | gain .18 human .3
+sax    <[0 _ 2 _ 4 _ _ 2] [5 _ 4 2 _ 0 _ _]> | nsax gain .7 rel .3 vib .3 verb .3 delay .2
+choir  <0^ 3^>/2                             | gain .4 verb .5 bright .3
+bass   0 _ . . 0 . . .                       | sine oct 2 gain .6
+
+scene open  timp choir
+scene full  all
+song open:8 full:16
+`,
+  },
 ];
 function presetText(p, lang) { return p.head[lang] + '\n' + p.body; }
 
@@ -2314,7 +2397,7 @@ function initAudio() {
   A.rIn = g(1); A.rPre = ctx.createDelay(0.2); A.rPre.delayTime.value = 0.022;
   A.cv = ctx.createConvolver(); A.cv.buffer = impulse(3.4);
   A.rHP = bq('highpass', 240); A.rLP = bq('lowpass', 8500); A.rOut = g(0.85);
-  A.vthrow.connect(A.rIn); A.rIn.connect(A.rPre); A.rPre.connect(A.cv); A.cv.connect(A.rHP); A.rHP.connect(A.rLP); A.rLP.connect(A.rOut); A.rOut.connect(A.post);
+  A.vthrow.connect(A.rIn); A.rIn.connect(A.rPre); A.rPre.connect(A.cv); A.cvG = g(1); A.cv.connect(A.cvG); A.cvG.connect(A.rHP); A.rHP.connect(A.rLP); A.rLP.connect(A.rOut); A.rOut.connect(A.post);
   // noise: white for hats and transients, pink for warmer snare and clap bodies
   const sr = ctx.sampleRate, nb = ctx.createBuffer(1, sr * 2, sr), pb = ctx.createBuffer(1, sr * 2, sr);
   const w = nb.getChannelData(0), p = pb.getChannelData(0);
@@ -2336,8 +2419,31 @@ function initAudio() {
   // a long FFT on the finished mix, read by the spectral freeze pad
   A.frz = ctx.createAnalyser(); A.frz.fftSize = 32768; A.frz.smoothingTimeConstant = 0; A.lim.connect(A.frz);
   ensureSynthWorklet(); loadKit(); applyMaster(S.masterMode); gpuInit().then(gpuPrewarm);
+  if (S.space && S.space !== 'hall-default') applySpace(S.space);
 }
 // a hall impulse: sparse early reflections, then a decorrelated stereo tail whose highs die faster than its lows
+// reverb spaces: 'space <name>' renders that space's modes on the GPU; without one, an algorithmic tail of
+// the same length. Without a space line the original hall stays. The new convolver fades in over the old.
+async function applySpace(name) {
+  const ctx = S.ctx; if (!ctx || !A.cv) return;
+  const tok = A.spaceTok = (A.spaceTok || 0) + 1, sp = name && SPACES[name];
+  let buf = null;
+  S.spaceInfo = { name, state: 'rendering' }; S.dirty = true;
+  if (sp && await gpuInit()) {
+    try { const r = await modalIR(name, ctx.sampleRate); buf = r.buf; S.spaceInfo = { name, state: 'gpu', modes: r.modes, ms: r.ms }; }
+    catch (e) { GPU.err = String(e.message || e); }
+  }
+  if (tok !== A.spaceTok) return;
+  if (!buf) { buf = impulse(sp ? Math.min(8, sp.t60 * 1.25) : 3.4); S.spaceInfo = { name, state: sp ? 'cpu' : 'default' }; }
+  const cv = ctx.createConvolver(); cv.buffer = buf;
+  const gN = ctx.createGain(); gN.gain.value = 0;
+  A.rPre.connect(cv); cv.connect(gN); gN.connect(A.rHP);
+  const now = ctx.currentTime, oldCv = A.cv, oldG = A.cvG;
+  gN.gain.setTargetAtTime(1, now, 0.12); oldG.gain.setTargetAtTime(0, now, 0.12);
+  A.rPre.delayTime.setTargetAtTime(sp ? sp.pre : 0.022, now, 0.05);
+  A.cv = cv; A.cvG = gN; S.dirty = true;
+  setTimeout(() => { try { A.rPre.disconnect(oldCv); oldCv.disconnect(); oldG.disconnect(); } catch (e) { } }, 1500);
+}
 function impulse(sec) {
   const ctx = S.ctx, sr = ctx.sampleRate, len = Math.floor(sr * sec), b = ctx.createBuffer(2, len, sr);
   const rt60 = sec * 0.8;
@@ -2427,6 +2533,8 @@ const INST = {
   // rendered on the GPU (gpu.js); detune, bright, width, dec, atk and rel shape the render
   swarm: { lvl: 0.55, oct: 3, cut: 20000, res: 0.7, env: 0, atk: 0.25, dec: 1, sus: 1, rel: 1.2, slope: 12, hpf: 110, width: 0.85, detune: 22, bright: 0.55 },
   choir: { lvl: 0.6, oct: 3, cut: 20000, res: 0.7, env: 0, atk: 0.35, dec: 1, sus: 1, rel: 1.4, slope: 12, hpf: 130, width: 0.8, detune: 16, bright: 0.35 },
+  membrane: { lvl: 0.9, oct: 3, cut: 20000, res: 0.7, env: 0, atk: 0.001, dec: 1, sus: 1, rel: 1, slope: 12, hpf: 30, width: 0.5, bright: 0.5 },
+  nsax: { lvl: 1.1, oct: 4, cut: 20000, res: 0.7, env: 0, atk: 0.05, dec: 1, sus: 1, rel: 0.25, slope: 12, hpf: 60, width: 0.3 },
   plate: { lvl: 1.0, oct: 4, cut: 20000, res: 0.7, env: 0, atk: 0.001, dec: 1, sus: 1, rel: 2, slope: 12, hpf: 70, width: 0.6, bright: 0.5 },
   epiano: { lvl: 0.5, oct: 4, cut: 7000, res: 0.5, env: 0, atk: 0.002, dec: 1.6, sus: 0.25, rel: 0.45, slope: 12, hpf: 90, width: 0.5 },
 };
@@ -3470,7 +3578,7 @@ function playNotes(def, notes, time, dur, P, vel, r) {
   if (GPU_INSTS[def.inst]) {
     // GPU-rendered note if it is ready; until then (or without WebGPU) a CPU voice stands in
     const fb = GPU_INSTS[def.inst], miss = gpuPlay(def, notes, time, dur, P, vel, r);
-    for (const m of miss) registerVoice(r, playSynth(fb, m, time, dur, { ...P, cut: Math.min(P.cut, INST[fb].cut) }, vel * 0.8, r.input));
+    for (const m of miss) registerVoice(r, SAMPLE_PITCHED.has(fb) ? playSamplePitched(fb, m, time, dur, P, vel * 0.8, r.input) : playSynth(fb, m, time, dur, { ...P, cut: Math.min(P.cut, INST[fb].cut) }, vel * 0.8, r.input));
     return;
   }
   if (wkPlay(def, notes, time, dur, { ...P, gain: P.gain * vel })) return;
@@ -3606,6 +3714,11 @@ function applyMaster(mode) {
   A.lim.threshold.setTargetAtTime(m.lim, now, 0.05);
 }
 
+// Weights of the neural sax voice (gpu.js 'neural voice'): a 14 -> 64 -> 64 -> 1 tanh network trained on the
+// sax recordings of the built-in VCSL kit (CC0). Float32, row-major: W1 (14x64), b1, W2 (64x64), b2, W3 (64x1), b3.
+// Training code: tactus/neural/ in the site repository.
+const NSAX_NET_B64 = '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';
+
 // ===================== Tactus GPU (WebGPU) =====================
 // The audio thread cannot see the GPU (WebGPU is not exposed inside an AudioWorklet), so the GPU works
 // ahead of time on the main thread: it renders whole notes and textures into buffers that the scheduler
@@ -3615,12 +3728,16 @@ function applyMaster(mode) {
 //   choir  24 detuned voices with vowel formants (about 1,000 partials per note)
 //   plate  a struck metal plate: every inharmonic mode split into six beating neighbours, each with its own decay
 //          (a few hundred partials in the middle register, more for low notes)
+//   membrane  a drum head simulated as the 2-D wave equation on a 96 x 96 grid, one time step per sample,
+//          four velocities at once (one GPU workgroup each)
+//   nsax   a small neural network trained on the sax recordings drives an additive voice (see 'neural voice')
 //   fx ... | freeze   spectral freeze: the live mix's spectrum resynthesized as ~2,000 sines
+//   space hall        modal reverb: up to 65,536 room modes rendered into the reverb's impulse response
 // and it draws four backdrops behind the code (terrain, contour, dots, demo) as full-screen shaders.
 // Without WebGPU every part falls back: the GPU instruments to CPU voices, freeze to a looped grain.
 
 const GPU = { state: 'idle', dev: null, name: '', err: '', synth: null, cache: new Map(), bytes: 0, jobs: new Map(), chain: Promise.resolve(), renders: 0, lastMs: 0 };
-const GPU_INSTS = { swarm: 'supersaw', choir: 'pad', plate: 'bell' };   // and their CPU fallbacks
+const GPU_INSTS = { swarm: 'supersaw', choir: 'pad', plate: 'bell', membrane: 'pluck', nsax: 'sax' };   // and their CPU fallbacks
 const GPU_CACHE_BYTES = 160 << 20;
 
 function gpuInit() {
@@ -3791,9 +3908,317 @@ function gpuVoice(inst, midi, dur, P, sr) {
   o.gain = 0.22 / Math.sqrt(Math.max(1e-9, sum2 / 2));
   return { parts, np, n, o };
 }
-const gpuKey = (inst, midi, dur, P) => [inst, midi, inst === 'plate' ? 0 : Math.round(dur * 8) / 8, (P.bright ?? 0).toFixed(2), (P.detune ?? 0).toFixed(0), (P.dec ?? 0).toFixed(2), (P.width ?? 0).toFixed(2), (P.atk ?? 0).toFixed(2), (P.rel ?? 0).toFixed(2)].join('|');
+// ---------- membrane: the wave equation on a drum head ----------
+// Finite differences on a 96 x 96 grid; cells outside a circle stay at zero, which is the rim. Each GPU
+// workgroup owns one head and steps it once per output sample: every thread updates its share of the
+// cells, then all wait at a barrier before the next step. Three buffers rotate (previous, current, next).
+// Loss is a plain damping term plus a stiffness-like term that damps high modes faster. A hard hit
+// tightens the skin for a moment, so the pitch starts high and settles: the tension term follows the hit.
+const MEM_N = 96, MEM_LAYERS = 4, MEM_STEPS = 2048;
+const MEMBRANE_WGSL = `
+struct MP { n: u32, steps: u32, start: u32, N: u32, lam2: f32, sig: f32, kap: f32, glide: f32, gtau: f32, p0: f32, p1: f32, p2: f32 };
+@group(0) @binding(0) var<uniform> mp: MP;
+@group(0) @binding(1) var<storage, read_write> st: array<f32>;
+@group(0) @binding(2) var<storage, read> mask: array<f32>;
+@group(0) @binding(3) var<storage, read_write> outb: array<f32>;
+@group(0) @binding(4) var<storage, read> vp: array<vec4f>;
+@compute @workgroup_size(256)
+fn main(@builtin(workgroup_id) wg: vec3u, @builtin(local_invocation_index) li: u32) {
+  let v = wg.x;
+  let NN = mp.N * mp.N;
+  let base = v * 3u * NN;
+  let pk = vp[v];
+  for (var s = 0u; s < mp.steps; s++) {
+    let gs = mp.start + s;
+    let prv = base + (gs % 3u) * NN;
+    let cur = base + ((gs + 1u) % 3u) * NN;
+    let nxt = base + ((gs + 2u) % 3u) * NN;
+    let l2 = mp.lam2 * (1.0 + pk.w * mp.glide * exp(-f32(gs) / mp.gtau));
+    for (var c = li; c < NN; c += 256u) {
+      if (mask[c] == 0.0) { continue; }
+      let uc = st[cur + c];
+      let lap = st[cur + c - 1u] + st[cur + c + 1u] + st[cur + c - mp.N] + st[cur + c + mp.N] - 4.0 * uc;
+      let up = st[prv + c];
+      let lapP = st[prv + c - 1u] + st[prv + c + 1u] + st[prv + c - mp.N] + st[prv + c + mp.N] - 4.0 * up;
+      st[nxt + c] = (2.0 * uc - (1.0 - mp.sig) * up + l2 * lap + mp.kap * (lap - lapP)) / (1.0 + mp.sig);
+    }
+    storageBarrier();
+    if (li == 0u && gs < mp.n) {
+      // the pickups hear the skin's velocity
+      let a = u32(pk.x); let b = u32(pk.y);
+      outb[v * mp.n * 2u + gs] = (st[nxt + a] - st[cur + a]) * pk.z;
+      outb[v * mp.n * 2u + mp.n + gs] = (st[nxt + b] - st[cur + b]) * pk.z;
+    }
+    storageBarrier();
+  }
+}`;
+function gpuBuildMembrane() {
+  const d = GPU.dev;
+  GPU.mem = d.createComputePipeline({ layout: 'auto', compute: { module: d.createShaderModule({ code: MEMBRANE_WGSL }), entryPoint: 'main' } });
+}
+// set-up shared by the GPU and the JavaScript reference: grid, strike shapes, pickups, coefficients
+function membraneSetup(midi, P, sr) {
+  const N = MEM_N, f0 = mtof(midi);
+  const dec = Math.max(0.05, P.dec ?? 1), bright = Math.max(0, Math.min(1, P.bright ?? 0.5));
+  const T60 = 0.18 + 0.9 * dec, sig = 6.9078 / (T60 * sr) * 0.5;
+  const kap = 0.004 + 0.03 * (1 - bright);
+  // the note is the (1,1) mode, as on a timpani, where it is the tone you hear: f11 = 3.832 c / (2 pi R).
+  // Pick the radius and Courant number to hit it; this scheme stays stable while lam^2 + 4 kap <= 1/2.
+  const lamMax = Math.sqrt(0.48 - 4 * kap), J = 3.832;
+  let R = 45, lam = 2 * Math.PI * R * f0 / (J * sr);
+  if (lam > lamMax) { R = Math.max(8, Math.floor(lamMax * J * sr / (2 * Math.PI * f0))); lam = Math.min(lamMax, 2 * Math.PI * R * f0 / (J * sr)); }
+  const c0 = (N - 1) / 2, mask = new Float32Array(N * N);
+  for (let y = 1; y < N - 1; y++) for (let x = 1; x < N - 1; x++) if (Math.hypot(x - c0, y - c0) < R) mask[y * N + x] = 1;
+  const n = Math.round(Math.min(4, T60 * 1.1) * sr);
+  const idx = (dx, dy) => Math.round(c0 + dy * R) * N + Math.round(c0 + dx * R);
+  const st = new Float32Array(MEM_LAYERS * 3 * N * N), vp = new Float32Array(MEM_LAYERS * 4);
+  for (let L = 0; L < MEM_LAYERS; L++) {
+    // harder hits: more force, a smaller contact patch (brighter), more tension glide
+    const amp = [0.35, 0.6, 0.85, 1.1][L], w = (4.6 - L * 0.8) * (0.6 + 0.4 * R / 45) * (1.3 - 0.6 * bright);
+    const sx = c0 - 0.62 * R, sy = c0 + 0.1 * R, base = L * 3 * N * N;   // struck about 40% in from the rim, as on a timpani
+    for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+      const r = Math.hypot(x - sx, y - sy);
+      if (r < w && mask[y * N + x]) st[base + y * N + x] = -amp * 0.5 * (1 + Math.cos(Math.PI * r / w)) * lam;   // u(-1): initial velocity
+    }
+    vp.set([idx(-0.38, 0.12), idx(0.36, -0.15), 1, [0.25, 0.5, 0.75, 1][L]], L * 4);
+  }
+  return { N, R, lam2: lam * lam, sig, kap, n, mask, st, vp, glide: 0.12, gtau: 0.06 * sr };
+}
+async function gpuMembrane(midi, P, sr) {
+  const d = GPU.dev, m = membraneSetup(midi, P, sr), t0 = performance.now();
+  if (!GPU.mem) gpuBuildMembrane();
+  const mk = (data, usage) => { const b = d.createBuffer({ size: Math.max(16, data.byteLength), usage: usage | GPUBufferUsage.COPY_DST }); d.queue.writeBuffer(b, 0, data); return b; };
+  const sb = mk(m.st, GPUBufferUsage.STORAGE), mb = mk(m.mask, GPUBufferUsage.STORAGE), vb = mk(m.vp, GPUBufferUsage.STORAGE);
+  const ob = d.createBuffer({ size: MEM_LAYERS * m.n * 8, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC });
+  const rb = d.createBuffer({ size: MEM_LAYERS * m.n * 8, usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST });
+  const unis = [];
+  for (let s0 = 0; s0 < m.n; s0 += MEM_STEPS) {
+    const u = new ArrayBuffer(48), dv = new DataView(u);
+    dv.setUint32(0, m.n, true); dv.setUint32(4, Math.min(MEM_STEPS, m.n - s0), true); dv.setUint32(8, s0, true); dv.setUint32(12, m.N, true);
+    dv.setFloat32(16, m.lam2, true); dv.setFloat32(20, m.sig, true); dv.setFloat32(24, m.kap, true); dv.setFloat32(28, m.glide, true); dv.setFloat32(32, m.gtau, true);
+    const ub = mk(new Uint8Array(u), GPUBufferUsage.UNIFORM); unis.push(ub);
+    const bg = d.createBindGroup({ layout: GPU.mem.getBindGroupLayout(0), entries: [ub, sb, mb, ob, vb].map((b, i) => ({ binding: i, resource: { buffer: b } })) });
+    const enc = d.createCommandEncoder(), pass = enc.beginComputePass();
+    pass.setPipeline(GPU.mem); pass.setBindGroup(0, bg); pass.dispatchWorkgroups(MEM_LAYERS); pass.end();
+    d.queue.submit([enc.finish()]);
+    await d.queue.onSubmittedWorkDone();
+  }
+  const enc = d.createCommandEncoder(); enc.copyBufferToBuffer(ob, 0, rb, 0, MEM_LAYERS * m.n * 8); d.queue.submit([enc.finish()]);
+  await rb.mapAsync(GPUMapMode.READ);
+  const out = new Float32Array(rb.getMappedRange().slice(0)); rb.unmap();
+  for (const b of [sb, mb, vb, ob, rb, ...unis]) b.destroy();
+  GPU.renders++; GPU.lastMs = performance.now() - t0;
+  return { out, n: m.n };
+}
+// the same simulation in JavaScript, for the benchmark and as a reference (one layer, first `steps` samples)
+function cpuMembrane(m, L, steps) {
+  const N = m.N, NN = N * N, B = [m.st.slice(L * 3 * NN, L * 3 * NN + NN), m.st.slice(L * 3 * NN + NN, L * 3 * NN + 2 * NN), new Float32Array(NN)];
+  const out = new Float32Array(steps * 2), a = m.vp[L * 4], b = m.vp[L * 4 + 1], gw = m.vp[L * 4 + 3];
+  for (let s = 0; s < steps; s++) {
+    const prv = B[s % 3], cur = B[(s + 1) % 3], nxt = B[(s + 2) % 3], l2 = m.lam2 * (1 + gw * m.glide * Math.exp(-s / m.gtau));
+    for (let c = 0; c < NN; c++) {
+      if (!m.mask[c]) continue;
+      const uc = cur[c], up = prv[c];
+      const lap = cur[c - 1] + cur[c + 1] + cur[c - N] + cur[c + N] - 4 * uc, lapP = prv[c - 1] + prv[c + 1] + prv[c - N] + prv[c + N] - 4 * up;
+      nxt[c] = (2 * uc - (1 - m.sig) * up + l2 * lap + m.kap * (lap - lapP)) / (1 + m.sig);
+    }
+    out[s] = nxt[a] - cur[a]; out[steps + s] = nxt[b] - cur[b];
+  }
+  return out;
+}
+// ---------- neural voice: nsax ----------
+// A small network (14 -> 64 -> 64 -> 1, tanh) learned the sax's spectral envelope from the kit's recordings:
+// given a frequency, whether it is a harmonic or breath noise, the note, the dynamic layer, the loudness at
+// that moment and the time since the attack, it predicts that component's level. Because it is asked one
+// frequency at a time it learns a smooth envelope instead of a table per recorded note; on notes left out
+// of training it is off by about 9.5 dB per harmonic, where re-pitching the nearest recording is off by 13-20.
+// The GPU runs the network for every 5 ms frame x 64 components, then an additive pass sums 48 harmonics
+// (with vibrato) and 16 bands of breath noise (64 random sines each) for every sample.
+const NS = { K: 48, NB: 16, NOISE: 64, FPS: 200, H: 64, IN: 14, ST: 16, w: null };
+const NS_BANDS = (() => { const e = []; for (let b = 0; b <= 16; b++) e.push(150 * Math.pow(16000 / 150, b / 16)); return e; })();
+function nsWeights() {
+  if (NS.w) return NS.w;
+  const bin = atob(NSAX_NET_B64), u = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+  return NS.w = new Float32Array(u.buffer);
+}
+// loudness (dB) over the note: breath attack, a slight swell and sag while held, then the release
+function nsLoudness(nF, hold, rel, atk, rnd) {
+  const L = new Float32Array(nF), dt = 1 / NS.FPS;
+  let drift = 0;
+  for (let j = 0; j < nF; j++) {
+    const t = j * dt;
+    let db = t < atk ? -45 + 45 * Math.pow(t / atk, 0.6) : -1.2 * Math.min(1, (t - atk) / 0.4) + 1.2 * Math.sin(Math.min(1, (t - atk) / 1.5) * Math.PI) * 0.5 - 0.6 * (t - atk);
+    drift += (rnd() - 0.5) * 0.15; drift *= 0.97; db += drift;
+    if (t > hold) db -= 60 * (t - hold) / rel;
+    L[j] = Math.max(-80, Math.min(0, db));
+  }
+  return L;
+}
+// the inputs for every (frame, component); the GPU and the JavaScript reference share them
+function nsPlan(midi, dur, P, sr) {
+  const f0 = mtof(midi), hold = Math.max(0.08, dur), rel = Math.max(0.08, Math.min(1.5, P.rel)), atk = Math.max(0.02, P.atk);
+  const nF = Math.ceil((hold + rel) * NS.FPS) + 2, n = Math.ceil((hold + rel) * sr), rnd = rngOf(midi * 131 + 7);
+  const L = nsLoudness(nF, hold, rel, atk, rnd), layer = (P.vel ?? 1) < 0.75 ? 0 : 1;
+  const C = NS.K + NS.NB, X = new Float32Array(nF * C * NS.ST);
+  const bandC = k => Math.sqrt(NS_BANDS[k] * NS_BANDS[k + 1]);
+  for (let j = 0; j < nF; j++) for (let c = 0; c < C; c++) {
+    const noise = c >= NS.K, fq = noise ? bandC(c - NS.K) : (c + 1) * f0, q = (j * C + c) * NS.ST, lf = Math.log2(fq / 1000) / 3;
+    X.set([lf, noise ? 1 : -1, (midi - 66) / 22, layer * 2 - 1, Math.max(-60, L[j]) / 30 + 1, Math.min(j / NS.FPS, 0.4) / 0.4 * 2 - 1], q);
+    // sines of the log-frequency at four scales, so the network can draw sharp formants
+    for (let m = 0; m < 4; m++) { X[q + 6 + m * 2] = Math.sin(Math.PI * 2 ** m * lf); X[q + 7 + m * 2] = Math.cos(Math.PI * 2 ** m * lf); }
+    X[q + 14] = Math.pow(10, L[j] / 20) * (noise || fq < Math.min(16000, sr * 0.45) ? 1 : 0);
+  }
+  // breath noise as clusters of random sines inside each band; level matched to the analysis (per-bin magnitude)
+  const ns = new Float32Array(NS.NB * NS.NOISE * 4);
+  for (let b = 0; b < NS.NB; b++) {
+    const lo = NS_BANDS[b], hi = Math.min(NS_BANDS[b + 1], sr * 0.45), bins = Math.max(1, (hi - lo) / (48000 / 2048));
+    for (let s = 0; s < NS.NOISE; s++) { const f = lo + (hi - lo) * rnd(); ns.set([f / sr, (f * 4096 / sr) % 1, rnd(), Math.sqrt(bins / NS.NOISE)], (b * NS.NOISE + s) * 4); }
+  }
+  const vib = { rate: 5.1 + rnd() * 0.4, depth: (10 + 30 * (P.vib || 0)) / 1200, start: 0.32 };
+  return { f0, n, nF, C, X, ns, vib, sr };
+}
+function nsEvalJS(X, nF, C) {
+  const w = nsWeights(), H = NS.H, IN = NS.IN, W1 = 0, b1 = IN * H, W2 = b1 + H, b2 = W2 + H * H, W3 = b2 + H, b3 = W3 + H;
+  const A = new Float32Array(nF * C), h1 = new Float32Array(H), h2 = new Float32Array(H);
+  for (let r = 0; r < nF * C; r++) {
+    const q = r * NS.ST;
+    if (!X[q + 14]) continue;
+    for (let o = 0; o < H; o++) { let s = w[b1 + o]; for (let i = 0; i < IN; i++) s += X[q + i] * w[W1 + i * H + o]; h1[o] = Math.tanh(s); }
+    for (let o = 0; o < H; o++) { let s = w[b2 + o]; for (let i = 0; i < H; i++) s += h1[i] * w[W2 + i * H + o]; h2[o] = Math.tanh(s); }
+    let y = w[b3]; for (let i = 0; i < H; i++) y += h2[i] * w[W3 + i];
+    A[r] = Math.exp(Math.max(-11.5, Math.min(0, y))) * X[q + 14];
+  }
+  return A;
+}
+const NSAX_WGSL = `
+struct NP { nF: u32, C: u32, n: u32, off: u32, f0: f32, sr: f32, fps: f32, vrate: f32, vdepth: f32, vstart: f32, gain: f32, cpb: f32 };
+@group(0) @binding(0) var<uniform> np: NP;
+@group(0) @binding(1) var<storage, read> X: array<f32>;
+@group(0) @binding(2) var<storage, read> W: array<f32>;
+@group(0) @binding(3) var<storage, read_write> A: array<f32>;
+@group(0) @binding(4) var<storage, read> NZ: array<vec4f>;
+@group(0) @binding(5) var<storage, read_write> outb: array<f32>;
+const HN = 64u;
+// one thread per (frame, component): the network
+@compute @workgroup_size(64)
+fn net(@builtin(global_invocation_id) gid: vec3u) {
+  let r = gid.x;
+  if (r >= np.nF * np.C) { return; }
+  let q = r * 16u;
+  if (X[q + 14u] == 0.0) { A[r] = 0.0; return; }
+  var h1: array<f32, 64>;
+  let b1 = 14u * HN; let W2 = b1 + HN; let b2 = W2 + HN * HN; let W3 = b2 + HN; let b3 = W3 + HN;
+  for (var o = 0u; o < HN; o++) {
+    var s = W[b1 + o];
+    for (var i = 0u; i < 14u; i++) { s += X[q + i] * W[i * HN + o]; }
+    h1[o] = tanh(s);
+  }
+  var y = W[b3];
+  for (var o = 0u; o < HN; o++) {
+    var s = W[b2 + o];
+    for (var i = 0u; i < HN; i++) { s += h1[i] * W[W2 + i * HN + o]; }
+    y += tanh(s) * W[W3 + o];
+  }
+  A[r] = exp(clamp(y, -11.5, 0.0)) * X[q + 14u];
+}
+// one thread per sample: 48 harmonics with vibrato plus the breath noise, levels interpolated between frames
+@compute @workgroup_size(256)
+fn synth(@builtin(global_invocation_id) gid: vec3u) {
+  let i = gid.x + np.off;
+  if (i >= np.n) { return; }
+  let t = f32(i) / np.sr;
+  let fp = t * np.fps; let j = min(u32(fp), np.nF - 2u); let w = fp - f32(j);
+  let ramp = clamp((t - np.vstart) / 0.4, 0.0, 1.0);
+  let wv = 6.2831853 * np.vrate;
+  // phase in cycles, kept precise over long notes by splitting the sample index into 4096-sample blocks
+  let hi = f32(i >> 12u); let lo = f32(i & 4095u);
+  let fps = np.f0 / np.sr;
+  let vph = np.f0 * np.vdepth * ramp * (1.0 - cos(wv * max(0.0, t - np.vstart))) / wv;
+  var s = 0.0;
+  for (var k = 0u; k < 48u; k++) {
+    let a = mix(A[j * np.C + k], A[(j + 1u) * np.C + k], w);
+    let kf = f32(k + 1u);
+    if (a > 0.0) { s += a * sin(6.2831853 * fract(fract(fract(kf * np.cpb) * hi) + kf * fps * lo + kf * vph + f32(k) * 0.137)); }
+  }
+  for (var b = 0u; b < 16u; b++) {
+    let a = mix(A[j * np.C + 48u + b], A[(j + 1u) * np.C + 48u + b], w);
+    if (a <= 0.0) { continue; }
+    for (var z = 0u; z < 64u; z++) {
+      let nz = NZ[b * 64u + z];
+      s += a * nz.w * sin(6.2831853 * fract(fract(nz.y * hi) + nz.x * lo + nz.z));
+    }
+  }
+  outb[i] = s * np.gain;
+}`;
+function nsSynthJS(pl, A, a = 0, b = pl.n) {
+  const { f0, sr, nF, C, vib, ns } = pl, out = new Float32Array(b - a), TAU = Math.PI * 2, wv = TAU * vib.rate;
+  for (let i = a; i < b; i++) {
+    const t = i / sr, fp = t * NS.FPS, j = Math.min(Math.floor(fp), nF - 2), w = fp - j, ramp = Math.max(0, Math.min(1, (t - vib.start) / 0.4));
+    const ph = f0 * t + f0 * vib.depth * ramp * (1 - Math.cos(wv * Math.max(0, t - vib.start))) / wv;
+    let s = 0;
+    for (let k = 0; k < NS.K; k++) { const am = A[j * C + k] + (A[(j + 1) * C + k] - A[j * C + k]) * w; if (am > 0) s += am * Math.sin(TAU * ((ph * (k + 1) + k * 0.137) % 1)); }
+    for (let bb = 0; bb < NS.NB; bb++) {
+      const am = A[j * C + NS.K + bb] + (A[(j + 1) * C + NS.K + bb] - A[j * C + NS.K + bb]) * w; if (am <= 0) continue;
+      for (let z = 0; z < NS.NOISE; z++) { const q = (bb * NS.NOISE + z) * 4; s += am * ns[q + 3] * Math.sin(TAU * ((ns[q] * i + ns[q + 2]) % 1)); }
+    }
+    out[i - a] = s;
+  }
+  return out;
+}
+async function gpuNeural(midi, dur, P, sr) {
+  const d = GPU.dev, pl = nsPlan(midi, dur, P, sr), t0 = performance.now();
+  if (!GPU.ns) {
+    const mod = d.createShaderModule({ code: NSAX_WGSL });
+    GPU.ns = { net: d.createComputePipeline({ layout: 'auto', compute: { module: mod, entryPoint: 'net' } }), synth: d.createComputePipeline({ layout: 'auto', compute: { module: mod, entryPoint: 'synth' } }) };
+  }
+  const mk = (data, usage) => { const b = d.createBuffer({ size: Math.max(16, data.byteLength), usage: usage | GPUBufferUsage.COPY_DST }); d.queue.writeBuffer(b, 0, data); return b; };
+  const xb = mk(pl.X, GPUBufferUsage.STORAGE), wb = mk(nsWeights(), GPUBufferUsage.STORAGE), zb = mk(pl.ns, GPUBufferUsage.STORAGE);
+  const ab = d.createBuffer({ size: pl.nF * pl.C * 4, usage: GPUBufferUsage.STORAGE });
+  const ob = d.createBuffer({ size: pl.n * 4, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC });
+  const rb = d.createBuffer({ size: pl.n * 4, usage: GPUBufferUsage.MAP_READ | GPUBufferUsage.COPY_DST });
+  const uni = off => { const u = new ArrayBuffer(48), dv = new DataView(u); dv.setUint32(0, pl.nF, true); dv.setUint32(4, pl.C, true); dv.setUint32(8, pl.n, true); dv.setUint32(12, off, true);
+    [pl.f0, sr, NS.FPS, pl.vib.rate, pl.vib.depth, pl.vib.start, 1, (pl.f0 * 4096 / sr) % 1].forEach((v, k) => dv.setFloat32(16 + k * 4, v, true)); return mk(new Uint8Array(u), GPUBufferUsage.UNIFORM); };
+  const unis = [];
+  const run = (pipe, entries, groups) => {
+    const bg = d.createBindGroup({ layout: pipe.getBindGroupLayout(0), entries: entries.map(([i, b]) => ({ binding: i, resource: { buffer: b } })) });
+    const enc = d.createCommandEncoder(), pass = enc.beginComputePass(); pass.setPipeline(pipe); pass.setBindGroup(0, bg); pass.dispatchWorkgroups(groups); pass.end(); d.queue.submit([enc.finish()]);
+  };
+  { const u = uni(0); unis.push(u); run(GPU.ns.net, [[0, u], [1, xb], [2, wb], [3, ab]], Math.ceil(pl.nF * pl.C / 64)); }
+  for (let off = 0; off < pl.n; off += GPU_SLICE) {
+    const u = uni(off); unis.push(u);
+    run(GPU.ns.synth, [[0, u], [3, ab], [4, zb], [5, ob]], Math.ceil(Math.min(GPU_SLICE, pl.n - off) / 256));
+    await d.queue.onSubmittedWorkDone();
+  }
+  const enc = d.createCommandEncoder(); enc.copyBufferToBuffer(ob, 0, rb, 0, pl.n * 4); d.queue.submit([enc.finish()]);
+  await rb.mapAsync(GPUMapMode.READ);
+  const out = new Float32Array(rb.getMappedRange().slice(0)); rb.unmap();
+  for (const b of [xb, wb, zb, ab, ob, rb, ...unis]) b.destroy();
+  GPU.renders++; GPU.lastMs = performance.now() - t0;
+  return { out, n: pl.n };
+}
+function gpuRequestNeural(key, midi, dur, P) {
+  if (GPU.cache.has(key) || GPU.jobs.has(key)) return key;
+  const job = GPU.chain = GPU.chain.then(async () => {
+    if (GPU.state !== 'ok') return;
+    const sr = S.ctx.sampleRate, { out, n } = await gpuNeural(midi, dur, P, sr);
+    const buf = S.ctx.createBuffer(2, n, sr);
+    for (let i = 0; i < n; i++) out[i] *= 0.2;
+    buf.copyToChannel(out, 0); buf.copyToChannel(out, 1);
+    gpuCachePut(key, buf);
+  }).catch(e => { GPU.err = String(e.message || e); }).finally(() => GPU.jobs.delete(key));
+  GPU.jobs.set(key, job);
+  return key;
+}
+const gpuKey = (inst, midi, dur, P) => [inst, midi, inst === 'nsax' ? ((P.vel ?? 1) < 0.75 ? 0 : 1) + '|' + (P.vib || 0).toFixed(2) : '', inst === 'plate' || inst === 'membrane' ? 0 : Math.round(dur * 8) / 8, (P.bright ?? 0).toFixed(2), (P.detune ?? 0).toFixed(0), (P.dec ?? 0).toFixed(2), (P.width ?? 0).toFixed(2), (P.atk ?? 0).toFixed(2), (P.rel ?? 0).toFixed(2)].join('|');
+function gpuCachePut(key, buf) {
+  GPU.cache.set(key, buf); GPU.bytes += buf.length * 8;
+  while (GPU.bytes > GPU_CACHE_BYTES && GPU.cache.size > 1) { const [k0, b0] = GPU.cache.entries().next().value; GPU.cache.delete(k0); GPU.bytes -= b0.length * 8; }
+}
 function gpuRequest(inst, midi, dur, P) {
   const key = gpuKey(inst, midi, dur, P);
+  if (inst === 'membrane') return gpuRequestMembrane(key, midi, P);
+  if (inst === 'nsax') return gpuRequestNeural(key, midi, dur, P);
   if (GPU.cache.has(key) || GPU.jobs.has(key)) return key;
   const job = GPU.chain = GPU.chain.then(async () => {
     if (GPU.state !== 'ok') return;
@@ -3801,8 +4226,26 @@ function gpuRequest(inst, midi, dur, P) {
     const pcm = await gpuRender(v.parts, v.np, v.n, v.o);
     const buf = S.ctx.createBuffer(2, v.n, sr);
     buf.copyToChannel(pcm.subarray(0, v.n), 0); buf.copyToChannel(pcm.subarray(v.n), 1);
-    GPU.cache.set(key, buf); GPU.bytes += v.n * 8;
-    while (GPU.bytes > GPU_CACHE_BYTES && GPU.cache.size > 1) { const [k0, b0] = GPU.cache.entries().next().value; GPU.cache.delete(k0); GPU.bytes -= b0.length * 8; }
+    gpuCachePut(key, buf);
+  }).catch(e => { GPU.err = String(e.message || e); }).finally(() => GPU.jobs.delete(key));
+  GPU.jobs.set(key, job);
+  return key;
+}
+// one render gives all four velocity layers; they are cached as key|0 .. key|3
+function gpuRequestMembrane(key, midi, P) {
+  if (GPU.cache.has(key + '|2') || GPU.jobs.has(key)) return key;
+  const job = GPU.chain = GPU.chain.then(async () => {
+    if (GPU.state !== 'ok') return;
+    const sr = S.ctx.sampleRate, { out, n } = await gpuMembrane(midi, P, sr);
+    let pk = 0; for (let i = 0; i < out.length; i++) pk = Math.max(pk, Math.abs(out[i]));
+    const g = 0.6 / Math.max(1e-9, pk);
+    for (let L = 0; L < MEM_LAYERS; L++) {
+      const buf = S.ctx.createBuffer(2, n, sr), o = L * n * 2;
+      const a = out.subarray(o, o + n), b = out.subarray(o + n, o + 2 * n);
+      for (let i = 0; i < n; i++) { a[i] *= g; b[i] *= g; }
+      buf.copyToChannel(a, 0); buf.copyToChannel(b, 1);
+      gpuCachePut(key + '|' + L, buf);
+    }
   }).catch(e => { GPU.err = String(e.message || e); }).finally(() => GPU.jobs.delete(key));
   GPU.jobs.set(key, job);
   return key;
@@ -3812,11 +4255,14 @@ function gpuPlay(def, notes, time, dur, P, vel, r) {
   if (GPU.state !== 'ok') return notes;
   const miss = [];
   for (const m of notes) {
-    const key = gpuRequest(def.inst, m, dur, P), buf = GPU.cache.get(key);
+    let key = gpuRequest(def.inst, m, dur, def.inst === 'nsax' ? { ...P, vel } : P), gv = vel;
+    // the drum head was rendered at four strengths: take the nearest, and only trim the level around it
+    if (def.inst === 'membrane') { const L = vel < 0.55 ? 0 : vel < 0.8 ? 1 : vel < 1.05 ? 2 : 3; key += '|' + L; gv = 0.85 + 0.15 * vel; }
+    const buf = GPU.cache.get(key);
     if (!buf) { miss.push(m); continue; }
     GPU.cache.delete(key); GPU.cache.set(key, buf);   // keep recently used notes
     const src = S.ctx.createBufferSource(), g = S.ctx.createGain();
-    src.buffer = buf; g.gain.value = P.gain * vel * (INST[def.inst].lvl || 0.5);
+    src.buffer = buf; g.gain.value = P.gain * gv * (INST[def.inst].lvl || 0.5);
     src.connect(g).connect(r.input);
     src.start(time); src.onended = () => { try { g.disconnect(); } catch (e) { } };
     registerVoice(r, { filters: [], kt: 1, tEnd: time + buf.duration });
@@ -3836,6 +4282,79 @@ function gpuPrewarm() {
       if (notes) for (const m of notes) gpuRequest(def.inst, m, ev.d / S.cps * P.len, P);
     }
   }
+}
+
+// ---------- modal reverb ----------
+// A space is rendered as the sum of its resonant modes, each a decaying sine (the approach studied for
+// GPUs and FPGAs in Frontiers in Signal Processing, 2025). Low room modes are exact for the room's size,
+// so a small room booms where a real one would; higher up the modes are placed at random with just enough
+// density that neighbours overlap, and every mode decays at its own frequency-dependent rate. Each mode
+// gets independent left and right gains, so the tail is wide. Up to 65,536 modes and several seconds:
+// minutes of work in JavaScript, well under a second on a GPU. The result loads into a ConvolverNode.
+const SPACES = {
+  room:      { dims: [6.4, 4.8, 3.0], t60: 0.8, air: 6000, pre: 0.004 },
+  chamber:   { dims: [11, 7.6, 5.2], t60: 1.5, air: 7000, pre: 0.01 },
+  hall:      { dims: [32, 21, 14], t60: 2.5, air: 6500, pre: 0.022 },
+  cathedral: { dims: [72, 34, 30], t60: 5.5, air: 5000, pre: 0.04 },
+  plate:     { plate: true, t60: 3.4, air: 10000, pre: 0.001 },
+};
+const SPACE_MAXMODES = 65536;
+function modalModes(sp, sr) {
+  const c = 343, rnd = rngOf(sp.t60 * 1000 | 0), fTop = Math.min(15000, sr * 0.45);
+  const T = f => sp.t60 * (1 + 0.35 * Math.exp(-f / 180)) / (1 + Math.pow(f / sp.air, 1.6));
+  const need = f => 3 * T(f) / 2.2;             // modes per Hz for ~3 inside each mode's bandwidth
+  const modes = [];
+  let fEx = 30;
+  if (sp.dims) {
+    // exact room modes (nx, ny, nz) below fEx
+    const [X, Y, Z] = sp.dims, V = X * Y * Z;
+    const phys = f => 4 * Math.PI * V * f * f / (c * c * c);
+    while (fEx < 2000 && phys(fEx) < need(fEx)) fEx += 5;
+    for (let a = 0; a * c / (2 * X) < fEx; a++) for (let b = 0; b * c / (2 * Y) < fEx; b++) for (let d = 0; d * c / (2 * Z) < fEx; d++) {
+      if (!a && !b && !d) continue;
+      const f = c / 2 * Math.hypot(a / X, b / Y, d / Z);
+      if (f >= 30 && f < fEx && modes.length < 8000) modes.push(f);
+    }
+  }
+  // above: jittered spacing at the needed density, thinned if the total would pass the cap
+  let est = 0; for (let f = fEx; f < fTop; f += 10) est += need(f) * 10 * (sp.plate ? 1.4 : 1);
+  const thin = Math.min(1, (SPACE_MAXMODES - modes.length) / Math.max(1, est));
+  for (let f = fEx; f < fTop && modes.length < SPACE_MAXMODES;) { modes.push(f); f += (0.3 + rnd() * 1.4) / (need(f) * (sp.plate ? 1.4 : 1) * thin); }
+  return { modes, T, rnd };
+}
+function gauss(rnd) { return Math.sqrt(-2 * Math.log(Math.max(1e-9, rnd()))) * Math.cos(2 * Math.PI * rnd()); }
+async function modalIR(name, sr) {
+  const sp = SPACES[name], { modes, T, rnd } = modalModes(sp, sr);
+  const np = modes.length, parts = new Float32Array(np * 8);
+  let s2 = 0, tMax = 0;
+  for (let k = 0; k < np; k++) {
+    const f = modes[k], t60 = T(f), fn = k + 1 < np ? modes[k + 1] - f : 1;
+    // energy per Hz stays even: each mode's power follows the spacing to its neighbour; very low end rolled off
+    const amp = Math.sqrt(Math.max(0.02, fn)) / (1 + Math.pow(45 / f, 4)), q = k * 8;
+    partial(parts, k, f, sr, amp, rnd(), t60, 0);
+    parts[q + 5] = gauss(rnd); parts[q + 6] = gauss(rnd);
+    s2 += amp * amp; tMax = Math.max(tMax, t60);
+  }
+  const n = Math.round(Math.min(9, tMax * 1.05) * sr);
+  const pcm = await gpuRender(parts, np, n, { atk: 0.002 * sr, gain: 0.5 / Math.sqrt(s2) });
+  // early reflections: first and second-order image sources of the box (none for the plate)
+  if (sp.dims) {
+    const [X, Y, Z] = sp.dims, src = [X * 0.31, Y * 0.42, 1.4], mic = [X * 0.62, Y * 0.55, 1.6];
+    let e2 = 0; for (let i = 0; i < Math.min(n, sr * 0.05); i++) e2 += pcm[i] * pcm[i];
+    const lvl = Math.sqrt(e2 / (sr * 0.05)) * 6;
+    for (let a = -2; a <= 2; a++) for (let b = -2; b <= 2; b++) for (let d = -1; d <= 1; d++) {
+      const ord = Math.abs(a) + Math.abs(b) + Math.abs(d);
+      if (!ord || ord > 2) continue;
+      const img = [a * X + (a & 1 ? X - src[0] : src[0]), b * Y + (b & 1 ? Y - src[1] : src[1]), d * Z + (d & 1 ? Z - src[2] : src[2])];
+      const dist = Math.hypot(img[0] - mic[0], img[1] - mic[1], img[2] - mic[2]), direct = Math.hypot(src[0] - mic[0], src[1] - mic[1], src[2] - mic[2]);
+      const at = Math.round((dist - direct) / 343 * sr), gain = lvl * Math.pow(0.72, ord) * direct / dist * (rnd() < 0.5 ? -1 : 1);
+      const side = Math.sign(img[0] - mic[0]) * 0.35;
+      for (let j = 0; j < 24 && at + j < n; j++) { const w = gain * Math.exp(-j / 5); pcm[at + j] += w * (1 - side); pcm[n + at + j] += w * (1 + side); }
+    }
+  }
+  const buf = S.ctx.createBuffer(2, n, sr);
+  buf.copyToChannel(pcm.subarray(0, n), 0); buf.copyToChannel(pcm.subarray(n), 1);
+  return { buf, modes: np, ms: GPU.lastMs };
 }
 
 // ---------- spectral freeze ----------
@@ -3894,8 +4413,10 @@ function freezeStop() {
 //   contour  a topographic map: spectrogram + slow drift + ripples from track hits, index line every fifth
 //   dots     an LED matrix: hits send rings out from their code line, the spectrum lights columns
 //   demo     a demoscene tunnel with copper bars and a sine scroller
-const SCENE_BANDS = 64, SCENE_ROWS = 160, SCENE_MAXE = 24, SCENE_MODES = ['terrain', 'contour', 'dots', 'demo'];
-const SCENE_WGSL = `
+//   sono     the whole song as one sonogram, filled in by song position as it plays
+// and any `shader name <WGSL expression>` line in the code becomes a scene too (see sceneCustomWGSL).
+const SCENE_BANDS = 64, SCENE_ROWS = 160, SCENE_MAXE = 24, SCENE_MODES = ['terrain', 'contour', 'dots', 'demo', 'sono'];
+const SCENE_PRE = `
 struct U {
   res: vec2f, time: f32, beat: f32,
   bass: f32, mid: f32, high: f32, kick: f32,
@@ -3903,11 +4424,14 @@ struct U {
   ink: vec4f, accent: vec4f,
   em: array<vec4f, 24>,
   pal: array<vec4f, 10>,
+  sono: vec4f,
+  cuts: array<vec4f, 4>,
 };
 @group(0) @binding(0) var<uniform> u: U;
-@group(0) @binding(1) var spec: texture_2d<f32>;
+@group(0) @binding(1) var specT: texture_2d<f32>;
 @group(0) @binding(2) var samp: sampler;
 @group(0) @binding(3) var txt: texture_2d<f32>;
+@group(0) @binding(4) var sonoT: texture_2d<f32>;
 struct VO { @builtin(position) p: vec4f, @location(0) uv: vec2f };
 @vertex fn vs(@builtin(vertex_index) i: u32) -> VO {
   var o: VO;
@@ -3918,9 +4442,23 @@ struct VO { @builtin(position) p: vec4f, @location(0) uv: vec2f };
 // band in [0,1] (low to high), age in [0,1] (now to ~5 s ago)
 fn specAt(band: f32, age: f32) -> f32 {
   let v = (u.head - clamp(age, 0.0, 1.0) * (u.rows - 2.0) + 0.5) / u.rows;
-  return textureSampleLevel(spec, samp, vec2f(clamp(band, 0.0, 1.0), v), 0.0).r;
+  return textureSampleLevel(specT, samp, vec2f(clamp(band, 0.0, 1.0), v), 0.0).r;
 }
 fn premul(c: vec3f, a: f32) -> vec4f { return vec4f(c * a, a); }
+fn rot(a: f32) -> mat2x2f { let c = cos(a); let s = sin(a); return mat2x2f(c, s, -s, c); }
+// helpers for shader lines written in the code
+fn spec(band: f32, age: f32) -> f32 { return specAt(band, age); }
+fn hash(p: vec2f) -> f32 { return fract(sin(dot(p, vec2f(127.1, 311.7))) * 43758.5453); }
+fn noise(p: vec2f) -> f32 {
+  let i = floor(p); let f = fract(p); let w = f * f * (3.0 - 2.0 * f);
+  return mix(mix(hash(i), hash(i + vec2f(1.0, 0.0)), w.x), mix(hash(i + vec2f(0.0, 1.0)), hash(i + vec2f(1.0, 1.0)), w.x), w.y);
+}
+fn fbm(p: vec2f) -> f32 { var v = 0.0; var a = 0.5; var q = p; for (var k = 0; k < 5; k++) { v += a * noise(q); q = q * 2.03 + 1.7; a *= 0.5; } return v; }
+fn pal(k: i32) -> vec3f { return u.pal[u32(k) % 10u].rgb; }
+// how recently track k (in code order) played: 1 on the hit, fading over about a second
+fn hit(k: i32) -> f32 { if (u32(k) >= u.ne) { return 0.0; } return exp(-u.em[u32(k)].w * 3.0); }
+`;
+const SCENE_WGSL = SCENE_PRE + `
 
 // one ridgeline: row k of R, at screen x
 fn ridge(x: f32, kf: f32, R: f32) -> f32 {
@@ -4014,7 +4552,6 @@ fn height(p: vec2f, asp: f32) -> f32 {
   return premul(col, a);
 }
 
-fn rot(a: f32) -> mat2x2f { let c = cos(a); let s = sin(a); return mat2x2f(c, s, -s, c); }
 fn tunnel(p: vec3f) -> f32 {
   let r = 1.5 + 0.18 * sin(p.z * 0.7 + u.time * 0.6) + u.kick * 0.12;
   var q = p;
@@ -4067,8 +4604,42 @@ fn tunnel(p: vec3f) -> f32 {
     c = mix(c, grad, g);
   }
   return vec4f(c, 1.0);
+}
+
+// the whole song: x is the song position, y the frequency; filled in as the song plays
+@fragment fn sono(i: VO) -> @location(0) vec4f {
+  let x = i.uv.x;
+  let fy = clamp((1.0 - i.uv.y - 0.04) / 0.92, 0.0, 1.0);
+  let v = textureSampleLevel(sonoT, samp, vec2f(fy, x), 0.0).r;
+  var a = pow(v, 1.8) * 0.45;
+  var c = mix(u.ink.rgb, u.accent.rgb, smoothstep(0.7, 0.98, v) * 0.7);
+  let bx = x * max(1.0, u.sono.y);
+  let bl = 1.0 - smoothstep(0.0, fwidth(bx) * 1.2, abs(fract(bx + 0.5) - 0.5));
+  a = max(a, bl * 0.05);
+  for (var k = 0u; k < 16u; k++) {
+    let cx = u.cuts[k / 4u][k % 4u];
+    if (cx >= 0.0 && abs(x - cx) * u.res.x < 1.0 * u.dpr) { a = max(a, 0.28); c = u.ink.rgb; }
+  }
+  if (u.sono.z > 0.5 && abs(x - u.sono.x) * u.res.x < 1.5 * u.dpr) { return premul(u.accent.rgb, 0.85); }
+  return premul(c, a);
 }`;
-const SCENE = { ready: false, failed: false, loading: false, hits: new Map(), bins: null, rowT: 0, head: 0 };
+// a shader line from the code, wrapped as a full-screen scene. p: 0..1 with y up; q: centred, square units.
+function sceneCustomWGSL(expr, kind) {
+  const out = kind === 'f32' ? 'premul(u.ink.rgb, clamp(v, 0.0, 1.0) * 0.55)' : 'vec4f(clamp(v, vec3f(0.0), vec3f(1.0)) * 0.6, clamp(max(v.x, max(v.y, v.z)), 0.0, 1.0) * 0.6)';
+  return SCENE_PRE + `
+@fragment fn custom(i: VO) -> @location(0) vec4f {
+  let asp = u.res.x / u.res.y;
+  let p = vec2f(i.uv.x, 1.0 - i.uv.y);
+  let q = (p - 0.5) * vec2f(asp, 1.0);
+  let t = u.time; let beat = u.beat; let bar = u.beat / 4.0;
+  let bass = u.bass; let mid = u.mid; let high = u.high; let kick = u.kick;
+  let ink = u.ink.rgb; let accent = u.accent.rgb;
+  let v: ${kind} = ${expr};
+  return ${out};
+}`;
+}
+const SCENE = { ready: false, failed: false, loading: false, hits: new Map(), bins: null, rowT: 0, head: 0, custom: new Map(), sonoKey: '', sonoLast: -1 };
+const SONO_ROWS = 2048, SCENE_UBYTES = 704;
 // own device, as with the audio renders: a canvas problem must never take the sound with it.
 // offscreen: draw into a texture (tests and headless browsers, where presenting a WebGPU canvas fails)
 async function sceneInit(canvas, offscreen) {
@@ -4087,8 +4658,9 @@ async function sceneInit(canvas, offscreen) {
     const mod = d.createShaderModule({ code: SCENE_WGSL });
     const info = await mod.getCompilationInfo(); const bad = info.messages.find(m => m.type === 'error');
     if (bad) throw new Error('shader: ' + bad.message + ' at line ' + bad.lineNum);
-    const uni = d.createBuffer({ size: 624, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
-    const spec = d.createTexture({ size: [SCENE_BANDS, SCENE_ROWS], format: 'r8unorm', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST });
+    const uni = d.createBuffer({ size: SCENE_UBYTES, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+    const tex = (w, h) => d.createTexture({ size: [w, h], format: 'r8unorm', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST });
+    const spec = tex(SCENE_BANDS, SCENE_ROWS), sono = tex(SCENE_BANDS, SONO_ROWS);
     const samp = d.createSampler({ magFilter: 'linear', minFilter: 'linear', addressModeU: 'clamp-to-edge', addressModeV: 'repeat', addressModeW: 'repeat' });
     // the scroller text, drawn once with the page's own font
     const tc = document.createElement('canvas'); tc.width = 4096; tc.height = 128;
@@ -4098,19 +4670,45 @@ async function sceneInit(canvas, offscreen) {
     g.fillText(msg, 8, 64);
     const txt = d.createTexture({ size: [tc.width, tc.height], format: 'rgba8unorm', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT });
     d.queue.copyExternalImageToTexture({ source: tc }, { texture: txt }, [tc.width, tc.height]);
+    // one explicit layout for every scene, so the code's own shaders can use any input
+    const F = GPUShaderStage.FRAGMENT, V = GPUShaderStage.VERTEX;
+    const bgl = d.createBindGroupLayout({ entries: [
+      { binding: 0, visibility: F | V, buffer: { type: 'uniform' } },
+      { binding: 1, visibility: F, texture: {} }, { binding: 2, visibility: F, sampler: {} },
+      { binding: 3, visibility: F, texture: {} }, { binding: 4, visibility: F, texture: {} }] });
+    const layout = d.createPipelineLayout({ bindGroupLayouts: [bgl] });
     const blend = { color: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' } };
+    const pipe = (module, entryPoint) => d.createRenderPipeline({ layout, vertex: { module, entryPoint: 'vs' }, fragment: { module, entryPoint, targets: [{ format: fmt, blend }] }, primitive: { topology: 'triangle-list' } });
     const pipes = {};
-    for (const m of SCENE_MODES) pipes[m] = d.createRenderPipeline({ layout: 'auto', vertex: { module: mod, entryPoint: 'vs' }, fragment: { module: mod, entryPoint: m, targets: [{ format: fmt, blend }] }, primitive: { topology: 'triangle-list' } });
-    const bgs = {};
-    for (const m of SCENE_MODES) {
-      // 'auto' layouts only include what each entry point uses, so build each bind group from its own layout
-      const entries = [{ binding: 0, resource: { buffer: uni } }, { binding: 2, resource: samp }];
-      entries.push(m === 'demo' ? { binding: 3, resource: txt.createView() } : { binding: 1, resource: spec.createView() });
-      bgs[m] = d.createBindGroup({ layout: pipes[m].getBindGroupLayout(0), entries });
-    }
-    Object.assign(SCENE, { ctx, fmt, canvas, uni, spec, pipes, bgs, specData: new Uint8Array(SCENE_BANDS * SCENE_ROWS), ready: true });
+    for (const m of SCENE_MODES) pipes[m] = pipe(mod, m);
+    const bg = d.createBindGroup({ layout: bgl, entries: [{ binding: 0, resource: { buffer: uni } }, { binding: 1, resource: spec.createView() }, { binding: 2, resource: samp }, { binding: 3, resource: txt.createView() }, { binding: 4, resource: sono.createView() }] });
+    Object.assign(SCENE, { ctx, fmt, canvas, uni, spec, sono, pipes, bg, pipe, ready: true });
   } catch (e) { SCENE.failed = true; SCENE.err = String(e.message || e); }
   SCENE.loading = false;
+}
+// a shader line from the code: compile it (as a number, then as a colour) and report the first error
+async function sceneCustom(name, expr) {
+  const have = SCENE.custom.get(name);
+  if (have && have.expr === expr) return have;
+  const ent = { expr, pipe: null, err: null, pending: true };
+  SCENE.custom.set(name, ent);
+  if (!SCENE.ready) { ent.pending = false; ent.err = SCENE.err || 'WebGPU'; return ent; }
+  const d = SCENE.dev; let first = null;
+  for (const kind of ['f32', 'vec3f']) {
+    d.pushErrorScope('validation');
+    const mod = d.createShaderModule({ code: sceneCustomWGSL(expr, kind) });
+    const info = await mod.getCompilationInfo();
+    const bad = info.messages.find(m => m.type === 'error');
+    if (bad) { await d.popErrorScope(); first = first || bad.message; continue; }
+    const p = SCENE.pipe(mod, 'custom');
+    const ve = await d.popErrorScope();
+    if (ve) { first = first || ve.message; continue; }
+    ent.pipe = p; break;
+  }
+  if (SCENE.custom.get(name) !== ent) return ent;   // replaced while compiling
+  ent.err = ent.pipe ? null : String(first || 'shader error').split('\n')[0].slice(0, 160);
+  ent.pending = false;
+  return ent;
 }
 // '#rrggbb' → [r, g, b] in 0..1
 function sceneRgb(hex, fb) { const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '').trim()); if (!m) return fb; const v = parseInt(m[1], 16); return [(v >> 16 & 255) / 255, (v >> 8 & 255) / 255, (v & 255) / 255]; }
@@ -4118,13 +4716,18 @@ function sceneRgb(hex, fb) { const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '
 function sceneHit(line) { SCENE.hits.set(line, performance.now() / 1000); }
 let sceneKick = 0;
 // opts.ink / opts.accent: [r, g, b] in 0..1, so lines follow the page theme
+// opts.sono: { pos, bars, cuts, key, live } — where the song is, for the whole-song sonogram
 function sceneFrame(mode, emitters, beat, opts) {
   opts = opts || {};
-  if (!SCENE.ready || !SCENE.pipes[mode]) return;
+  // mode null: only keep the spectrum and the sonogram up to date, draw nothing
+  if (!SCENE.ready) return false;
+  const custom = mode && SCENE.custom.get(mode), pipe = mode && (SCENE.pipes[mode] || (custom && custom.pipe));
+  if (!pipe && mode !== null) return false;
   const d = SCENE.dev, off = SCENE.offscreen, cv = SCENE.canvas, dpr = devicePixelRatio || 1;
   const w = off ? off.w : Math.max(1, Math.round(cv.clientWidth * dpr)), h = off ? off.h : Math.max(1, Math.round(cv.clientHeight * dpr));
   if (!off && (cv.width !== w || cv.height !== h)) { cv.width = w; cv.height = h; }
-  const now = performance.now() / 1000;
+  const now = performance.now() / 1000, so = opts.sono;
+  if (so && so.key !== SCENE.sonoKey) { SCENE.sonoKey = so.key; SCENE.sonoLast = -1; d.queue.writeTexture({ texture: SCENE.sono }, new Uint8Array(SCENE_BANDS * SONO_ROWS), { bytesPerRow: SCENE_BANDS }, [SCENE_BANDS, SONO_ROWS]); }
   // spectrum: 64 log-spaced bands, one new row every 1/30 s
   let bass = 0, mid = 0, high = 0;
   if (now - SCENE.rowT > 1 / 30) {
@@ -4145,11 +4748,22 @@ function sceneFrame(mode, emitters, beat, opts) {
     SCENE.head = (SCENE.head + 1) % SCENE_ROWS;
     d.queue.writeTexture({ texture: SCENE.spec, origin: [0, SCENE.head] }, row, { bytesPerRow: SCENE_BANDS }, [SCENE_BANDS, 1]);
     SCENE.lastRow = row;
+    // the sonogram keeps the spectrum by song position, so every bar has its own place
+    if (so && so.live && S.playing) {
+      const r = Math.max(0, Math.min(SONO_ROWS - 1, Math.floor(so.pos * SONO_ROWS)));
+      let from = r;
+      if (SCENE.sonoLast >= 0 && r > SCENE.sonoLast && r - SCENE.sonoLast < 48) from = SCENE.sonoLast + 1;
+      const cnt = r - from + 1, rows = new Uint8Array(SCENE_BANDS * cnt);
+      for (let k = 0; k < cnt; k++) rows.set(row, k * SCENE_BANDS);
+      d.queue.writeTexture({ texture: SCENE.sono, origin: [0, from] }, rows, { bytesPerRow: SCENE_BANDS }, [SCENE_BANDS, cnt]);
+      SCENE.sonoLast = r;
+    }
   }
+  if (!pipe) return false;
   const lr = SCENE.lastRow || new Uint8Array(SCENE_BANDS), avg = (a, b) => { let s = 0; for (let k = a; k < b; k++) s += lr[k]; return s / (b - a) / 255; };
   bass = avg(0, 12); mid = avg(20, 40); high = avg(44, 60);
   sceneKick = Math.max(sceneKick * 0.9, bass > 0.62 ? (bass - 0.62) * 2.6 : 0);
-  const buf = new ArrayBuffer(624), f = new Float32Array(buf), ui = new Uint32Array(buf);
+  const buf = new ArrayBuffer(SCENE_UBYTES), f = new Float32Array(buf), ui = new Uint32Array(buf);
   f[0] = w; f[1] = h; f[2] = now % 1000; f[3] = beat || 0;
   f[4] = bass; f[5] = mid; f[6] = high; f[7] = Math.min(1, sceneKick);
   const em = emitters.slice(0, SCENE_MAXE);
@@ -4157,11 +4771,14 @@ function sceneFrame(mode, emitters, beat, opts) {
   f.set([...(opts.ink || [0.9, 0.91, 0.93]), 1], 12); f.set([...(opts.accent || [1, 0.6, 0.3]), 1], 16);
   em.forEach((e, k) => { const t0 = SCENE.hits.get(e.line); f.set([e.y, e.x, e.col, t0 ? Math.min(30, now - t0) : 30], 20 + k * 4); });
   TRACK_COLORS.forEach((hx, k) => { const v = parseInt(hx.slice(1), 16); f.set([(v >> 16 & 255) / 255, (v >> 8 & 255) / 255, (v & 255) / 255, 1], 116 + k * 4); });
+  f.set([so ? so.pos : 0, so ? so.bars : 1, so && S.playing ? 1 : 0, 0], 156);
+  for (let k = 0; k < 16; k++) f[160 + k] = so && so.cuts && k < so.cuts.length ? so.cuts[k] : -1;
   d.queue.writeBuffer(SCENE.uni, 0, buf);
   const enc = d.createCommandEncoder();
   const rp = enc.beginRenderPass({ colorAttachments: [{ view: off ? off.tex.createView() : SCENE.ctx.getCurrentTexture().createView(), loadOp: 'clear', clearValue: { r: 0, g: 0, b: 0, a: 0 }, storeOp: 'store' }] });
-  rp.setPipeline(SCENE.pipes[mode]); rp.setBindGroup(0, SCENE.bgs[mode]); rp.draw(3); rp.end();
+  rp.setPipeline(pipe); rp.setBindGroup(0, SCENE.bg); rp.draw(3); rp.end();
   d.queue.submit([enc.finish()]);
+  return true;
 }
 
 // ---------- benchmark: the same note on the GPU and in JavaScript ----------
@@ -4899,6 +5516,9 @@ function evaluate(mode = 'bar', opts = {}) {
   if (newBpm && !deferBpm) setBpm(newBpm);
   S.swing = r.swing ?? 0;
   { const m = r.master || 'default'; if (m !== S.masterMode) { S.masterMode = m; if (S.ctx) applyMaster(m); } }
+  { const sp = r.space || 'hall-default'; if (sp !== (S.space || 'hall-default')) { S.space = sp; if (S.ctx) applySpace(sp); } }
+  // backdrops: a changed viz line takes over again from any button pressed before
+  { const sig = r.viz ? r.viz.list.join(' ') + '/' + r.viz.per : ''; if (sig !== S.vizSig) { S.vizSig = sig; S.vizManual = false; } S.vizCode = r.viz; S.shaders = r.shaders; }
   const state = { tracks, order, key, prog: r.prog, progSrc: r.progSrc, bpm: deferBpm ? newBpm : null, scenes: r.scenes, song: r.song, arrSrc: r.arrSrc, resetSong: !!opts.resetSong };
   if (S.playing && structural) {
     const applyAt = mode === 'phrase' ? Math.ceil(S.lastC / 4 - 1e-6) * 4 : Math.ceil(S.lastC - 1e-6);
@@ -5743,7 +6363,7 @@ function frame() {
           const el = v.id && document.getElementById(v.id);
           if (el) { el.classList.remove('hit'); void el.offsetWidth; el.classList.add('hit'); }
           const led = document.getElementById('led' + v.line);
-          if (SCENE_MODES.includes(VZ.mode)) sceneHit(v.line);
+          sceneHit(v.line);
           if (led) { led.classList.remove('hit'); void led.offsetWidth; led.classList.add('hit'); }
         } else keep.push(v);
       }
@@ -5843,8 +6463,8 @@ requestAnimationFrame(frame);
 // spiral: one turn per bar · fft: spectrum. Future notes come straight from the patterns, not from audio.
 var VZ = { mode: 'roll', ver: 0 };
 try { VZ.mode = localStorage.getItem('pulse-viz') || 'roll'; } catch (e) { }
-const VZ_OPACITY = { roll: 0.55, grid: 0.4, spiral: 0.5, fft: 0.45, terrain: 0, contour: 0, dots: 0, demo: 0, off: 0 };
-const VZ_GPU_OPACITY = { terrain: 1, contour: 1, dots: 1, demo: 0.55 };
+const VZ_OPACITY = { roll: 0.55, grid: 0.4, spiral: 0.5, fft: 0.45, off: 0 };
+const VZ_GPU_OPACITY = { terrain: 1, contour: 1, dots: 1, demo: 0.55, sono: 1 };
 const VZ_COLORS = TRACK_COLORS;
 const vizCv = document.getElementById('viz'), vizG = vizCv.getContext('2d'), vizGpu = document.getElementById('vizgpu');
 
@@ -5979,28 +6599,46 @@ function drawFft(g, w, h, c, dpr) {
   g.globalAlpha = 1;
 }
 
+// a viz line in the code picks the backdrop (one per `per` bars) until a button overrides it
+function vizModeAt(c) {
+  const v = S.vizCode;
+  if (!v || S.vizManual) return VZ.mode;
+  return v.list[Math.floor(Math.max(0, c) / v.per) % v.list.length];
+}
+let vizShown = '';
 function drawViz(now) {
   const dpr = devicePixelRatio || 1;
   const w = Math.round(vizCv.clientWidth * dpr), h = Math.round(vizCv.clientHeight * dpr);
   if (vizCv.width !== w || vizCv.height !== h) { vizCv.width = w; vizCv.height = h; }
   vizG.clearRect(0, 0, w, h);
-  vizCv.style.opacity = VZ_OPACITY[VZ.mode] ?? 0.5;
-  const gpuMode = SCENE_MODES.includes(VZ.mode);
+  const c = S.playing ? transport(now) : 0, mode = vizModeAt(c);
+  if (mode !== vizShown) { vizShown = mode; document.querySelectorAll('#vizbar button').forEach(b => { b.setAttribute('aria-pressed', b.dataset.v === mode); b.classList.toggle('bycode', !!S.vizCode && !S.vizManual && b.dataset.v === mode); }); }
+  const custom = S.shaders && S.shaders.has(mode);
+  const gpuMode = SCENE_MODES.includes(mode) || custom;
+  vizCv.style.opacity = gpuMode ? 0 : VZ_OPACITY[mode] ?? 0.5;
   vizGpu.hidden = !gpuMode || !SCENE.ready;
-  if (gpuMode) { vizGpu.style.opacity = VZ_GPU_OPACITY[VZ.mode]; drawScene(now); return; }
-  if (VZ.mode === 'off' || !w || !h) return;
-  const c = S.playing ? transport(now) : 0;
-  if (VZ.mode === 'roll') drawRoll(vizG, w, h, c, dpr);
-  else if (VZ.mode === 'grid') drawGrid(vizG, w, h, c, dpr);
-  else if (VZ.mode === 'spiral') drawSpiral(vizG, w, h, c, dpr);
-  else if (VZ.mode === 'fft' && S.playing) drawFft(vizG, w, h, c, dpr);
+  if (gpuMode) { vizGpu.style.opacity = custom ? 1 : VZ_GPU_OPACITY[mode]; drawScene(now, mode); return; }
+  if (SCENE.ready && S.playing) sceneFrame(null, [], c, { sono: vizSono(c) });
+  if (mode === 'off' || !w || !h) return;
+  if (mode === 'roll') drawRoll(vizG, w, h, c, dpr);
+  else if (mode === 'grid') drawGrid(vizG, w, h, c, dpr);
+  else if (mode === 'spiral') drawSpiral(vizG, w, h, c, dpr);
+  else if (mode === 'fft' && S.playing) drawFft(vizG, w, h, c, dpr);
+}
+// where the song is, for the whole-song sonogram: song mode maps the whole arrangement, live mode a 16-bar loop
+function vizSono(c) {
+  if (S.song && S.songMode) {
+    const cur = sceneNameAt(c), T = S.song.total;
+    return { pos: cur && cur.part ? cur.pos / T : 0, bars: T, live: !!(cur && cur.part), key: S.arrSrc, cuts: S.song.parts.slice(1).map(p => p.start / T) };
+  }
+  return { pos: (Math.max(0, c) % 16) / 16, bars: 16, live: true, key: 'live', cuts: [0.25, 0.5, 0.75] };
 }
 // GPU backdrops (gpu.js): each track's code line is a point the scene can react to
 let sceneWarned = false;
-function drawScene(now) {
+function drawScene(now, mode) {
   if (!SCENE.ready) {
     if (!SCENE.loading && !SCENE.failed) sceneInit(vizGpu);
-    if (SCENE.failed && !sceneWarned) { sceneWarned = true; loopMsg(t('sceneOff', { e: SCENE.err || 'WebGPU' }), 'bad', 6000); setVizMode('roll'); }
+    if (SCENE.failed && !sceneWarned) { sceneWarned = true; loopMsg(t('sceneOff', { e: SCENE.err || 'WebGPU' }), 'bad', 6000); S.vizManual = true; setVizMode('roll'); }
     return;
   }
   const r = vizGpu.getBoundingClientRect(); if (!r.width || !r.height) return;
@@ -6014,15 +6652,25 @@ function drawScene(now) {
   const rs = getComputedStyle(document.documentElement), ink = sceneRgb(rs.getPropertyValue('--fg'), [0.9, 0.91, 0.93]);
   const light = ink[0] + ink[1] + ink[2] < 1.5;
   // the demo scene is opaque; on a light page keep it faint so the code stays readable
-  if (VZ.mode === 'demo') vizGpu.style.opacity = light ? 0.3 : VZ_GPU_OPACITY.demo;
-  sceneFrame(VZ.mode, em, S.playing ? transport(now) : 0, { ink, accent: sceneRgb(rs.getPropertyValue('--k-orange'), [1, 0.6, 0.3]) });
+  if (mode === 'demo') vizGpu.style.opacity = light ? 0.3 : VZ_GPU_OPACITY.demo;
+  // the code's shader lines compile when a backdrop is showing; errors land on their own line
+  if (S.shaders) for (const [n, sh] of S.shaders) {
+    const e = SCENE.custom.get(n);
+    if (!e || e.expr !== sh.expr) sceneCustom(n, sh.expr).then(ent => {
+      if (S.shaders.get(n) !== sh || !ent.err) return;
+      S.errors.set(sh.line, { msg: t('shaderErr', { e: ent.err }), col: 0, keep: true }); render(); updateStatus();
+    });
+    else if (e.err && !e.pending && S.shaders.get(n) === sh && !S.errors.has(sh.line)) { S.errors.set(sh.line, { msg: t('shaderErr', { e: e.err }), col: 0, keep: true }); render(); updateStatus(); }
+  }
+  const c = S.playing ? transport(now) : 0;
+  sceneFrame(mode, em, c, { ink, accent: sceneRgb(rs.getPropertyValue('--k-orange'), [1, 0.6, 0.3]), sono: vizSono(c) });
 }
 function setVizMode(m) {
   VZ.mode = m;
   try { localStorage.setItem('pulse-viz', m); } catch (e) { }
   document.querySelectorAll('#vizbar button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === m));
 }
-document.getElementById('vizbar').addEventListener('click', e => { const b = e.target.closest('button'); if (b) setVizMode(b.dataset.v); });
+document.getElementById('vizbar').addEventListener('click', e => { const b = e.target.closest('button'); if (b) { if (S.vizCode) S.vizManual = true; setVizMode(b.dataset.v); vizShown = ''; } });
 setVizMode(VZ.mode);
 
 </script>
