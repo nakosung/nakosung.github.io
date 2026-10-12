@@ -316,7 +316,7 @@ body.recording .editor { border-color: var(--c-err); }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.12 23:49<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.12 23:57<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -2312,6 +2312,65 @@ scene build arp chip hat snare riser
 scene drop  kick snare clap hat wob sub chip pad chop dive
 scene break pad arp chip filter down
 song intro:8 build:4 drop:16 break:8 build:4 drop:16
+`,
+  },
+  {
+    id: 'rpgtown', name: 'Harbor Lantern (retro RPG town)',
+    head: {
+      ko: '// Harbor Lantern — 80년대 말 PC RPG의 마을 음악 감성으로 새로 쓴 곡이에요 (원곡 없음). 6/8, D장조, 한 마디 = 8분음표 6칸\n// FM 느낌의 사각파 선율과 일렉 피아노, 하프 아르페지오. 두 번째 바퀴에는 벨이 한 옥타브 위에서 겹치고 대선율과 가벼운 리듬이 들어와요',
+      en: '// Harbor Lantern — an original in the spirit of late-80s PC RPG town music (not based on any song). 6/8 in D major, one bar = six eighths\n// An FM-style square lead over electric piano and a harp arpeggio. On the second pass a bell doubles the tune an octave up, with a counter-line and a light groove',
+    },
+    body: `bpm 120
+key D major
+prog <0 5 3 4 0 2 3 4 3 4 2 5 3 4 0 0>     // D Bm G A D F#m G A · G A F#m Bm G A D D
+master warm
+space hall
+
+lead   <[4 _ 2 4 _ 7] [9 _ 7 5 _ _] [7 _ 5 3 _ 4] [4 _ _ 6 _ 5] [4 _ 2 4 _ 7] [8 _ 9 8 _ 6] [7 _ 5 4 _ 3] [6 _ 4 1 _ _] [3 _ 4 5 _ 7] [8 _ 7 6 _ 4] [5 _ 4 2 _ 4] [5@4 6 7] [7 _ 9 10 _ 9] [8 _ 7 6 _ 8] [7 _ _ 4 _ 2] [0@6]> | square fixed oct 4 cut 3200 vib 14 gain .42 delay .25 verb .3 human .1
+bell   <[4 _ 2 4 _ 7] [9 _ 7 5 _ _] [7 _ 5 3 _ 4] [4 _ _ 6 _ 5] [4 _ 2 4 _ 7] [8 _ 9 8 _ 6] [7 _ 5 4 _ 3] [6 _ 4 1 _ _] [3 _ 4 5 _ 7] [8 _ 7 6 _ 4] [5 _ 4 2 _ 4] [5@4 6 7] [7 _ 9 10 _ 9] [8 _ 7 6 _ 8] [7 _ _ 4 _ 2] [0@6]> | bell fixed oct 5 gain .16 delay .3 verb .4
+alto   <[2@6] [4 _ _ 3 _ _] [2@6] [1 _ _ 2 _ _] [2@6] [4 _ _ 6 _ _] [5@6] [4 _ _ . . .] [1@6] [2@6] [0 _ _ . 1 2] [3@6] [5@6] [4 _ _ 6 _ _] [4@6] [2@6]> | flute fixed oct 4 gain .14 verb .4 atk .08
+keys   0^7 _ _ _ _ _                     | epiano oct 3 gain .3 verb .3
+harp   [0 2 4 7 4 2]                     | harp oct 3 gain .36 verb .3 human .15
+bass   [0 _ _ 4 _ .]                     | bass oct 2 cut 900 gain .62 rel .1
+kick   x . . . . .                       | gain .55 tune .9 dec .7
+rim    . . . x . .                       | gain .55 verb .2
+shake  x x x x x x                       | gain .2 vel [1 .5 .7 .9 .5 .7] human .3
+
+scene town  lead keys harp bass
+scene fair  all
+song town:16 fair:16
+`,
+  },
+  {
+    id: 'rpgopen', name: 'Crimson Horizon (retro RPG opening)',
+    head: {
+      ko: '// Crimson Horizon — 80년대 말 PC RPG 오프닝 감성으로 새로 쓴 곡이에요 (원곡 없음). C단조, 150 BPM, 화성단음계의 G로 몰아쳐요\n// FM 브라스 같은 쏘우 리드, 옥타브로 튀는 슬랩 베이스, 16분 사각파 아르페지오. 마지막 8마디는 auto 줄이 온음 올려 전조해요',
+      en: '// Crimson Horizon — an original in the spirit of late-80s PC RPG openings (not based on any song). C minor at 150 BPM, driven by the harmonic-minor G\n// A saw lead like FM brass, octave-jumping slap bass, a sixteenth square arpeggio. In the last 8 bars an auto line lifts the key a whole step',
+    },
+    body: `bpm 150
+key C minor
+prog <Cm Ab Bb Cm Cm Ab Fm G>
+master loud
+space chamber
+
+theme  <[g4 _ _ c5 _ _ d5 _ eb5@4 d5 _ c5 _] [eb5@6 c5 _ ab4@4 c5 _ eb5 _] [f5 _ _ eb5 _ _ d5 _ bb4@4 d5 _ f5 _] [g5@8 g5 _ ab5 _ g5 _ f5 _] [eb5 _ _ g5 _ _ c6@6 bb5 _ g5 _] [ab5@4 g5 _ f5 _ eb5@4 c5 _ eb5 _] [f5 _ _ ab5 _ _ c6@4 bb5 _ ab5 _ f5 _] [g5@8 b4 _ d5 _ f5 _ ab5 _]> | saw cut 2600 env .5 dec .3 res 2 detune 8 vib 10 gain .52 delay .2 verb .3
+hero   <[c6 _ _ bb5 _ _ g5@4 eb5 _ g5 _ c6 _] [c6@4 eb6@4 c6 _ ab5@4 g5 _] [f5 _ _ g5 _ _ bb5@4 d6 _ c6 _ bb5 _] [c6@12 g5 _ c6 _] [eb6 _ _ d6 _ _ c6@4 g5 _ c6 _ eb6 _] [f6@4 eb6 _ c6 _ ab5@4 c6 _ eb6 _] [d6 _ _ c6 _ _ ab5@4 f5 _ ab5 _ c6 _] [b5@8 d6@4 f6@4]> | saw cut 3000 env .5 dec .3 res 2 detune 8 vib 12 gain .5 delay .2 verb .35
+echo   <[g4 _ _ c5 _ _ d5 _ eb5@4 d5 _ c5 _] [eb5@6 c5 _ ab4@4 c5 _ eb5 _] [f5 _ _ eb5 _ _ d5 _ bb4@4 d5 _ f5 _] [g5@8 g5 _ ab5 _ g5 _ f5 _] [eb5 _ _ g5 _ _ c6@6 bb5 _ g5 _] [ab5@4 g5 _ f5 _ eb5@4 c5 _ eb5 _] [f5 _ _ ab5 _ _ c6@4 bb5 _ ab5 _ f5 _] [g5@8 b4 _ d5 _ f5 _ ab5 _]> | square cut 4000 gain .12 delay .4 verb .4 nudge 30
+arp    [0 2 4 7]*4                         | square oct 5 cut 3800 gain .16 delay .2 duck .3
+brass  [0^ . . 0^' . . 0^ . . . 0^ . 0^' . . .] | saw oct 4 cut 2200 env .4 dec .2 gain .22 duck .3
+pad    0^7                                  | pad gain .22 verb .5 duck .5
+bass   [0 . 7 0 . 7 0' 7]*2                 | bass oct 2 cut 1400 env .5 dec .12 shape .25 gain .5 duck .4
+kick   x . . . . . x . x . . . . . . .      | gain 1 drive .1
+snare  . . . . x . . . . . . . x . . x?     | gain .8 verb .2 lpf 9000
+hat    x*16                                 | gain .26 vel [1 .45 .7 .45]*4 human .15
+crash  <x . . . . . . .>                    | gain .35
+auto lift x                                 | pitch 2
+
+scene intro arp pad bass hat riser
+scene a     theme echo arp brass pad bass kick snare hat crash
+scene b     hero arp brass pad bass kick snare hat crash fill
+scene last  theme echo arp brass pad bass kick snare hat crash lift fill
+song intro:8 a:8 b:8 a:8 last:8
 `,
   },
   {
