@@ -529,7 +529,7 @@ const I18N = {
     op_throw: '딜레이로 던지기 (양)', op_echo: '에코 아웃', op_verb: '리버브로 보내기 (양)', op_gate: '게이트: 마디당 N 또는 x.x. 패턴', op_crush: '비트 수 (낮을수록 거칠게)',
     op_kill: 'low mid high 대역 빼기', op_pitch: '멜로디 이조 (반음)', op_riser: '빌드업 (마디), 놓으면 드롭', op_set: '트랙.파라미터 값 (a>b 램프)', op_scene: 'next prev 또는 씬 이름',
     op_fill: '다음 마디로 드럼 필인', op_impact: '다음 박에 임팩트', op_swell: '다음 마디로 리버스 스웰', op_down: '다운리프터', op_in: '램프 길이 (마디)',
-    p_seed: '이 트랙만 다른 시드로', p_dens: '생성 밀도 0–1', p_evolve: 'N마디마다 조금씩 변이 (0 = 고정)', p_bars: '프레이즈 길이 (마디)', ac_seed: '곡 전체 시드', ac_fx: '연주 패드 만들기', ac_auto: 'FX 시퀀스: 패드를 패턴대로 자동으로 눌러요',
+    p_seed: '이 트랙만 다른 시드로', p_dens: '생성 밀도 0–1', p_evolve: 'N마디마다 조금씩 변이 (0 = 고정)', p_bars: '프레이즈 길이 (마디)', ac_seed: '곡 전체 시드', ac_fx: '연주 패드 만들기', ac_auto: 'FX 시퀀스: 패드를 패턴대로 자동으로 눌러요', padAuto: 'auto 줄이 이 패드를 패턴대로 눌러요. 누를 때마다 불이 들어와요',
     // v3: WebGPU
     busFmt: 'bus 다음에 이름, | 다음에 효과를 써요 (예: bus wash | chorus .5 verb .6)', busName: '"{n}"은 이미 파라미터나 키워드 이름이에요. 다른 버스 이름을 써요',
     mixParam: '"{w}"는 이 줄에서 못 써요. 쓸 수 있는 것: {list}', returnOnly: '{w}는 bus delay · bus verb · master 줄에서만 써요',
@@ -702,7 +702,7 @@ const I18N = {
     op_throw: 'throw into the delay (amount)', op_echo: 'echo out', op_verb: 'send to reverb (amount)', op_gate: 'gate: N per bar or an x.x. pattern', op_crush: 'bits (lower is rougher)',
     op_kill: 'cut low, mid or high', op_pitch: 'transpose melodies (semitones)', op_riser: 'build-up (bars), drop on release', op_set: 'track.param value (a>b ramps)', op_scene: 'next, prev or a scene name',
     op_fill: 'drum fill into the next bar', op_impact: 'impact on the next beat', op_swell: 'reverse swell into the next bar', op_down: 'downlifter', op_in: 'ramp length in bars',
-    p_seed: 'a different seed for this track', p_dens: 'generator density 0–1', p_evolve: 'mutate a little every N bars (0 = fixed)', p_bars: 'phrase length in bars', ac_seed: 'seed for the whole piece', ac_fx: 'make a performance pad', ac_auto: 'FX sequence: press a pad from a pattern',
+    p_seed: 'a different seed for this track', p_dens: 'generator density 0–1', p_evolve: 'mutate a little every N bars (0 = fixed)', p_bars: 'phrase length in bars', ac_seed: 'seed for the whole piece', ac_fx: 'make a performance pad', ac_auto: 'FX sequence: press a pad from a pattern', padAuto: 'An auto line presses this pad from a pattern. It lights up on every hit',
     // v3: WebGPU
     busFmt: 'Write a name after bus and effects after | (e.g. bus wash | chorus .5 verb .6)', busName: '"{n}" is already a parameter or keyword. Pick another bus name',
     mixParam: '"{w}" does not work on this line. Available: {list}', returnOnly: '{w} only works on bus delay, bus verb and master lines',
@@ -1499,8 +1499,11 @@ function compile(text) {
     let err = null;
     if (out.tracks.has(n)) err = t('dup', { n });
     else if (!au.pad && !pads.has(n)) err = t('noPad', { n });
+    else if (au.pad && pads.has(n) && !pads.get(n).builtin) err = t('dup', { n });
     else if (au.pad) { const bad = au.pad.refs.find(c => !known(c.s)); if (bad) err = t('noTrack', { n: bad.s }); }
-    if (err) { if (!out.errors.has(au.line)) out.errors.set(au.line, { msg: err, col: au.col }); out.autos.delete(n); }
+    if (err) { if (!out.errors.has(au.line)) out.errors.set(au.line, { msg: err, col: au.col }); out.autos.delete(n); continue; }
+    // its own actions become a pad too, so it shows with the pads and can also be pressed by hand
+    if (au.pad) pads.set(n, { ...au.pad, line: au.line, key: au.pad.key || (pads.get(n) || {}).key || null });
   }
   if (out.viz) {
     const bad = out.viz.list.find(n => !VIZ_BUILTIN.includes(n) && !out.shaders.has(n));

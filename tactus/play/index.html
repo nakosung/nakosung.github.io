@@ -197,6 +197,8 @@ body.recording .editor { border-color: var(--c-err); }
 .pad.on { background: var(--kc); border-color: var(--kc); transform: scale(.97); box-shadow: 0 0 18px color-mix(in srgb, var(--kc) 45%, transparent); }
 .pad.on b, .pad.on span, .pad.on kbd, .pad.on .latch { color: var(--on-key); background: transparent; border-color: color-mix(in srgb, var(--on-key) 35%, transparent); }
 .pad.on .lamp { background: var(--on-key); }
+.pad .autob { position: absolute; top: 5px; left: 18px; font: 600 9px/1 var(--f-code); font-style: normal; letter-spacing: .04em; color: color-mix(in srgb, var(--kc) 80%, var(--dim)); }
+.pad.on .autob { color: var(--on-key); }
 .row-btns { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .knobs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
 .knob { display: grid; justify-items: center; gap: 2px; cursor: ns-resize; touch-action: none; border-radius: 10px; padding: 6px 0 4px; background: var(--panel); border: 1px solid var(--line); }
@@ -302,7 +304,7 @@ body.recording .editor { border-color: var(--c-err); }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.12 23:25<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.12 23:33<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -664,7 +666,7 @@ const I18N = {
     op_throw: '딜레이로 던지기 (양)', op_echo: '에코 아웃', op_verb: '리버브로 보내기 (양)', op_gate: '게이트: 마디당 N 또는 x.x. 패턴', op_crush: '비트 수 (낮을수록 거칠게)',
     op_kill: 'low mid high 대역 빼기', op_pitch: '멜로디 이조 (반음)', op_riser: '빌드업 (마디), 놓으면 드롭', op_set: '트랙.파라미터 값 (a>b 램프)', op_scene: 'next prev 또는 씬 이름',
     op_fill: '다음 마디로 드럼 필인', op_impact: '다음 박에 임팩트', op_swell: '다음 마디로 리버스 스웰', op_down: '다운리프터', op_in: '램프 길이 (마디)',
-    p_seed: '이 트랙만 다른 시드로', p_dens: '생성 밀도 0–1', p_evolve: 'N마디마다 조금씩 변이 (0 = 고정)', p_bars: '프레이즈 길이 (마디)', ac_seed: '곡 전체 시드', ac_fx: '연주 패드 만들기', ac_auto: 'FX 시퀀스: 패드를 패턴대로 자동으로 눌러요',
+    p_seed: '이 트랙만 다른 시드로', p_dens: '생성 밀도 0–1', p_evolve: 'N마디마다 조금씩 변이 (0 = 고정)', p_bars: '프레이즈 길이 (마디)', ac_seed: '곡 전체 시드', ac_fx: '연주 패드 만들기', ac_auto: 'FX 시퀀스: 패드를 패턴대로 자동으로 눌러요', padAuto: 'auto 줄이 이 패드를 패턴대로 눌러요. 누를 때마다 불이 들어와요',
     // v3: WebGPU
     busFmt: 'bus 다음에 이름, | 다음에 효과를 써요 (예: bus wash | chorus .5 verb .6)', busName: '"{n}"은 이미 파라미터나 키워드 이름이에요. 다른 버스 이름을 써요',
     mixParam: '"{w}"는 이 줄에서 못 써요. 쓸 수 있는 것: {list}', returnOnly: '{w}는 bus delay · bus verb · master 줄에서만 써요',
@@ -837,7 +839,7 @@ const I18N = {
     op_throw: 'throw into the delay (amount)', op_echo: 'echo out', op_verb: 'send to reverb (amount)', op_gate: 'gate: N per bar or an x.x. pattern', op_crush: 'bits (lower is rougher)',
     op_kill: 'cut low, mid or high', op_pitch: 'transpose melodies (semitones)', op_riser: 'build-up (bars), drop on release', op_set: 'track.param value (a>b ramps)', op_scene: 'next, prev or a scene name',
     op_fill: 'drum fill into the next bar', op_impact: 'impact on the next beat', op_swell: 'reverse swell into the next bar', op_down: 'downlifter', op_in: 'ramp length in bars',
-    p_seed: 'a different seed for this track', p_dens: 'generator density 0–1', p_evolve: 'mutate a little every N bars (0 = fixed)', p_bars: 'phrase length in bars', ac_seed: 'seed for the whole piece', ac_fx: 'make a performance pad', ac_auto: 'FX sequence: press a pad from a pattern',
+    p_seed: 'a different seed for this track', p_dens: 'generator density 0–1', p_evolve: 'mutate a little every N bars (0 = fixed)', p_bars: 'phrase length in bars', ac_seed: 'seed for the whole piece', ac_fx: 'make a performance pad', ac_auto: 'FX sequence: press a pad from a pattern', padAuto: 'An auto line presses this pad from a pattern. It lights up on every hit',
     // v3: WebGPU
     busFmt: 'Write a name after bus and effects after | (e.g. bus wash | chorus .5 verb .6)', busName: '"{n}" is already a parameter or keyword. Pick another bus name',
     mixParam: '"{w}" does not work on this line. Available: {list}', returnOnly: '{w} only works on bus delay, bus verb and master lines',
@@ -1638,8 +1640,11 @@ function compile(text) {
     let err = null;
     if (out.tracks.has(n)) err = t('dup', { n });
     else if (!au.pad && !pads.has(n)) err = t('noPad', { n });
+    else if (au.pad && pads.has(n) && !pads.get(n).builtin) err = t('dup', { n });
     else if (au.pad) { const bad = au.pad.refs.find(c => !known(c.s)); if (bad) err = t('noTrack', { n: bad.s }); }
-    if (err) { if (!out.errors.has(au.line)) out.errors.set(au.line, { msg: err, col: au.col }); out.autos.delete(n); }
+    if (err) { if (!out.errors.has(au.line)) out.errors.set(au.line, { msg: err, col: au.col }); out.autos.delete(n); continue; }
+    // its own actions become a pad too, so it shows with the pads and can also be pressed by hand
+    if (au.pad) pads.set(n, { ...au.pad, line: au.line, key: au.pad.key || (pads.get(n) || {}).key || null });
   }
   if (out.viz) {
     const bad = out.viz.list.find(n => !VIZ_BUILTIN.includes(n) && !out.shaders.has(n));
@@ -3459,7 +3464,7 @@ function stop() {
 
 // ---------- performance pads ----------
 // Every pad, built-in or written in code, is a list of actions from the fx language (see engine.js).
-const G = { held: new Set(), act: new Map() };
+const G = { held: new Set(), act: new Map(), auto: new Set() };   // auto: pads an auto line is holding right now (lit on screen)
 function resetFx(now) {
   for (const [p, v] of [[A.lp.frequency, 20000], [A.hp.frequency, 20], [A.lp.Q, 0.7], [A.throw.gain, 0], [A.dFb.gain, S.dlFb ?? 0.42], [A.vthrow.gain, 0], [A.dryG.gain, 1], [A.rIn.gain, 1], [A.dIn.gain, 1], [A.fxGate.gain, 1], [A.eqL.gain, 0], [A.eqM.gain, 0], [A.eqH.gain, 0]]) {
     p.cancelScheduledValues(now); p.setTargetAtTime(v, now, 0.05);
@@ -3468,7 +3473,7 @@ function resetFx(now) {
   if (typeof FRZ !== 'undefined' && (FRZ.on || FRZ.srcs.length)) freezeStop();
   if (A.riser) { try { A.riser.src.stop(now + 0.1); } catch (e) { } A.riser = null; }
   S.padMute = []; S.padSet = []; S.padGate = null; S.padPitch = 0; S.padFills = new Set(); S.autoOff = [];
-  G.held.clear(); G.act.clear();
+  G.held.clear(); G.act.clear(); G.auto.clear(); S.dirty = true;
 }
 function hold(p, now) { p.cancelScheduledValues(now); p.setValueAtTime(p.value, now); }
 const crushCurve = bits => { const n = 4096, c = new Float32Array(n), q = Math.pow(2, Math.max(1, bits) - 1); for (let i = 0; i < n; i++) { const x = i / (n - 1) * 2 - 1; c[i] = Math.round(x * q) / q; } return c; };
@@ -3526,6 +3531,7 @@ function padStart(key, pad, c, seq) {
   if (G.act.has(key)) padStop(key, c, seq);
   const st = { undo: [] };
   G.act.set(key, st);
+  if (seq) { const g = key.slice(5); atTime(now, () => { G.auto.add(g); S.dirty = true; }); st.undo.push(n => atTime(n, () => { G.auto.delete(g); S.dirty = true; })); }
   for (const a of pad.acts) {
     switch (a.op) {
       case 'lp': padSweep(A.lp.frequency, a.v, 20000, now, dur); st.undo.push(n => { hold(A.lp.frequency, n); A.lp.frequency.setTargetAtTime(20000, n, 0.12); }); break;
@@ -6151,7 +6157,7 @@ function evaluate(mode = 'bar', opts = {}) {
   const r = compile(srcEl.value);
   S.errors = r.errors; S.lineNames = r.lineNames;
   S.progGen = r.progGen;
-  { const sig = [...r.pads.values()].map(p => p.name + p.key + p.latch + p.src).join('|'); S.pads = r.pads; if (sig !== padSig) { padSig = sig; renderPads(); } }
+  { const sig = [...r.pads.values()].map(p => p.name + p.key + p.latch + p.src + r.autos.has(p.name)).join('|'); S.pads = r.pads; S.autoNames = new Set(r.autos.keys()); if (sig !== padSig) { padSig = sig; renderPads(); } }
   // a broken line keeps playing its last good version
   const entries = r.order.map(n => [r.tracks.get(n).line, n, r.tracks.get(n)]);
   for (const [line, err] of r.errors) {
@@ -6649,7 +6655,8 @@ function renderPads() {
   padsEl.innerHTML = list.map(p => {
     const k = p.builtin && PAD_I18N[p.name];
     const first = p.acts.find(a => a.op !== 'in');
-    return `<button class="pad" data-g="${esc(p.name)}" data-cat="${first ? PAD_CAT[first.op] : 'tone'}" title="fx ${esc(p.name)} | ${esc(p.src)}"><i class="lamp"></i>${p.key ? `<kbd>${esc(p.key)}</kbd>` : ''}${p.latch ? `<em class="latch">${esc(t('latch'))}</em>` : ''}<b>${esc(k ? t(k) : p.name)}</b><span>${esc(k ? t(k + 'D') : p.src)}</span></button>`;
+    const auto = S.autoNames && S.autoNames.has(p.name);
+    return `<button class="pad" data-g="${esc(p.name)}" data-cat="${first ? PAD_CAT[first.op] : 'tone'}" title="${auto ? esc(t('padAuto')) + '\n' : ''}fx ${esc(p.name)} | ${esc(p.src)}"><i class="lamp"></i>${auto ? '<em class="autob">auto</em>' : ''}${p.key ? `<kbd>${esc(p.key)}</kbd>` : ''}${p.latch ? `<em class="latch">${esc(t('latch'))}</em>` : ''}<b>${esc(k ? t(k) : p.name)}</b><span>${esc(k ? t(k + 'D') : p.src)}</span></button>`;
   }).join('');
   S.dirty = true;
 }
@@ -7084,7 +7091,7 @@ function frame() {
     { const on = WK.dsp === 'wasm'; $('#dspTag').classList.toggle('on', on); $('#build').title = on ? 'Synth voices run in Rust compiled to WebAssembly' : 'build'; }
     $('#keyo').textContent = S.keySrc;
     renderLoops(); syncGpu();
-    document.querySelectorAll('.pad').forEach(p => p.classList.toggle('on', G.held.has(p.dataset.g)));
+    document.querySelectorAll('.pad').forEach(p => p.classList.toggle('on', G.held.has(p.dataset.g) || G.auto.has(p.dataset.g)));
   }
   // scope
   const w = scope.clientWidth * devicePixelRatio, h = scope.clientHeight * devicePixelRatio;
