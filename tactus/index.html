@@ -82,7 +82,13 @@ html[lang=ko] body { word-break: keep-all; }
 
 /* the code screen */
 .codewrap { position: relative; }
-#field { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+#scene { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; transition: opacity .6s; }
+.code { position: relative; z-index: 1; }
+.scnbar { display: flex; align-items: center; gap: 4px; padding: 6px 10px; border-top: 1px solid var(--scr-line); background: var(--scr-2); font: 500 11px/1 var(--f-code); color: var(--scr-faint); }
+.scnbar span { margin-right: 6px; }
+.scnbar button { font: inherit; color: var(--scr-dim); background: none; border: 1px solid transparent; border-radius: 6px; padding: 4px 8px; cursor: pointer; }
+.scnbar button:hover { color: var(--scr-fg); }
+.scnbar button[aria-pressed="true"] { color: var(--scr-fg); border-color: var(--scr-line); background: var(--scr); }
 .screen { background: var(--scr); border: 1px solid var(--scr-line); border-radius: 16px; overflow: hidden; box-shadow: 0 0 0 5px color-mix(in srgb, var(--body) 55%, var(--panel)), 0 0 0 6px var(--line), 0 30px 60px -30px rgba(0,0,0,.6); min-width: 0; }
 .scr-top { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 1px solid var(--scr-line); color: var(--scr-dim); font: 500 12px/1 var(--f-code); }
 .scr-top .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--scr-line); }
@@ -243,7 +249,8 @@ html[lang=ko] body { word-break: keep-all; }
       </div>
       <div class="screen">
         <div class="scr-top"><i class="dot" id="dot"></i><span id="fname">trance</span><span class="sp"></span><span><output id="bpm">138</output> BPM</span><span>BAR <output id="bar">1.1</output></span></div>
-        <div class="codewrap"><pre class="code" id="code"></pre><canvas id="field" aria-hidden="true" hidden></canvas></div>
+        <div class="codewrap"><pre class="code" id="code"></pre><canvas id="scene" aria-hidden="true" hidden></canvas></div>
+        <div class="scnbar" id="scnbar" role="group" aria-label="WebGPU backdrop" hidden><span>WebGPU</span><button type="button" data-v="terrain" aria-pressed="true">terrain</button><button type="button" data-v="contour">contour</button><button type="button" data-v="dots">dots</button><button type="button" data-v="demo">demo</button><button type="button" data-v="off" data-ko="끄기" data-en="off">끄기</button></div>
         <canvas id="spec" aria-hidden="true"></canvas>
       </div>
     </div>
@@ -319,7 +326,7 @@ html[lang=ko] body { word-break: keep-all; }
         <li><b data-ko="연주와 작곡" data-en="Perform and compose">연주와 작곡</b><span data-ko="패드를 코드로, 시드 생성기와 자동 작곡, 새 디자인" data-en="Pads as code, seeded generators and one-click composing, a new design">패드를 코드로, 시드 생성기와 자동 작곡, 새 디자인</span></li>
         <li><b data-ko="이름과 이 페이지" data-en="A name and this page">이름과 이 페이지</b><span data-ko="Tactus라는 이름과 지금 보고 있는 소개 페이지" data-en="The name Tactus and the page you are reading">Tactus라는 이름과 지금 보고 있는 소개 페이지</span></li>
         <li><b data-ko="Rust DSP" data-en="Rust DSP">Rust DSP</b><span data-ko="오디오 스레드의 보이스를 Rust로 옮겨 WebAssembly로 실행" data-en="The audio-thread voices rewritten in Rust and run as WebAssembly">오디오 스레드의 보이스를 Rust로 옮겨 WebAssembly로 실행</span></li>
-        <li><b data-ko="WebGPU" data-en="WebGPU">WebGPU</b><span data-ko="수천 개 사인파 악기, 스펙트럴 프리즈, 131,072개 파티클" data-en="Instruments of thousands of sines, a spectral freeze, 131,072 particles">수천 개 사인파 악기, 스펙트럴 프리즈, 131,072개 파티클</span></li>
+        <li><b data-ko="WebGPU" data-en="WebGPU">WebGPU</b><span data-ko="수천 개 사인파 악기, 스펙트럴 프리즈, 소리에 반응하는 셰이더 배경" data-en="Instruments of thousands of sines, a spectral freeze, shader backdrops that follow the sound">수천 개 사인파 악기, 스펙트럴 프리즈, 소리에 반응하는 셰이더 배경</span></li>
     </ol>
   </section>
 
@@ -339,7 +346,7 @@ html[lang=ko] body { word-break: keep-all; }
     <ul class="glist">
       <li class="gi done"><span class="st" data-ko="구현함" data-en="Built">구현함</span><b data-ko="수천 개 사인파로 된 악기" data-en="Instruments made of thousands of sines">수천 개 사인파로 된 악기</b><p data-ko="swarm은 음표 하나에 사인파 1,920개(40개 목소리 × 48배음), choir는 포먼트를 입힌 1,056개, plate는 금속판의 고유 진동 수백~1,500개를 각자 다른 감쇠로 더해요. JavaScript로는 음표 하나에 수십 초가 걸리는 양이라 실시간으로는 불가능했어요." data-en="swarm sums 1,920 sines per note (40 voices × 48 harmonics), choir 1,056 shaped by vowel formants, plate several hundred to 1,500 metal-plate modes, each with its own decay. In JavaScript one such note takes tens of seconds, so this was out of reach in real time.">swarm은 음표 하나에 사인파 1,920개(40개 목소리 × 48배음), choir는 포먼트를 입힌 1,056개, plate는 금속판의 고유 진동 수백~1,500개를 각자 다른 감쇠로 더해요. JavaScript로는 음표 하나에 수십 초가 걸리는 양이라 실시간으로는 불가능했어요.</p></li>
       <li class="gi done"><span class="st" data-ko="구현함" data-en="Built">구현함</span><b data-ko="스펙트럴 프리즈" data-en="Spectral freeze">스펙트럴 프리즈</b><p data-ko="P를 누르면 지금 믹스의 FFT에서 가장 센 2,048개 성분을 뽑아 무작위 위상의 사인파로 다시 합성해, 끝없이 이어지는 화음으로 붙잡아요. 드럼은 그대로 흘러가요." data-en="Hold P and the 2,048 strongest components of the mix's FFT are resynthesized as sines with random phases, held as an endless chord while the drums keep going.">P를 누르면 지금 믹스의 FFT에서 가장 센 2,048개 성분을 뽑아 무작위 위상의 사인파로 다시 합성해, 끝없이 이어지는 화음으로 붙잡아요. 드럼은 그대로 흘러가요.</p></li>
-      <li class="gi done"><span class="st" data-ko="구현함" data-en="Built">구현함</span><b data-ko="131,072개 파티클" data-en="131,072 particles">131,072개 파티클</b><p data-ko="위 데모 화면에서처럼, 트랙이 칠 때마다 그 코드 줄에서 트랙 색 입자가 튀어나와 소리의 저음·중음·고음에 따라 흐름이 바뀌어요. 매 프레임 GPU 컴퓨트 셰이더가 전부 움직여요." data-en="As in the demo screen above, every time a track plays its code line throws particles in its colour, and the flow follows the lows, mids and highs. A compute shader moves all of them every frame.">위 데모 화면에서처럼, 트랙이 칠 때마다 그 코드 줄에서 트랙 색 입자가 튀어나와 소리의 저음·중음·고음에 따라 흐름이 바뀌어요. 매 프레임 GPU 컴퓨트 셰이더가 전부 움직여요.</p></li>
+      <li class="gi done"><span class="st" data-ko="구현함" data-en="Built">구현함</span><b data-ko="코드 뒤의 셰이더 배경" data-en="Shader backdrops behind the code">코드 뒤의 셰이더 배경</b><p data-ko="최근 5초의 스펙트럼을 GPU 텍스처에 쌓아 두고 매 프레임 그려요. terrain은 그 스펙트럼을 겹겹의 산 능선으로, contour는 등고선 지도로, dots는 LED 격자로 보여 주고, demo는 90년대 데모신처럼 터널과 사인 스크롤러를 띄워요. 트랙이 칠 때마다 그 코드 줄에서 물결이 퍼져요. 위 데모 화면 아래에서 바꿔 볼 수 있어요." data-en="The last five seconds of spectrum live in a GPU texture and are drawn every frame. terrain turns it into layered ridgelines, contour into a topographic map, dots into an LED grid, and demo raises a tunnel and a sine scroller in the spirit of the 90s demoscene. Each time a track plays, a ripple spreads from its code line. Switch between them under the demo screen above.">최근 5초의 스펙트럼을 GPU 텍스처에 쌓아 두고 매 프레임 그려요. terrain은 그 스펙트럼을 겹겹의 산 능선으로, contour는 등고선 지도로, dots는 LED 격자로 보여 주고, demo는 90년대 데모신처럼 터널과 사인 스크롤러를 띄워요. 트랙이 칠 때마다 그 코드 줄에서 물결이 퍼져요. 위 데모 화면 아래에서 바꿔 볼 수 있어요.</p></li>
       <li class="gi next"><span class="st" data-ko="다음 후보" data-en="Next">다음 후보</span><b data-ko="모달 리버브" data-en="Modal reverb">모달 리버브</b><p data-ko="공간의 울림을 수천 개 공진 모드로 표현하는 방식. CPU·GPU·FPGA를 비교한 2025년 연구가 있어요." data-en="A room's response as thousands of resonant modes. A 2025 study compares CPU, GPU and FPGA for it.">공간의 울림을 수천 개 공진 모드로 표현하는 방식. CPU·GPU·FPGA를 비교한 2025년 연구가 있어요.</p></li>
       <li class="gi next"><span class="st" data-ko="다음 후보" data-en="Next">다음 후보</span><b data-ko="파동 방정식 물리 모델" data-en="Wave-equation physical models">파동 방정식 물리 모델</b><p data-ko="북 가죽이나 심벌을 수만 개 격자점의 파동 방정식으로 직접 시뮬레이션. GPU Audio와 Audio Modeling이 이 방향으로 협업하고 있어요." data-en="Drum heads and cymbals simulated directly as wave equations on tens of thousands of grid points. GPU Audio and Audio Modeling are working on exactly this.">북 가죽이나 심벌을 수만 개 격자점의 파동 방정식으로 직접 시뮬레이션. GPU Audio와 Audio Modeling이 이 방향으로 협업하고 있어요.</p></li>
       <li class="gi next"><span class="st" data-ko="다음 후보" data-en="Next">다음 후보</span><b data-ko="브라우저 안 신경망 오디오" data-en="Neural audio in the browser">브라우저 안 신경망 오디오</b><p data-ko="불러온 루프에서 드럼만 분리해 chop하기, DDSP·RAVE 같은 음색 변환. 모델 추론을 WebGPU로." data-en="Split the drums out of a loaded loop to chop them, or transfer timbre with DDSP or RAVE, running the model on WebGPU.">불러온 루프에서 드럼만 분리해 chop하기, DDSP·RAVE 같은 음색 변환. 모델 추론을 WebGPU로.</p></li>
@@ -509,12 +516,12 @@ const I18N = {
     op_fill: '다음 마디로 드럼 필인', op_impact: '다음 박에 임팩트', op_swell: '다음 마디로 리버스 스웰', op_down: '다운리프터', op_in: '램프 길이 (마디)',
     p_seed: '이 트랙만 다른 시드로', p_dens: '생성 밀도 0–1', p_evolve: 'N마디마다 조금씩 변이 (0 = 고정)', p_bars: '프레이즈 길이 (마디)', ac_seed: '곡 전체 시드', ac_fx: '연주 패드 만들기',
     // v3: WebGPU
-    vizField: '파티클', vizFieldTitle: '트랙이 칠 때마다 그 코드 줄에서 입자가 튀어나와요 (WebGPU, 131,072개)', fieldOff: '파티클은 WebGPU가 필요해요: {e}',
+    vizTerrain: '지형', vizContour: '등고선', vizDots: '도트', vizDemo: '데모', vizGpuTitle: 'WebGPU로 그리는 배경. 트랙이 칠 때마다 그 코드 줄에서 반응해요', sceneOff: '이 배경은 WebGPU가 필요해요: {e}',
     gFreeze: '프리즈', gFreezeD: '지금 소리를 GPU로 얼려 화음으로 붙잡고 드럼만 남겨요', gRep8: '비트 리피트 1/8', gRep8D: '8분음표 반복', gUp: '옥타브 업', gUpD: '멜로디를 한 옥타브 올려요', gDrop: '드롭', gDropD: '다음 박에 임팩트',
     gpuIntro: 'GPU가 하는 일: 오디오 스레드에서는 WebGPU를 쓸 수 없어서, GPU가 음표를 미리 통째로 렌더링해 두면 스케줄러가 정확한 시간에 틀어요.',
     gpuInst: '음표 하나에 사인파 1,000~1,900개(swarm·choir) 또는 고유 진동 수백 개(plate)를 더하는 악기. 준비되기 전에는 CPU 소리가 대신해요',
     gpuFreeze: '지금 믹스의 스펙트럼에서 가장 센 2,048개 성분을 뽑아 사인파로 다시 합성해 붙잡아요. GPU가 없으면 마지막 0.7초를 반복',
-    gpuField: '131,072개 입자를 GPU에서 매 프레임 움직여요. 트랙이 치면 그 줄에서 그 트랙 색으로 튀어나와요',
+    gpuScenesT: '지형 · 등고선 · 도트 · 데모', gpuScenes: '코드 뒤 배경을 GPU 셰이더로 그려요. 최근 5초의 스펙트럼으로 만든 원근 능선, 지형도 같은 등고선, 트랙이 칠 때 그 줄에서 번지는 LED 점, 데모신 스타일 터널',
     gpuBench: '이 컴퓨터에서 벤치마크', gpuBenchRun: '측정 중…', gpuOn: '켜짐', gpuLoading: '여는 중…', gpuOffShort: '없음 (CPU로 대체)', gpuIdle: '재생하면 켜져요',
     gpuBenchRes: '사인파 {p}개, {s}초짜리 음 하나: GPU {g} · JavaScript {c} (일부를 재서 환산) → {x} 빨라요',
     gpuBenchCpu: '사인파 {p}개, {s}초짜리 음 하나: JavaScript {c}. GPU를 쓸 수 없어요: {e}',
@@ -657,12 +664,12 @@ const I18N = {
     op_fill: 'drum fill into the next bar', op_impact: 'impact on the next beat', op_swell: 'reverse swell into the next bar', op_down: 'downlifter', op_in: 'ramp length in bars',
     p_seed: 'a different seed for this track', p_dens: 'generator density 0–1', p_evolve: 'mutate a little every N bars (0 = fixed)', p_bars: 'phrase length in bars', ac_seed: 'seed for the whole piece', ac_fx: 'make a performance pad',
     // v3: WebGPU
-    vizField: 'Particles', vizFieldTitle: 'Each code line throws particles when its track plays (WebGPU, 131,072 particles)', fieldOff: 'Particles need WebGPU: {e}',
+    vizTerrain: 'Terrain', vizContour: 'Contour', vizDots: 'Dots', vizDemo: 'Demo', vizGpuTitle: 'Drawn with WebGPU. Reacts on each track\'s code line when it plays', sceneOff: 'This backdrop needs WebGPU: {e}',
     gFreeze: 'Freeze', gFreezeD: 'Freezes the mix into a held chord on the GPU and leaves only drums', gRep8: 'Beat repeat 1/8', gRep8D: 'Eighth-note repeat', gUp: 'Octave up', gUpD: 'Raises melodies an octave', gDrop: 'Drop', gDropD: 'Impact on the next beat',
     gpuIntro: 'What the GPU does: WebGPU is not available on the audio thread, so the GPU renders whole notes ahead of time and the scheduler plays them at the exact moment.',
     gpuInst: 'Instruments that sum 1,000–1,900 sines per note (swarm, choir) or hundreds of resonant modes (plate). A CPU voice stands in until a note is ready',
     gpuFreeze: 'Takes the 2,048 strongest components of the mix right now and resynthesizes them as sines to hold. Without a GPU it loops the last 0.7 s',
-    gpuField: 'Moves 131,072 particles on the GPU every frame. When a track plays, its line throws them in its colour',
+    gpuScenesT: 'Terrain · Contour · Dots · Demo', gpuScenes: 'Backdrops drawn by GPU shaders: perspective ridgelines of the last five seconds of spectrum, a topographic map, LED dots rippling out from a track\'s line when it plays, and a demoscene tunnel',
     gpuBench: 'Benchmark this computer', gpuBenchRun: 'Measuring…', gpuOn: 'on', gpuLoading: 'opening…', gpuOffShort: 'not available (CPU fallback)', gpuIdle: 'starts when you press play',
     gpuBenchRes: 'One {s} s note of {p} sines: GPU {g} · JavaScript {c} (scaled from a slice) → {x} faster',
     gpuBenchCpu: 'One {s} s note of {p} sines: JavaScript {c}. No GPU: {e}',
@@ -1738,7 +1745,7 @@ const TRACK_COLORS = ['#ff9a4d', '#a48bff', '#5fd6a4', '#6fb6ff', '#ff6b8e', '#f
 //   plate  a struck metal plate: every inharmonic mode split into six beating neighbours, each with its own decay
 //          (a few hundred partials in the middle register, more for low notes)
 //   fx ... | freeze   spectral freeze: the live mix's spectrum resynthesized as ~2,000 sines
-// and it draws the "field" visualization: 131,072 particles thrown from the code lines of the tracks.
+// and it draws four backdrops behind the code (terrain, contour, dots, demo) as full-screen shaders.
 // Without WebGPU every part falls back: the GPU instruments to CPU voices, freeze to a looped grain.
 
 const GPU = { state: 'idle', dev: null, name: '', err: '', synth: null, cache: new Map(), bytes: 0, jobs: new Map(), chain: Promise.resolve(), renders: 0, lastMs: 0 };
@@ -2007,138 +2014,282 @@ function freezeStop() {
   setTimeout(() => { try { g.disconnect(); } catch (e) { } }, 900);
 }
 
-// ---------- field: 131,072 particles thrown from the code lines ----------
-const FIELD_N = 131072, FIELD_MAXE = 24;
-const FIELD_COMMON = `
-struct U { dt: f32, time: f32, aspect: f32, ne: u32, bass: f32, mid: f32, high: f32, size: f32, em: array<vec4f, 24> };
-struct Pt { pos: vec2f, vel: vec2f, life: f32, maxl: f32, col: f32, seed: f32 };
-@group(0) @binding(0) var<uniform> u: U;`;
-const FIELD_COMP = FIELD_COMMON + `
-@group(0) @binding(1) var<storage, read_write> pts: array<Pt>;
-fn hash(x: u32) -> f32 { var h = x * 747796405u + 2891336453u; h = ((h >> ((h >> 28u) + 4u)) ^ h) * 277803737u; h = (h >> 22u) ^ h; return f32(h) / 4294967296.0; }
-// a divergence-free swirl: the curl of a moving stream function, so particles circulate instead of clumping
-fn flow(p: vec2f, t: f32) -> vec2f {
-  let A = p.x * 3.1 + t * 0.7; let B = p.y * 2.3 - t * 0.5; let C = p.x * 1.7 - t * 0.3; let D = p.y * 4.1 + t * 0.9;
-  let dy = -2.3 * sin(A) * sin(B) + 0.5 * 4.1 * cos(C) * cos(D);
-  let dx = 3.1 * cos(A) * cos(B) - 0.5 * 1.7 * sin(C) * sin(D);
-  return vec2f(dy, -dx) * 0.25;
-}
-@compute @workgroup_size(256)
-fn step(@builtin(global_invocation_id) id: vec3u) {
-  let i = id.x;
-  if (i >= arrayLength(&pts)) { return; }
-  var p = pts[i];
-  let seed = u32(fract(u.time * 0.137) * 1000003.0) * 1664525u + i * 22695477u;
-  p.life -= u.dt;
-  if (p.life <= 0.0) {
-    var tot = 0.0;
-    for (var k = 0u; k < u.ne; k++) { tot += u.em[k].y; }
-    if (hash(seed) < tot * 0.08 * u.dt) {
-      var pick = hash(seed + 7u) * tot;
-      var e = u.em[0];
-      for (var k = 0u; k < u.ne; k++) { e = u.em[k]; pick -= e.y; if (pick <= 0.0) { break; } }
-      p.pos = vec2f(e.w + hash(seed + 11u) * 0.05, e.x + (hash(seed + 13u) - 0.5) * 0.012);
-      let sp = (0.18 + hash(seed + 17u) * 0.55) * (0.6 + min(e.y, 2.0));
-      let an = (hash(seed + 19u) - 0.5) * 0.9;
-      p.vel = vec2f(cos(an) * sp, sin(an) * sp * 0.6);
-      p.maxl = 1.4 + hash(seed + 23u) * 2.6;
-      p.life = p.maxl;
-      p.col = e.z;
-    } else { p.life = 0.0; pts[i] = p; return; }
-  }
-  let f = flow(p.pos * vec2f(u.aspect, 1.0) * 1.6, u.time * (0.35 + u.mid * 1.5));
-  p.vel += f * (0.25 + u.bass * 2.4) * u.dt;
-  p.vel *= 1.0 - (0.9 - u.high * 0.4) * u.dt;
-  p.pos += p.vel * u.dt * vec2f(1.0 / u.aspect, 1.0);
-  if (p.pos.x > 1.05 || p.pos.y < -0.05 || p.pos.y > 1.05) { p.life = 0.0; }
-  pts[i] = p;
-}`;
-const FIELD_REND = FIELD_COMMON + `
-@group(0) @binding(1) var<storage, read> pts: array<Pt>;
-@group(0) @binding(2) var<storage, read> pal: array<vec4f, 10>;
-struct VO { @builtin(position) pos: vec4f, @location(0) col: vec4f, @location(1) uv: vec2f };
-@vertex
-fn vs(@builtin(vertex_index) vi: u32, @builtin(instance_index) ii: u32) -> VO {
-  let p = pts[ii];
+// ---------- scenes: GPU backdrops behind the code ----------
+// Each scene is one full-screen fragment shader fed by the same inputs: a spectrogram history kept as a
+// texture (64 log-spaced bands x 160 rows, about 5 s), the transport position, the kick, and every track's
+// code line with the time since it last played. Quiet by design: thin lines in the screen's ink colour,
+// with the track colours only where something just happened.
+//   terrain  ridgelines of the recent spectrum in perspective, nearest at the bottom
+//   contour  a topographic map: spectrogram + slow drift + ripples from track hits, index line every fifth
+//   dots     an LED matrix: hits send rings out from their code line, the spectrum lights columns
+//   demo     a demoscene tunnel with copper bars and a sine scroller
+const SCENE_BANDS = 64, SCENE_ROWS = 160, SCENE_MAXE = 24, SCENE_MODES = ['terrain', 'contour', 'dots', 'demo'];
+const SCENE_WGSL = `
+struct U {
+  res: vec2f, time: f32, beat: f32,
+  bass: f32, mid: f32, high: f32, kick: f32,
+  ne: u32, head: f32, rows: f32, dpr: f32,
+  ink: vec4f, accent: vec4f,
+  em: array<vec4f, 24>,
+  pal: array<vec4f, 10>,
+};
+@group(0) @binding(0) var<uniform> u: U;
+@group(0) @binding(1) var spec: texture_2d<f32>;
+@group(0) @binding(2) var samp: sampler;
+@group(0) @binding(3) var txt: texture_2d<f32>;
+struct VO { @builtin(position) p: vec4f, @location(0) uv: vec2f };
+@vertex fn vs(@builtin(vertex_index) i: u32) -> VO {
   var o: VO;
-  let corner = vec2f(f32(vi & 1u), f32(vi >> 1u)) * 2.0 - 1.0;
-  let k = clamp(p.life / max(p.maxl, 0.001), 0.0, 1.0);
-  let sz = u.size * (0.6 + k * 1.4);
-  let c = vec2f(p.pos.x * 2.0 - 1.0, 1.0 - p.pos.y * 2.0);
-  o.pos = vec4f(c + corner * vec2f(sz / u.aspect, sz), 0.0, 1.0);
-  if (p.life <= 0.0) { o.pos = vec4f(2.0, 2.0, 0.0, 1.0); }
-  let col = pal[u32(p.col) % 10u];
-  let a = pow(k, 1.6) * 0.22;
-  o.col = vec4f(col.rgb * a, a);
-  o.uv = corner;
+  let x = f32((i << 1u) & 2u); let y = f32(i & 2u);
+  o.p = vec4f(x * 2.0 - 1.0, 1.0 - y * 2.0, 0.0, 1.0); o.uv = vec2f(x, y);
   return o;
 }
-@fragment
-fn fs(i: VO) -> @location(0) vec4f {
-  let d = dot(i.uv, i.uv);
-  if (d > 1.0) { discard; }
-  return i.col * (1.0 - d);
-}`;
-const FIELD = { ready: false, failed: false, hits: new Map(), lastT: 0 };
-// The field gets its own GPU device, so a problem with the canvas can never take the audio renders down with it.
-// offscreen: draw into a texture instead of the canvas (used by tests and headless browsers)
-async function fieldInit(canvas, offscreen) {
-  if (FIELD.ready || FIELD.failed || FIELD.loading) return;
-  FIELD.loading = true;
-  if (!(await gpuInit())) { FIELD.failed = true; FIELD.loading = false; return; }
-  try {
-    const ad = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' });   // an adapter makes only one device
-    if (!ad) throw new Error('no GPU adapter for the field');
-    FIELD.adapter = ad;
-    const d = await ad.requestDevice();
-    d.lost.then(() => { FIELD.ready = false; FIELD.failed = true; });
-    let ctx = null, fmt = 'rgba8unorm';
-    if (offscreen) FIELD.offscreen = { w: offscreen.w, h: offscreen.h, tex: d.createTexture({ size: [offscreen.w, offscreen.h], format: fmt, usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC }) };
-    else { ctx = canvas.getContext('webgpu'); fmt = navigator.gpu.getPreferredCanvasFormat(); ctx.configure({ device: d, format: fmt, alphaMode: 'premultiplied' }); }
-    FIELD.dev = d;
-    const pts = d.createBuffer({ size: FIELD_N * 32, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC });
-    const uni = d.createBuffer({ size: 32 + FIELD_MAXE * 16, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
-    const pal = d.createBuffer({ size: 160, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST });
-    const pd = new Float32Array(40);
-    TRACK_COLORS.forEach((h, k) => { const v = parseInt(h.slice(1), 16); pd.set([(v >> 16 & 255) / 255, (v >> 8 & 255) / 255, (v & 255) / 255, 1], k * 4); });
-    d.queue.writeBuffer(pal, 0, pd);
-    const comp = d.createComputePipeline({ layout: 'auto', compute: { module: d.createShaderModule({ code: FIELD_COMP }), entryPoint: 'step' } });
-    const rm = d.createShaderModule({ code: FIELD_REND });
-    const blend = { color: { srcFactor: 'one', dstFactor: 'one', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one', operation: 'add' } };
-    const rend = d.createRenderPipeline({ layout: 'auto', vertex: { module: rm, entryPoint: 'vs' }, fragment: { module: rm, entryPoint: 'fs', targets: [{ format: fmt, blend }] }, primitive: { topology: 'triangle-strip' } });
-    Object.assign(FIELD, { ctx, uni, pts, comp, rend, canvas, fmt,
-      cbg: d.createBindGroup({ layout: comp.getBindGroupLayout(0), entries: [{ binding: 0, resource: { buffer: uni } }, { binding: 1, resource: { buffer: pts } }] }),
-      rbg: d.createBindGroup({ layout: rend.getBindGroupLayout(0), entries: [{ binding: 0, resource: { buffer: uni } }, { binding: 1, resource: { buffer: pts } }, { binding: 2, resource: { buffer: pal } }] }),
-      ready: true });
-  } catch (e) { FIELD.failed = true; GPU.err = String(e.message || e); }
-  FIELD.loading = false;
+// band in [0,1] (low to high), age in [0,1] (now to ~5 s ago)
+fn specAt(band: f32, age: f32) -> f32 {
+  let v = (u.head - clamp(age, 0.0, 1.0) * (u.rows - 2.0) + 0.5) / u.rows;
+  return textureSampleLevel(spec, samp, vec2f(clamp(band, 0.0, 1.0), v), 0.0).r;
 }
-// a track hit on a code line: that line throws particles in its colour
-function fieldHit(line) { FIELD.hits.set(line, Math.min(2, (FIELD.hits.get(line) || 0) + 1)); }
-let fieldBins = null;
-function fieldFrame(now, emitters) {
-  if (!FIELD.ready) return;
-  const cv = FIELD.canvas, dpr = devicePixelRatio || 1, off = FIELD.offscreen;
+fn premul(c: vec3f, a: f32) -> vec4f { return vec4f(c * a, a); }
+
+// one ridgeline: row k of R, at screen x
+fn ridge(x: f32, kf: f32, R: f32) -> f32 {
+  let z = 1.0 + kf * 0.21;
+  let wx = (x - 0.5) * z * 1.1;
+  let m = abs(wx) * 2.0;
+  var h = 0.0;
+  if (m < 1.0) {
+    let e = (specAt(m * 0.85 - 0.012, kf / R) + specAt(m * 0.85, kf / R) * 2.0 + specAt(m * 0.85 + 0.012, kf / R)) * 0.25;
+    h = e * e * (1.0 - m * m * m * m);
+  }
+  h += 0.012 * sin(wx * 23.0 + kf * 1.3 + u.time * 0.25) * (1.0 - min(m, 1.0));
+  return 0.36 + 0.6 / z - h * 0.45 / z;
+}
+@fragment fn terrain(i: VO) -> @location(0) vec4f {
+  let uv = i.uv;
+  let R = 46.0;
+  let px = 1.0 / u.res.x;
+  for (var k = 0; k < 46; k++) {
+    let kf = f32(k);
+    let y = ridge(uv.x, kf, R);
+    let d = uv.y - y;
+    // distance to the line in pixels, measured across the slope so steep flanks stay unbroken
+    let slope = (ridge(uv.x + px, kf, R) - y) * u.res.y;
+    let dpx = abs(d) * u.res.y / sqrt(1.0 + slope * slope);
+    let w = u.dpr * (0.55 + 0.35 / (1.0 + kf * 0.21));
+    if (dpx < w + 1.0) {
+      let fade = pow(1.0 - kf / R, 1.4);
+      let a = (1.0 - smoothstep(w - 0.5, w + 1.0, dpx)) * (0.1 + 0.42 * fade);
+      let c = mix(u.ink.rgb, u.accent.rgb, u.kick * 0.7 * max(0.0, 1.0 - kf / 4.0));
+      return premul(c, a);
+    }
+    if (d > 0.0) { break; }
+  }
+  return vec4f(0.0);
+}
+
+fn height(p: vec2f, asp: f32) -> f32 {
+  // the spectrogram, blurred across time and pitch so it bends the map instead of striping it
+  let bx = pow(p.x, 1.3); let ay = 1.0 - p.y;
+  var sp = 0.0;
+  for (var j = -2; j <= 2; j++) { for (var q = -1; q <= 1; q++) { sp += specAt(bx + f32(q) * 0.05, ay + f32(j) * 0.06); } }
+  var h = sp / 15.0 * 0.5;
+  h += 0.32 * sin(p.x * 4.3 + u.time * 0.045) * cos(p.y * 3.7 - u.time * 0.035);
+  h += 0.18 * sin((p.x * 1.3 + p.y) * 7.1 + u.time * 0.06) + 0.1 * cos(p.x * 11.0 - p.y * 5.0 - u.time * 0.05);
+  for (var k = 0u; k < u.ne; k++) {
+    let e = u.em[k];
+    let d = distance(vec2f(p.x * asp, p.y), vec2f(e.x * asp, e.y));
+    let age = e.w;
+    h += 0.5 * exp(-age * 1.1) * exp(-pow((d - age * 0.3) * 9.0, 2.0));
+  }
+  return h;
+}
+@fragment fn contour(i: VO) -> @location(0) vec4f {
+  let asp = u.res.x / u.res.y;
+  let h = height(i.uv, asp) * 7.0;
+  let w = max(fwidth(h), 1e-4);
+  let f = abs(fract(h + 0.5) - 0.5) / (w * u.dpr);
+  var a = (1.0 - min(f, 1.0)) * 0.2;
+  let h5 = h / 5.0;
+  let f5 = abs(fract(h5 + 0.5) - 0.5) / (max(fwidth(h5), 1e-4) * u.dpr * 1.4);
+  a = max(a, (1.0 - min(f5, 1.0)) * 0.42);
+  return premul(u.ink.rgb, a);
+}
+
+@fragment fn dots(i: VO) -> @location(0) vec4f {
+  let asp = u.res.x / u.res.y;
+  let cell = 15.0 * u.dpr;
+  let px = i.uv * u.res;
+  let c = (floor(px / cell) + 0.5) * cell;
+  let d = length(px - c);
+  let q = c / u.res;
+  var b = 0.085;
+  var col = u.ink.rgb;
+  let lv = specAt(q.x, 0.0);
+  let top = lv * 0.55;
+  let fromBottom = 1.0 - q.y;
+  if (fromBottom < top) { b += 0.34 * (1.0 - fromBottom / max(top, 0.001) * 0.6); }
+  // the peak cell of each column picks up the accent, like an LED meter
+  let ch = cell / u.res.y;
+  if (top > ch && abs(fromBottom - top) < ch * 0.5) { b += 0.3; col = mix(col, u.accent.rgb, 0.7); }
+  for (var k = 0u; k < u.ne; k++) {
+    let e = u.em[k];
+    let dd = distance(vec2f(q.x * asp, q.y), vec2f(e.x * asp, e.y));
+    let ring = exp(-pow((dd - e.w * 0.45) * 11.0, 2.0)) * exp(-e.w * 1.5);
+    if (ring > 0.02) { col = mix(col, u.pal[u32(e.z) % 10u].rgb, min(1.0, ring * 1.5)); }
+    b += ring * 1.0;
+  }
+  let r = 1.6 * u.dpr * (0.85 + min(b, 1.0) * 0.5);
+  let a = (1.0 - smoothstep(r - 0.8 * u.dpr, r + 0.4 * u.dpr, d)) * min(b, 0.9);
+  return premul(col, a);
+}
+
+fn rot(a: f32) -> mat2x2f { let c = cos(a); let s = sin(a); return mat2x2f(c, s, -s, c); }
+fn tunnel(p: vec3f) -> f32 {
+  let r = 1.5 + 0.18 * sin(p.z * 0.7 + u.time * 0.6) + u.kick * 0.12;
+  var q = p;
+  let t = rot(p.z * 0.12 + u.time * 0.1) * q.xy; q = vec3f(t, q.z);
+  let ang = atan2(q.y, q.x);
+  let wall = r - length(q.xy) + 0.05 * sin(ang * 8.0 + p.z * 1.5);
+  let ringz = (fract(p.z * 0.25) - 0.5) * 4.0;
+  let ring = length(vec2f(length(q.xy) - r * 0.92, ringz)) - 0.05;
+  return min(wall, ring);
+}
+@fragment fn demo(i: VO) -> @location(0) vec4f {
+  let asp = u.res.x / u.res.y;
+  let p = (i.uv * 2.0 - 1.0) * vec2f(asp, -1.0);
+  let z0 = u.time * 1.6 + u.beat * 0.8;
+  let ro = vec3f(0.0, 0.0, z0);
+  var rd = normalize(vec3f(p, 1.7));
+  let rr = rot(sin(u.time * 0.21) * 0.35) * rd.xy; rd = vec3f(rr, rd.z);
+  var dist = 0.0; var glow = 0.0; var hit = false;
+  for (var k = 0; k < 64; k++) {
+    let d = tunnel(ro + rd * dist);
+    glow += 0.012 / (0.02 + abs(d));
+    if (d < 0.002) { hit = true; break; }
+    dist += d * 0.8;
+    if (dist > 28.0) { break; }
+  }
+  let fog = exp(-dist * 0.11);
+  let pos = ro + rd * dist;
+  let band = 0.5 + 0.5 * sin(pos.z * 0.6 - u.time * 1.2);
+  var c = mix(u.pal[1].rgb, u.pal[3].rgb, band) * 0.35 * fog;
+  if (hit) { c += u.accent.rgb * pow(fog, 2.0) * (0.25 + u.kick * 0.6) * step(0.75, fract(pos.z * 0.25 + 0.6)); }
+  c += u.accent.rgb * glow * 0.012 * (0.4 + u.bass);
+  // copper bars
+  let cy = i.uv.y;
+  for (var k = 0; k < 3; k++) {
+    let yc = 0.14 + 0.06 * sin(u.time * 1.3 + f32(k) * 1.9);
+    let dd = abs(cy - yc - f32(k) * 0.012);
+    c += mix(u.pal[0].rgb, u.pal[4].rgb, f32(k) / 2.0) * exp(-dd * dd * 9000.0) * 0.35;
+  }
+  // sine scroller along the bottom
+  let tsz = vec2f(textureDimensions(txt));
+  let sh = 0.11;
+  let base = 0.8;
+  let sx = i.uv.x * asp / sh * (tsz.y / tsz.x);
+  let off = fract(sx + u.time * 0.045);
+  let wav = sin(i.uv.x * 9.0 + u.time * 3.0) * 0.025;
+  let ty = (i.uv.y - base - wav) / sh + 0.5;
+  if (ty > 0.0 && ty < 1.0) {
+    let g = textureSampleLevel(txt, samp, vec2f(off, ty), 0.0).a;
+    let grad = mix(u.pal[0].rgb, u.pal[1].rgb, ty);
+    c = mix(c, grad, g);
+  }
+  return vec4f(c, 1.0);
+}`;
+const SCENE = { ready: false, failed: false, loading: false, hits: new Map(), bins: null, rowT: 0, head: 0 };
+// own device, as with the audio renders: a canvas problem must never take the sound with it.
+// offscreen: draw into a texture (tests and headless browsers, where presenting a WebGPU canvas fails)
+async function sceneInit(canvas, offscreen) {
+  if (SCENE.ready || SCENE.failed || SCENE.loading) return;
+  SCENE.loading = true;
+  try {
+    if (!navigator.gpu) throw new Error('WebGPU is not available in this browser');
+    const ad = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' });
+    if (!ad) throw new Error('no GPU adapter');
+    const d = await ad.requestDevice();
+    SCENE.adapter = ad; SCENE.dev = d;
+    d.lost.then(i => { SCENE.ready = false; SCENE.failed = true; SCENE.err = i.message; });
+    let ctx = null, fmt = 'rgba8unorm';
+    if (offscreen) SCENE.offscreen = { w: offscreen.w, h: offscreen.h, tex: d.createTexture({ size: [offscreen.w, offscreen.h], format: fmt, usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC }) };
+    else { ctx = canvas.getContext('webgpu'); fmt = navigator.gpu.getPreferredCanvasFormat(); ctx.configure({ device: d, format: fmt, alphaMode: 'premultiplied' }); }
+    const mod = d.createShaderModule({ code: SCENE_WGSL });
+    const info = await mod.getCompilationInfo(); const bad = info.messages.find(m => m.type === 'error');
+    if (bad) throw new Error('shader: ' + bad.message + ' at line ' + bad.lineNum);
+    const uni = d.createBuffer({ size: 624, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+    const spec = d.createTexture({ size: [SCENE_BANDS, SCENE_ROWS], format: 'r8unorm', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST });
+    const samp = d.createSampler({ magFilter: 'linear', minFilter: 'linear', addressModeU: 'clamp-to-edge', addressModeV: 'repeat', addressModeW: 'repeat' });
+    // the scroller text, drawn once with the page's own font
+    const tc = document.createElement('canvas'); tc.width = 4096; tc.height = 128;
+    const g = tc.getContext('2d'); g.font = '700 96px "Instrument Sans", system-ui, sans-serif'; g.textBaseline = 'middle'; g.fillStyle = '#fff';
+    const msg = 'TACTUS  •  LIVE CODING AT THE SPEED OF FEEL  •  RUST DSP  •  WEBGPU  •  GREETINGS TO STRUDEL, TIDALCYCLES, SONIC PI, ORCA AND EVERY ALGORAVE  •  ';
+    let fs = 96; while (g.measureText(msg).width > 4000 && fs > 40) { fs -= 4; g.font = `700 ${fs}px "Instrument Sans", system-ui, sans-serif`; }
+    g.fillText(msg, 8, 64);
+    const txt = d.createTexture({ size: [tc.width, tc.height], format: 'rgba8unorm', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT });
+    d.queue.copyExternalImageToTexture({ source: tc }, { texture: txt }, [tc.width, tc.height]);
+    const blend = { color: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' } };
+    const pipes = {};
+    for (const m of SCENE_MODES) pipes[m] = d.createRenderPipeline({ layout: 'auto', vertex: { module: mod, entryPoint: 'vs' }, fragment: { module: mod, entryPoint: m, targets: [{ format: fmt, blend }] }, primitive: { topology: 'triangle-list' } });
+    const bgs = {};
+    for (const m of SCENE_MODES) {
+      // 'auto' layouts only include what each entry point uses, so build each bind group from its own layout
+      const entries = [{ binding: 0, resource: { buffer: uni } }, { binding: 2, resource: samp }];
+      entries.push(m === 'demo' ? { binding: 3, resource: txt.createView() } : { binding: 1, resource: spec.createView() });
+      bgs[m] = d.createBindGroup({ layout: pipes[m].getBindGroupLayout(0), entries });
+    }
+    Object.assign(SCENE, { ctx, fmt, canvas, uni, spec, pipes, bgs, specData: new Uint8Array(SCENE_BANDS * SCENE_ROWS), ready: true });
+  } catch (e) { SCENE.failed = true; SCENE.err = String(e.message || e); }
+  SCENE.loading = false;
+}
+// '#rrggbb' → [r, g, b] in 0..1
+function sceneRgb(hex, fb) { const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '').trim()); if (!m) return fb; const v = parseInt(m[1], 16); return [(v >> 16 & 255) / 255, (v >> 8 & 255) / 255, (v & 255) / 255]; }
+// a track played on a code line
+function sceneHit(line) { SCENE.hits.set(line, performance.now() / 1000); }
+let sceneKick = 0;
+// opts.ink / opts.accent: [r, g, b] in 0..1, so lines follow the page theme
+function sceneFrame(mode, emitters, beat, opts) {
+  opts = opts || {};
+  if (!SCENE.ready || !SCENE.pipes[mode]) return;
+  const d = SCENE.dev, off = SCENE.offscreen, cv = SCENE.canvas, dpr = devicePixelRatio || 1;
   const w = off ? off.w : Math.max(1, Math.round(cv.clientWidth * dpr)), h = off ? off.h : Math.max(1, Math.round(cv.clientHeight * dpr));
   if (!off && (cv.width !== w || cv.height !== h)) { cv.width = w; cv.height = h; }
-  const t = performance.now() / 1000, dt = Math.min(0.05, FIELD.lastT ? t - FIELD.lastT : 0.016); FIELD.lastT = t;
+  const now = performance.now() / 1000;
+  // spectrum: 64 log-spaced bands, one new row every 1/30 s
   let bass = 0, mid = 0, high = 0;
-  if (A.an && S.playing) {
-    fieldBins = fieldBins || new Uint8Array(A.an.frequencyBinCount); A.an.getByteFrequencyData(fieldBins);
-    const bin = S.ctx.sampleRate / A.an.fftSize, band = (a, b) => { let s = 0, c = 0; for (let k = Math.floor(a / bin); k <= Math.ceil(b / bin); k++, c++) s += fieldBins[k] || 0; return s / Math.max(1, c) / 255; };
-    bass = band(30, 160); mid = band(300, 2000); high = band(4000, 12000);
+  if (now - SCENE.rowT > 1 / 30) {
+    SCENE.rowT = now;
+    const row = new Uint8Array(SCENE_BANDS);
+    if (A.an && S.playing) {
+      const an = A.an; SCENE.bins = SCENE.bins || new Uint8Array(an.frequencyBinCount); an.getByteFrequencyData(SCENE.bins);
+      const bin = S.ctx.sampleRate / an.fftSize;
+      for (let k = 0; k < SCENE_BANDS; k++) {
+        const f0 = 30 * Math.pow(16000 / 30, k / SCENE_BANDS), f1 = 30 * Math.pow(16000 / 30, (k + 1) / SCENE_BANDS);
+        let m = 0;
+        if (f1 - f0 < bin * 2) { const x = Math.sqrt(f0 * f1) / bin, j = Math.floor(x), fr = x - j; m = (SCENE.bins[j] || 0) * (1 - fr) + (SCENE.bins[j + 1] || 0) * fr; }
+        else for (let j = Math.floor(f0 / bin); j <= Math.ceil(f1 / bin) && j < SCENE.bins.length; j++) m = Math.max(m, SCENE.bins[j]);
+        const prev = SCENE.lastRow ? SCENE.lastRow[k] : 0;
+        row[k] = Math.max(m, prev * 0.86);
+      }
+    }
+    SCENE.head = (SCENE.head + 1) % SCENE_ROWS;
+    d.queue.writeTexture({ texture: SCENE.spec, origin: [0, SCENE.head] }, row, { bytesPerRow: SCENE_BANDS }, [SCENE_BANDS, 1]);
+    SCENE.lastRow = row;
   }
-  const u = new ArrayBuffer(32 + FIELD_MAXE * 16), f = new Float32Array(u), ui = new Uint32Array(u);
-  const em = emitters.slice(0, FIELD_MAXE);
-  f[0] = dt; f[1] = t; f[2] = w / h; ui[3] = em.length; f[4] = bass; f[5] = mid; f[6] = high; f[7] = 2.2 * dpr / h;
-  em.forEach((e, k) => { const en = FIELD.hits.get(e.line) || 0; f.set([e.y, en, e.col, e.x], 8 + k * 4); });
-  for (const [k, v] of FIELD.hits) { const nv = v * Math.pow(0.02, dt); if (nv < 0.01) FIELD.hits.delete(k); else FIELD.hits.set(k, nv); }
-  const d = FIELD.dev;
-  d.queue.writeBuffer(FIELD.uni, 0, u);
+  const lr = SCENE.lastRow || new Uint8Array(SCENE_BANDS), avg = (a, b) => { let s = 0; for (let k = a; k < b; k++) s += lr[k]; return s / (b - a) / 255; };
+  bass = avg(0, 12); mid = avg(20, 40); high = avg(44, 60);
+  sceneKick = Math.max(sceneKick * 0.9, bass > 0.62 ? (bass - 0.62) * 2.6 : 0);
+  const buf = new ArrayBuffer(624), f = new Float32Array(buf), ui = new Uint32Array(buf);
+  f[0] = w; f[1] = h; f[2] = now % 1000; f[3] = beat || 0;
+  f[4] = bass; f[5] = mid; f[6] = high; f[7] = Math.min(1, sceneKick);
+  const em = emitters.slice(0, SCENE_MAXE);
+  ui[8] = em.length; f[9] = SCENE.head; f[10] = SCENE_ROWS; f[11] = off ? 1 : dpr;
+  f.set([...(opts.ink || [0.9, 0.91, 0.93]), 1], 12); f.set([...(opts.accent || [1, 0.6, 0.3]), 1], 16);
+  em.forEach((e, k) => { const t0 = SCENE.hits.get(e.line); f.set([e.y, e.x, e.col, t0 ? Math.min(30, now - t0) : 30], 20 + k * 4); });
+  TRACK_COLORS.forEach((hx, k) => { const v = parseInt(hx.slice(1), 16); f.set([(v >> 16 & 255) / 255, (v >> 8 & 255) / 255, (v & 255) / 255, 1], 116 + k * 4); });
+  d.queue.writeBuffer(SCENE.uni, 0, buf);
   const enc = d.createCommandEncoder();
-  const cp = enc.beginComputePass(); cp.setPipeline(FIELD.comp); cp.setBindGroup(0, FIELD.cbg); cp.dispatchWorkgroups(FIELD_N / 256); cp.end();
-  const rp = enc.beginRenderPass({ colorAttachments: [{ view: off ? off.tex.createView() : FIELD.ctx.getCurrentTexture().createView(), loadOp: 'clear', clearValue: { r: 0, g: 0, b: 0, a: 0 }, storeOp: 'store' }] });
-  rp.setPipeline(FIELD.rend); rp.setBindGroup(0, FIELD.rbg); rp.draw(4, FIELD_N); rp.end();
+  const rp = enc.beginRenderPass({ colorAttachments: [{ view: off ? off.tex.createView() : SCENE.ctx.getCurrentTexture().createView(), loadOp: 'clear', clearValue: { r: 0, g: 0, b: 0, a: 0 }, storeOp: 'store' }] });
+  rp.setPipeline(SCENE.pipes[mode]); rp.setBindGroup(0, SCENE.bgs[mode]); rp.draw(3); rp.end();
   d.queue.submit([enc.finish()]);
 }
 
@@ -2245,7 +2396,7 @@ async function start() {
   ensureAudio(); if (ctx.state !== 'running') await ctx.resume();
   try { await cur.audio.play(); playing = true; } catch (e) { playing = false; }
   syncBtn();
-  if (playing && !FIELD.ready && !FIELD.loading && !FIELD.failed) fieldInit($('#field')).then(() => { $('#field').hidden = !FIELD.ready; });
+  if (playing && !SCENE.ready && !SCENE.loading && !SCENE.failed) sceneInit($('#scene')).then(() => { $('#scene').hidden = !SCENE.ready || scnMode === 'off'; $('#scnbar').hidden = !SCENE.ready; });
 }
 function stopPlay() { cur.audio.pause(); playing = false; syncBtn(); }
 function syncBtn() {
@@ -2255,6 +2406,13 @@ function syncBtn() {
   $('#dot').classList.toggle('on', playing);
 }
 $('#play').addEventListener('click', () => (playing ? stopPlay() : start()));
+let scnMode = 'terrain';
+$('#scnbar').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  scnMode = b.dataset.v;
+  $('#scnbar').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  const cv = $('#scene'); cv.hidden = scnMode === 'off' || !SCENE.ready; cv.style.opacity = scnMode === 'demo' ? 0.55 : 1;
+});
 
 // which scene is playing at a song position
 function sceneAtPos(r, p) {
@@ -2288,7 +2446,7 @@ function frame() {
         const evs = eventsIn(def, lastPos, p);
         if (!evs.length) continue;
         for (const ev of evs) if (ev.loc) flash(`a${def.line}_${ev.loc.c0}`);
-        if (FIELD.ready) fieldHit(def.line);
+        if (SCENE.ready) sceneHit(def.line);
         const k = cur.order.indexOf(n); if (k >= 0) energy[k] = 1;
       }
       markScene(p);
@@ -2296,17 +2454,17 @@ function frame() {
     lastPos = p;
     $('#bar').textContent = `${Math.floor(p) + 1}.${Math.floor((p % 1) * 4) + 1}`;
   }
-  // particles: each track's code line is an emitter
-  if (FIELD.failed && !$('#field').hidden) $('#field').hidden = true;
-  if (FIELD.ready && cur) {
+  // WebGPU backdrop: each track's code line is a point the scene reacts to
+  if (SCENE.failed && !$('#scene').hidden) { $('#scene').hidden = true; $('#scnbar').hidden = true; }
+  if (SCENE.ready && cur && scnMode !== 'off') {
     S.playing = playing; S.ctx = ctx; A.an = an;
-    const box = $('#field').getBoundingClientRect(), code = $('#code'), em = [];
+    const box = $('#scene').getBoundingClientRect(), code = $('#code'), em = [];
     if (box.height) for (const [n, def] of cur.r.tracks) {
       const el = code.querySelector(`.ln[data-l="${def.line}"]`); if (!el) continue;
       const r = el.getBoundingClientRect();
       em.push({ line: def.line, y: (r.top + r.height / 2 - box.top) / box.height, x: Math.max(0, (r.left + (n.length + 1) * 7.5 - box.left) / box.width), col: cur.r.order.indexOf(n) % 10 });
     }
-    fieldFrame(performance.now(), em);
+    sceneFrame(scnMode, em, cur.meta.pos0 + (cur.audio.currentTime || 0) * cur.meta.cps);
   }
   // letters breathe with their tracks
   letters.forEach((el, i) => {

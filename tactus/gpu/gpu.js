@@ -8,7 +8,7 @@
 //   plate  a struck metal plate: every inharmonic mode split into six beating neighbours, each with its own decay
 //          (a few hundred partials in the middle register, more for low notes)
 //   fx ... | freeze   spectral freeze: the live mix's spectrum resynthesized as ~2,000 sines
-// and it draws the "field" visualization: 131,072 particles thrown from the code lines of the tracks.
+// and it draws four backdrops behind the code (terrain, contour, dots, demo) as full-screen shaders.
 // Without WebGPU every part falls back: the GPU instruments to CPU voices, freeze to a looped grain.
 
 const GPU = { state: 'idle', dev: null, name: '', err: '', synth: null, cache: new Map(), bytes: 0, jobs: new Map(), chain: Promise.resolve(), renders: 0, lastMs: 0 };
@@ -277,138 +277,282 @@ function freezeStop() {
   setTimeout(() => { try { g.disconnect(); } catch (e) { } }, 900);
 }
 
-// ---------- field: 131,072 particles thrown from the code lines ----------
-const FIELD_N = 131072, FIELD_MAXE = 24;
-const FIELD_COMMON = `
-struct U { dt: f32, time: f32, aspect: f32, ne: u32, bass: f32, mid: f32, high: f32, size: f32, em: array<vec4f, 24> };
-struct Pt { pos: vec2f, vel: vec2f, life: f32, maxl: f32, col: f32, seed: f32 };
-@group(0) @binding(0) var<uniform> u: U;`;
-const FIELD_COMP = FIELD_COMMON + `
-@group(0) @binding(1) var<storage, read_write> pts: array<Pt>;
-fn hash(x: u32) -> f32 { var h = x * 747796405u + 2891336453u; h = ((h >> ((h >> 28u) + 4u)) ^ h) * 277803737u; h = (h >> 22u) ^ h; return f32(h) / 4294967296.0; }
-// a divergence-free swirl: the curl of a moving stream function, so particles circulate instead of clumping
-fn flow(p: vec2f, t: f32) -> vec2f {
-  let A = p.x * 3.1 + t * 0.7; let B = p.y * 2.3 - t * 0.5; let C = p.x * 1.7 - t * 0.3; let D = p.y * 4.1 + t * 0.9;
-  let dy = -2.3 * sin(A) * sin(B) + 0.5 * 4.1 * cos(C) * cos(D);
-  let dx = 3.1 * cos(A) * cos(B) - 0.5 * 1.7 * sin(C) * sin(D);
-  return vec2f(dy, -dx) * 0.25;
-}
-@compute @workgroup_size(256)
-fn step(@builtin(global_invocation_id) id: vec3u) {
-  let i = id.x;
-  if (i >= arrayLength(&pts)) { return; }
-  var p = pts[i];
-  let seed = u32(fract(u.time * 0.137) * 1000003.0) * 1664525u + i * 22695477u;
-  p.life -= u.dt;
-  if (p.life <= 0.0) {
-    var tot = 0.0;
-    for (var k = 0u; k < u.ne; k++) { tot += u.em[k].y; }
-    if (hash(seed) < tot * 0.08 * u.dt) {
-      var pick = hash(seed + 7u) * tot;
-      var e = u.em[0];
-      for (var k = 0u; k < u.ne; k++) { e = u.em[k]; pick -= e.y; if (pick <= 0.0) { break; } }
-      p.pos = vec2f(e.w + hash(seed + 11u) * 0.05, e.x + (hash(seed + 13u) - 0.5) * 0.012);
-      let sp = (0.18 + hash(seed + 17u) * 0.55) * (0.6 + min(e.y, 2.0));
-      let an = (hash(seed + 19u) - 0.5) * 0.9;
-      p.vel = vec2f(cos(an) * sp, sin(an) * sp * 0.6);
-      p.maxl = 1.4 + hash(seed + 23u) * 2.6;
-      p.life = p.maxl;
-      p.col = e.z;
-    } else { p.life = 0.0; pts[i] = p; return; }
-  }
-  let f = flow(p.pos * vec2f(u.aspect, 1.0) * 1.6, u.time * (0.35 + u.mid * 1.5));
-  p.vel += f * (0.25 + u.bass * 2.4) * u.dt;
-  p.vel *= 1.0 - (0.9 - u.high * 0.4) * u.dt;
-  p.pos += p.vel * u.dt * vec2f(1.0 / u.aspect, 1.0);
-  if (p.pos.x > 1.05 || p.pos.y < -0.05 || p.pos.y > 1.05) { p.life = 0.0; }
-  pts[i] = p;
-}`;
-const FIELD_REND = FIELD_COMMON + `
-@group(0) @binding(1) var<storage, read> pts: array<Pt>;
-@group(0) @binding(2) var<storage, read> pal: array<vec4f, 10>;
-struct VO { @builtin(position) pos: vec4f, @location(0) col: vec4f, @location(1) uv: vec2f };
-@vertex
-fn vs(@builtin(vertex_index) vi: u32, @builtin(instance_index) ii: u32) -> VO {
-  let p = pts[ii];
+// ---------- scenes: GPU backdrops behind the code ----------
+// Each scene is one full-screen fragment shader fed by the same inputs: a spectrogram history kept as a
+// texture (64 log-spaced bands x 160 rows, about 5 s), the transport position, the kick, and every track's
+// code line with the time since it last played. Quiet by design: thin lines in the screen's ink colour,
+// with the track colours only where something just happened.
+//   terrain  ridgelines of the recent spectrum in perspective, nearest at the bottom
+//   contour  a topographic map: spectrogram + slow drift + ripples from track hits, index line every fifth
+//   dots     an LED matrix: hits send rings out from their code line, the spectrum lights columns
+//   demo     a demoscene tunnel with copper bars and a sine scroller
+const SCENE_BANDS = 64, SCENE_ROWS = 160, SCENE_MAXE = 24, SCENE_MODES = ['terrain', 'contour', 'dots', 'demo'];
+const SCENE_WGSL = `
+struct U {
+  res: vec2f, time: f32, beat: f32,
+  bass: f32, mid: f32, high: f32, kick: f32,
+  ne: u32, head: f32, rows: f32, dpr: f32,
+  ink: vec4f, accent: vec4f,
+  em: array<vec4f, 24>,
+  pal: array<vec4f, 10>,
+};
+@group(0) @binding(0) var<uniform> u: U;
+@group(0) @binding(1) var spec: texture_2d<f32>;
+@group(0) @binding(2) var samp: sampler;
+@group(0) @binding(3) var txt: texture_2d<f32>;
+struct VO { @builtin(position) p: vec4f, @location(0) uv: vec2f };
+@vertex fn vs(@builtin(vertex_index) i: u32) -> VO {
   var o: VO;
-  let corner = vec2f(f32(vi & 1u), f32(vi >> 1u)) * 2.0 - 1.0;
-  let k = clamp(p.life / max(p.maxl, 0.001), 0.0, 1.0);
-  let sz = u.size * (0.6 + k * 1.4);
-  let c = vec2f(p.pos.x * 2.0 - 1.0, 1.0 - p.pos.y * 2.0);
-  o.pos = vec4f(c + corner * vec2f(sz / u.aspect, sz), 0.0, 1.0);
-  if (p.life <= 0.0) { o.pos = vec4f(2.0, 2.0, 0.0, 1.0); }
-  let col = pal[u32(p.col) % 10u];
-  let a = pow(k, 1.6) * 0.22;
-  o.col = vec4f(col.rgb * a, a);
-  o.uv = corner;
+  let x = f32((i << 1u) & 2u); let y = f32(i & 2u);
+  o.p = vec4f(x * 2.0 - 1.0, 1.0 - y * 2.0, 0.0, 1.0); o.uv = vec2f(x, y);
   return o;
 }
-@fragment
-fn fs(i: VO) -> @location(0) vec4f {
-  let d = dot(i.uv, i.uv);
-  if (d > 1.0) { discard; }
-  return i.col * (1.0 - d);
-}`;
-const FIELD = { ready: false, failed: false, hits: new Map(), lastT: 0 };
-// The field gets its own GPU device, so a problem with the canvas can never take the audio renders down with it.
-// offscreen: draw into a texture instead of the canvas (used by tests and headless browsers)
-async function fieldInit(canvas, offscreen) {
-  if (FIELD.ready || FIELD.failed || FIELD.loading) return;
-  FIELD.loading = true;
-  if (!(await gpuInit())) { FIELD.failed = true; FIELD.loading = false; return; }
-  try {
-    const ad = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' });   // an adapter makes only one device
-    if (!ad) throw new Error('no GPU adapter for the field');
-    FIELD.adapter = ad;
-    const d = await ad.requestDevice();
-    d.lost.then(() => { FIELD.ready = false; FIELD.failed = true; });
-    let ctx = null, fmt = 'rgba8unorm';
-    if (offscreen) FIELD.offscreen = { w: offscreen.w, h: offscreen.h, tex: d.createTexture({ size: [offscreen.w, offscreen.h], format: fmt, usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC }) };
-    else { ctx = canvas.getContext('webgpu'); fmt = navigator.gpu.getPreferredCanvasFormat(); ctx.configure({ device: d, format: fmt, alphaMode: 'premultiplied' }); }
-    FIELD.dev = d;
-    const pts = d.createBuffer({ size: FIELD_N * 32, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_SRC });
-    const uni = d.createBuffer({ size: 32 + FIELD_MAXE * 16, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
-    const pal = d.createBuffer({ size: 160, usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST });
-    const pd = new Float32Array(40);
-    TRACK_COLORS.forEach((h, k) => { const v = parseInt(h.slice(1), 16); pd.set([(v >> 16 & 255) / 255, (v >> 8 & 255) / 255, (v & 255) / 255, 1], k * 4); });
-    d.queue.writeBuffer(pal, 0, pd);
-    const comp = d.createComputePipeline({ layout: 'auto', compute: { module: d.createShaderModule({ code: FIELD_COMP }), entryPoint: 'step' } });
-    const rm = d.createShaderModule({ code: FIELD_REND });
-    const blend = { color: { srcFactor: 'one', dstFactor: 'one', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one', operation: 'add' } };
-    const rend = d.createRenderPipeline({ layout: 'auto', vertex: { module: rm, entryPoint: 'vs' }, fragment: { module: rm, entryPoint: 'fs', targets: [{ format: fmt, blend }] }, primitive: { topology: 'triangle-strip' } });
-    Object.assign(FIELD, { ctx, uni, pts, comp, rend, canvas, fmt,
-      cbg: d.createBindGroup({ layout: comp.getBindGroupLayout(0), entries: [{ binding: 0, resource: { buffer: uni } }, { binding: 1, resource: { buffer: pts } }] }),
-      rbg: d.createBindGroup({ layout: rend.getBindGroupLayout(0), entries: [{ binding: 0, resource: { buffer: uni } }, { binding: 1, resource: { buffer: pts } }, { binding: 2, resource: { buffer: pal } }] }),
-      ready: true });
-  } catch (e) { FIELD.failed = true; GPU.err = String(e.message || e); }
-  FIELD.loading = false;
+// band in [0,1] (low to high), age in [0,1] (now to ~5 s ago)
+fn specAt(band: f32, age: f32) -> f32 {
+  let v = (u.head - clamp(age, 0.0, 1.0) * (u.rows - 2.0) + 0.5) / u.rows;
+  return textureSampleLevel(spec, samp, vec2f(clamp(band, 0.0, 1.0), v), 0.0).r;
 }
-// a track hit on a code line: that line throws particles in its colour
-function fieldHit(line) { FIELD.hits.set(line, Math.min(2, (FIELD.hits.get(line) || 0) + 1)); }
-let fieldBins = null;
-function fieldFrame(now, emitters) {
-  if (!FIELD.ready) return;
-  const cv = FIELD.canvas, dpr = devicePixelRatio || 1, off = FIELD.offscreen;
+fn premul(c: vec3f, a: f32) -> vec4f { return vec4f(c * a, a); }
+
+// one ridgeline: row k of R, at screen x
+fn ridge(x: f32, kf: f32, R: f32) -> f32 {
+  let z = 1.0 + kf * 0.21;
+  let wx = (x - 0.5) * z * 1.1;
+  let m = abs(wx) * 2.0;
+  var h = 0.0;
+  if (m < 1.0) {
+    let e = (specAt(m * 0.85 - 0.012, kf / R) + specAt(m * 0.85, kf / R) * 2.0 + specAt(m * 0.85 + 0.012, kf / R)) * 0.25;
+    h = e * e * (1.0 - m * m * m * m);
+  }
+  h += 0.012 * sin(wx * 23.0 + kf * 1.3 + u.time * 0.25) * (1.0 - min(m, 1.0));
+  return 0.36 + 0.6 / z - h * 0.45 / z;
+}
+@fragment fn terrain(i: VO) -> @location(0) vec4f {
+  let uv = i.uv;
+  let R = 46.0;
+  let px = 1.0 / u.res.x;
+  for (var k = 0; k < 46; k++) {
+    let kf = f32(k);
+    let y = ridge(uv.x, kf, R);
+    let d = uv.y - y;
+    // distance to the line in pixels, measured across the slope so steep flanks stay unbroken
+    let slope = (ridge(uv.x + px, kf, R) - y) * u.res.y;
+    let dpx = abs(d) * u.res.y / sqrt(1.0 + slope * slope);
+    let w = u.dpr * (0.55 + 0.35 / (1.0 + kf * 0.21));
+    if (dpx < w + 1.0) {
+      let fade = pow(1.0 - kf / R, 1.4);
+      let a = (1.0 - smoothstep(w - 0.5, w + 1.0, dpx)) * (0.1 + 0.42 * fade);
+      let c = mix(u.ink.rgb, u.accent.rgb, u.kick * 0.7 * max(0.0, 1.0 - kf / 4.0));
+      return premul(c, a);
+    }
+    if (d > 0.0) { break; }
+  }
+  return vec4f(0.0);
+}
+
+fn height(p: vec2f, asp: f32) -> f32 {
+  // the spectrogram, blurred across time and pitch so it bends the map instead of striping it
+  let bx = pow(p.x, 1.3); let ay = 1.0 - p.y;
+  var sp = 0.0;
+  for (var j = -2; j <= 2; j++) { for (var q = -1; q <= 1; q++) { sp += specAt(bx + f32(q) * 0.05, ay + f32(j) * 0.06); } }
+  var h = sp / 15.0 * 0.5;
+  h += 0.32 * sin(p.x * 4.3 + u.time * 0.045) * cos(p.y * 3.7 - u.time * 0.035);
+  h += 0.18 * sin((p.x * 1.3 + p.y) * 7.1 + u.time * 0.06) + 0.1 * cos(p.x * 11.0 - p.y * 5.0 - u.time * 0.05);
+  for (var k = 0u; k < u.ne; k++) {
+    let e = u.em[k];
+    let d = distance(vec2f(p.x * asp, p.y), vec2f(e.x * asp, e.y));
+    let age = e.w;
+    h += 0.5 * exp(-age * 1.1) * exp(-pow((d - age * 0.3) * 9.0, 2.0));
+  }
+  return h;
+}
+@fragment fn contour(i: VO) -> @location(0) vec4f {
+  let asp = u.res.x / u.res.y;
+  let h = height(i.uv, asp) * 7.0;
+  let w = max(fwidth(h), 1e-4);
+  let f = abs(fract(h + 0.5) - 0.5) / (w * u.dpr);
+  var a = (1.0 - min(f, 1.0)) * 0.2;
+  let h5 = h / 5.0;
+  let f5 = abs(fract(h5 + 0.5) - 0.5) / (max(fwidth(h5), 1e-4) * u.dpr * 1.4);
+  a = max(a, (1.0 - min(f5, 1.0)) * 0.42);
+  return premul(u.ink.rgb, a);
+}
+
+@fragment fn dots(i: VO) -> @location(0) vec4f {
+  let asp = u.res.x / u.res.y;
+  let cell = 15.0 * u.dpr;
+  let px = i.uv * u.res;
+  let c = (floor(px / cell) + 0.5) * cell;
+  let d = length(px - c);
+  let q = c / u.res;
+  var b = 0.085;
+  var col = u.ink.rgb;
+  let lv = specAt(q.x, 0.0);
+  let top = lv * 0.55;
+  let fromBottom = 1.0 - q.y;
+  if (fromBottom < top) { b += 0.34 * (1.0 - fromBottom / max(top, 0.001) * 0.6); }
+  // the peak cell of each column picks up the accent, like an LED meter
+  let ch = cell / u.res.y;
+  if (top > ch && abs(fromBottom - top) < ch * 0.5) { b += 0.3; col = mix(col, u.accent.rgb, 0.7); }
+  for (var k = 0u; k < u.ne; k++) {
+    let e = u.em[k];
+    let dd = distance(vec2f(q.x * asp, q.y), vec2f(e.x * asp, e.y));
+    let ring = exp(-pow((dd - e.w * 0.45) * 11.0, 2.0)) * exp(-e.w * 1.5);
+    if (ring > 0.02) { col = mix(col, u.pal[u32(e.z) % 10u].rgb, min(1.0, ring * 1.5)); }
+    b += ring * 1.0;
+  }
+  let r = 1.6 * u.dpr * (0.85 + min(b, 1.0) * 0.5);
+  let a = (1.0 - smoothstep(r - 0.8 * u.dpr, r + 0.4 * u.dpr, d)) * min(b, 0.9);
+  return premul(col, a);
+}
+
+fn rot(a: f32) -> mat2x2f { let c = cos(a); let s = sin(a); return mat2x2f(c, s, -s, c); }
+fn tunnel(p: vec3f) -> f32 {
+  let r = 1.5 + 0.18 * sin(p.z * 0.7 + u.time * 0.6) + u.kick * 0.12;
+  var q = p;
+  let t = rot(p.z * 0.12 + u.time * 0.1) * q.xy; q = vec3f(t, q.z);
+  let ang = atan2(q.y, q.x);
+  let wall = r - length(q.xy) + 0.05 * sin(ang * 8.0 + p.z * 1.5);
+  let ringz = (fract(p.z * 0.25) - 0.5) * 4.0;
+  let ring = length(vec2f(length(q.xy) - r * 0.92, ringz)) - 0.05;
+  return min(wall, ring);
+}
+@fragment fn demo(i: VO) -> @location(0) vec4f {
+  let asp = u.res.x / u.res.y;
+  let p = (i.uv * 2.0 - 1.0) * vec2f(asp, -1.0);
+  let z0 = u.time * 1.6 + u.beat * 0.8;
+  let ro = vec3f(0.0, 0.0, z0);
+  var rd = normalize(vec3f(p, 1.7));
+  let rr = rot(sin(u.time * 0.21) * 0.35) * rd.xy; rd = vec3f(rr, rd.z);
+  var dist = 0.0; var glow = 0.0; var hit = false;
+  for (var k = 0; k < 64; k++) {
+    let d = tunnel(ro + rd * dist);
+    glow += 0.012 / (0.02 + abs(d));
+    if (d < 0.002) { hit = true; break; }
+    dist += d * 0.8;
+    if (dist > 28.0) { break; }
+  }
+  let fog = exp(-dist * 0.11);
+  let pos = ro + rd * dist;
+  let band = 0.5 + 0.5 * sin(pos.z * 0.6 - u.time * 1.2);
+  var c = mix(u.pal[1].rgb, u.pal[3].rgb, band) * 0.35 * fog;
+  if (hit) { c += u.accent.rgb * pow(fog, 2.0) * (0.25 + u.kick * 0.6) * step(0.75, fract(pos.z * 0.25 + 0.6)); }
+  c += u.accent.rgb * glow * 0.012 * (0.4 + u.bass);
+  // copper bars
+  let cy = i.uv.y;
+  for (var k = 0; k < 3; k++) {
+    let yc = 0.14 + 0.06 * sin(u.time * 1.3 + f32(k) * 1.9);
+    let dd = abs(cy - yc - f32(k) * 0.012);
+    c += mix(u.pal[0].rgb, u.pal[4].rgb, f32(k) / 2.0) * exp(-dd * dd * 9000.0) * 0.35;
+  }
+  // sine scroller along the bottom
+  let tsz = vec2f(textureDimensions(txt));
+  let sh = 0.11;
+  let base = 0.8;
+  let sx = i.uv.x * asp / sh * (tsz.y / tsz.x);
+  let off = fract(sx + u.time * 0.045);
+  let wav = sin(i.uv.x * 9.0 + u.time * 3.0) * 0.025;
+  let ty = (i.uv.y - base - wav) / sh + 0.5;
+  if (ty > 0.0 && ty < 1.0) {
+    let g = textureSampleLevel(txt, samp, vec2f(off, ty), 0.0).a;
+    let grad = mix(u.pal[0].rgb, u.pal[1].rgb, ty);
+    c = mix(c, grad, g);
+  }
+  return vec4f(c, 1.0);
+}`;
+const SCENE = { ready: false, failed: false, loading: false, hits: new Map(), bins: null, rowT: 0, head: 0 };
+// own device, as with the audio renders: a canvas problem must never take the sound with it.
+// offscreen: draw into a texture (tests and headless browsers, where presenting a WebGPU canvas fails)
+async function sceneInit(canvas, offscreen) {
+  if (SCENE.ready || SCENE.failed || SCENE.loading) return;
+  SCENE.loading = true;
+  try {
+    if (!navigator.gpu) throw new Error('WebGPU is not available in this browser');
+    const ad = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' });
+    if (!ad) throw new Error('no GPU adapter');
+    const d = await ad.requestDevice();
+    SCENE.adapter = ad; SCENE.dev = d;
+    d.lost.then(i => { SCENE.ready = false; SCENE.failed = true; SCENE.err = i.message; });
+    let ctx = null, fmt = 'rgba8unorm';
+    if (offscreen) SCENE.offscreen = { w: offscreen.w, h: offscreen.h, tex: d.createTexture({ size: [offscreen.w, offscreen.h], format: fmt, usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.COPY_SRC }) };
+    else { ctx = canvas.getContext('webgpu'); fmt = navigator.gpu.getPreferredCanvasFormat(); ctx.configure({ device: d, format: fmt, alphaMode: 'premultiplied' }); }
+    const mod = d.createShaderModule({ code: SCENE_WGSL });
+    const info = await mod.getCompilationInfo(); const bad = info.messages.find(m => m.type === 'error');
+    if (bad) throw new Error('shader: ' + bad.message + ' at line ' + bad.lineNum);
+    const uni = d.createBuffer({ size: 624, usage: GPUBufferUsage.UNIFORM | GPUBufferUsage.COPY_DST });
+    const spec = d.createTexture({ size: [SCENE_BANDS, SCENE_ROWS], format: 'r8unorm', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST });
+    const samp = d.createSampler({ magFilter: 'linear', minFilter: 'linear', addressModeU: 'clamp-to-edge', addressModeV: 'repeat', addressModeW: 'repeat' });
+    // the scroller text, drawn once with the page's own font
+    const tc = document.createElement('canvas'); tc.width = 4096; tc.height = 128;
+    const g = tc.getContext('2d'); g.font = '700 96px "Instrument Sans", system-ui, sans-serif'; g.textBaseline = 'middle'; g.fillStyle = '#fff';
+    const msg = 'TACTUS  •  LIVE CODING AT THE SPEED OF FEEL  •  RUST DSP  •  WEBGPU  •  GREETINGS TO STRUDEL, TIDALCYCLES, SONIC PI, ORCA AND EVERY ALGORAVE  •  ';
+    let fs = 96; while (g.measureText(msg).width > 4000 && fs > 40) { fs -= 4; g.font = `700 ${fs}px "Instrument Sans", system-ui, sans-serif`; }
+    g.fillText(msg, 8, 64);
+    const txt = d.createTexture({ size: [tc.width, tc.height], format: 'rgba8unorm', usage: GPUTextureUsage.TEXTURE_BINDING | GPUTextureUsage.COPY_DST | GPUTextureUsage.RENDER_ATTACHMENT });
+    d.queue.copyExternalImageToTexture({ source: tc }, { texture: txt }, [tc.width, tc.height]);
+    const blend = { color: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' }, alpha: { srcFactor: 'one', dstFactor: 'one-minus-src-alpha', operation: 'add' } };
+    const pipes = {};
+    for (const m of SCENE_MODES) pipes[m] = d.createRenderPipeline({ layout: 'auto', vertex: { module: mod, entryPoint: 'vs' }, fragment: { module: mod, entryPoint: m, targets: [{ format: fmt, blend }] }, primitive: { topology: 'triangle-list' } });
+    const bgs = {};
+    for (const m of SCENE_MODES) {
+      // 'auto' layouts only include what each entry point uses, so build each bind group from its own layout
+      const entries = [{ binding: 0, resource: { buffer: uni } }, { binding: 2, resource: samp }];
+      entries.push(m === 'demo' ? { binding: 3, resource: txt.createView() } : { binding: 1, resource: spec.createView() });
+      bgs[m] = d.createBindGroup({ layout: pipes[m].getBindGroupLayout(0), entries });
+    }
+    Object.assign(SCENE, { ctx, fmt, canvas, uni, spec, pipes, bgs, specData: new Uint8Array(SCENE_BANDS * SCENE_ROWS), ready: true });
+  } catch (e) { SCENE.failed = true; SCENE.err = String(e.message || e); }
+  SCENE.loading = false;
+}
+// '#rrggbb' → [r, g, b] in 0..1
+function sceneRgb(hex, fb) { const m = /^#?([0-9a-f]{6})$/i.exec(String(hex || '').trim()); if (!m) return fb; const v = parseInt(m[1], 16); return [(v >> 16 & 255) / 255, (v >> 8 & 255) / 255, (v & 255) / 255]; }
+// a track played on a code line
+function sceneHit(line) { SCENE.hits.set(line, performance.now() / 1000); }
+let sceneKick = 0;
+// opts.ink / opts.accent: [r, g, b] in 0..1, so lines follow the page theme
+function sceneFrame(mode, emitters, beat, opts) {
+  opts = opts || {};
+  if (!SCENE.ready || !SCENE.pipes[mode]) return;
+  const d = SCENE.dev, off = SCENE.offscreen, cv = SCENE.canvas, dpr = devicePixelRatio || 1;
   const w = off ? off.w : Math.max(1, Math.round(cv.clientWidth * dpr)), h = off ? off.h : Math.max(1, Math.round(cv.clientHeight * dpr));
   if (!off && (cv.width !== w || cv.height !== h)) { cv.width = w; cv.height = h; }
-  const t = performance.now() / 1000, dt = Math.min(0.05, FIELD.lastT ? t - FIELD.lastT : 0.016); FIELD.lastT = t;
+  const now = performance.now() / 1000;
+  // spectrum: 64 log-spaced bands, one new row every 1/30 s
   let bass = 0, mid = 0, high = 0;
-  if (A.an && S.playing) {
-    fieldBins = fieldBins || new Uint8Array(A.an.frequencyBinCount); A.an.getByteFrequencyData(fieldBins);
-    const bin = S.ctx.sampleRate / A.an.fftSize, band = (a, b) => { let s = 0, c = 0; for (let k = Math.floor(a / bin); k <= Math.ceil(b / bin); k++, c++) s += fieldBins[k] || 0; return s / Math.max(1, c) / 255; };
-    bass = band(30, 160); mid = band(300, 2000); high = band(4000, 12000);
+  if (now - SCENE.rowT > 1 / 30) {
+    SCENE.rowT = now;
+    const row = new Uint8Array(SCENE_BANDS);
+    if (A.an && S.playing) {
+      const an = A.an; SCENE.bins = SCENE.bins || new Uint8Array(an.frequencyBinCount); an.getByteFrequencyData(SCENE.bins);
+      const bin = S.ctx.sampleRate / an.fftSize;
+      for (let k = 0; k < SCENE_BANDS; k++) {
+        const f0 = 30 * Math.pow(16000 / 30, k / SCENE_BANDS), f1 = 30 * Math.pow(16000 / 30, (k + 1) / SCENE_BANDS);
+        let m = 0;
+        if (f1 - f0 < bin * 2) { const x = Math.sqrt(f0 * f1) / bin, j = Math.floor(x), fr = x - j; m = (SCENE.bins[j] || 0) * (1 - fr) + (SCENE.bins[j + 1] || 0) * fr; }
+        else for (let j = Math.floor(f0 / bin); j <= Math.ceil(f1 / bin) && j < SCENE.bins.length; j++) m = Math.max(m, SCENE.bins[j]);
+        const prev = SCENE.lastRow ? SCENE.lastRow[k] : 0;
+        row[k] = Math.max(m, prev * 0.86);
+      }
+    }
+    SCENE.head = (SCENE.head + 1) % SCENE_ROWS;
+    d.queue.writeTexture({ texture: SCENE.spec, origin: [0, SCENE.head] }, row, { bytesPerRow: SCENE_BANDS }, [SCENE_BANDS, 1]);
+    SCENE.lastRow = row;
   }
-  const u = new ArrayBuffer(32 + FIELD_MAXE * 16), f = new Float32Array(u), ui = new Uint32Array(u);
-  const em = emitters.slice(0, FIELD_MAXE);
-  f[0] = dt; f[1] = t; f[2] = w / h; ui[3] = em.length; f[4] = bass; f[5] = mid; f[6] = high; f[7] = 2.2 * dpr / h;
-  em.forEach((e, k) => { const en = FIELD.hits.get(e.line) || 0; f.set([e.y, en, e.col, e.x], 8 + k * 4); });
-  for (const [k, v] of FIELD.hits) { const nv = v * Math.pow(0.02, dt); if (nv < 0.01) FIELD.hits.delete(k); else FIELD.hits.set(k, nv); }
-  const d = FIELD.dev;
-  d.queue.writeBuffer(FIELD.uni, 0, u);
+  const lr = SCENE.lastRow || new Uint8Array(SCENE_BANDS), avg = (a, b) => { let s = 0; for (let k = a; k < b; k++) s += lr[k]; return s / (b - a) / 255; };
+  bass = avg(0, 12); mid = avg(20, 40); high = avg(44, 60);
+  sceneKick = Math.max(sceneKick * 0.9, bass > 0.62 ? (bass - 0.62) * 2.6 : 0);
+  const buf = new ArrayBuffer(624), f = new Float32Array(buf), ui = new Uint32Array(buf);
+  f[0] = w; f[1] = h; f[2] = now % 1000; f[3] = beat || 0;
+  f[4] = bass; f[5] = mid; f[6] = high; f[7] = Math.min(1, sceneKick);
+  const em = emitters.slice(0, SCENE_MAXE);
+  ui[8] = em.length; f[9] = SCENE.head; f[10] = SCENE_ROWS; f[11] = off ? 1 : dpr;
+  f.set([...(opts.ink || [0.9, 0.91, 0.93]), 1], 12); f.set([...(opts.accent || [1, 0.6, 0.3]), 1], 16);
+  em.forEach((e, k) => { const t0 = SCENE.hits.get(e.line); f.set([e.y, e.x, e.col, t0 ? Math.min(30, now - t0) : 30], 20 + k * 4); });
+  TRACK_COLORS.forEach((hx, k) => { const v = parseInt(hx.slice(1), 16); f.set([(v >> 16 & 255) / 255, (v >> 8 & 255) / 255, (v & 255) / 255, 1], 116 + k * 4); });
+  d.queue.writeBuffer(SCENE.uni, 0, buf);
   const enc = d.createCommandEncoder();
-  const cp = enc.beginComputePass(); cp.setPipeline(FIELD.comp); cp.setBindGroup(0, FIELD.cbg); cp.dispatchWorkgroups(FIELD_N / 256); cp.end();
-  const rp = enc.beginRenderPass({ colorAttachments: [{ view: off ? off.tex.createView() : FIELD.ctx.getCurrentTexture().createView(), loadOp: 'clear', clearValue: { r: 0, g: 0, b: 0, a: 0 }, storeOp: 'store' }] });
-  rp.setPipeline(FIELD.rend); rp.setBindGroup(0, FIELD.rbg); rp.draw(4, FIELD_N); rp.end();
+  const rp = enc.beginRenderPass({ colorAttachments: [{ view: off ? off.tex.createView() : SCENE.ctx.getCurrentTexture().createView(), loadOp: 'clear', clearValue: { r: 0, g: 0, b: 0, a: 0 }, storeOp: 'store' }] });
+  rp.setPipeline(SCENE.pipes[mode]); rp.setBindGroup(0, SCENE.bgs[mode]); rp.draw(3); rp.end();
   d.queue.submit([enc.finish()]);
 }
 
