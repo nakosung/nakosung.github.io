@@ -430,6 +430,17 @@ body.recording .editor { border-color: var(--c-err); }
 .pwa-tip { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 80; max-width: min(460px, calc(100vw - 32px)); padding: 12px 16px; border-radius: var(--r-l, 12px);
   background: var(--fg); color: var(--body); font-size: 14px; line-height: 1.45; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
 
+/* ---- voice to code ---- */
+.vxbox { display: grid; gap: 8px; }
+.vxrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.vxunit { font-size: 12px; color: var(--dim); }
+.vxrec { margin-left: auto; }
+.vxrec::before { content: ''; display: inline-block; width: 9px; height: 9px; border-radius: 50%; background: var(--k-pink); margin-right: 7px; vertical-align: 0; }
+.vxrec.on { background: var(--k-pink); border-color: var(--k-pink); color: var(--on-key); }
+.vxrec.on::before { background: var(--on-key); border-radius: 2px; }
+.vxview { width: 100%; height: 86px; border-radius: var(--r-m); background: var(--scr); display: block; }
+.vxout { margin: 0; padding: 9px 11px; border-radius: var(--r-m); background: var(--scr); color: var(--scr-fg); font: 12px/1.6 var(--f-code); white-space: pre-wrap; overflow-wrap: anywhere; }
+.vxmsg.ok { color: var(--k-green); } .vxmsg.bad { color: var(--k-pink); }
 /* ---- sharing ---- */
 .sharedlg { width: min(520px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--line); border-radius: var(--r-xl); background: var(--panel); color: var(--fg); box-shadow: 0 24px 60px rgba(0,0,0,.45); }
 .sharedlg::backdrop { background: rgba(0, 0, 0, .5); }
@@ -588,7 +599,7 @@ body.recording .editor { border-color: var(--c-err); }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.13 09:27<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.13 09:38<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -673,6 +684,20 @@ body.recording .editor { border-color: var(--c-err); }
         <div class="row-btns">
           <button class="btn go" id="cmpGo" data-i18n="cmpGo"></button>
           <button class="btn ghost" id="cmpUndo" data-i18n="cmpUndo" disabled></button>
+        </div>
+        <div class="vxbox" id="vxBox">
+          <h2 class="sec-h"><span data-i18n="vxTitle"></span><small data-i18n="vxSmall"></small></h2>
+          <p class="note" data-i18n="vxIntro"></p>
+          <div class="vxrow">
+            <div class="seg" id="vxMode" role="group" data-i18n-aria="vxModeLbl"><button data-m="beat" data-i18n="vxBeat"></button><button data-m="hum" data-i18n="vxHum"></button></div>
+            <div class="seg" id="vxBars" role="group" data-i18n-aria="vxBarsLbl"><button data-b="1">1</button><button data-b="2">2</button><button data-b="4">4</button></div>
+            <span class="vxunit" data-i18n="vxBarsLbl"></span>
+            <button class="btn vxrec" id="vxRec"></button>
+          </div>
+          <canvas class="vxview" id="vxView" hidden aria-hidden="true"></canvas>
+          <pre class="vxout" id="vxOut" hidden></pre>
+          <div class="row-btns" id="vxActs" hidden><button class="btn go" id="vxInsert" data-i18n="vxInsert"></button><button class="btn ghost" id="vxUndo" data-i18n="vxUndo"></button></div>
+          <p class="note vxmsg" id="vxMsg" aria-live="polite"></p>
         </div>
         <h2 class="sec-h"><span data-i18n="genTitle"></span></h2>
         <dl class="gens">
@@ -886,6 +911,7 @@ const I18N = {
     tagline: 'live instrument', play: '재생', stop: '정지', auto: '자동 반영', autoTitle: '끄면 Ctrl+Enter로만 반영',
     bpmTitle: '휠로 조절, T 또는 TAP으로 탭 템포', lang: 'EN', langTitle: 'Switch to English',
     queueNext: '다음 마디에 반영', queueIn: '{n}마디 뒤 반영',
+    vxTitle: '목소리로 쓰기', vxSmall: '마이크', vxIntro: '"둠 츠 칙 츠" 비트박스나 흥얼거린 멜로디를 마디에 맞춰 녹음하면 코드 줄로 바꿔요. 한 마디 동안 박자 소리로 준비를 세고 시작해요. 스피커로 들을 때는 녹음하는 동안 음악을 잠시 끄고 박자 소리만 들려줘요.', vxBeat: '비트박스', vxHum: '허밍', vxModeLbl: '무엇을 녹음할지', vxBarsLbl: '마디', vxRec: '녹음', vxCancel: '녹음 취소', vxCount: '{m} 준비… 박자에 맞춰 들어오세요', vxRecBanner: '{m} 녹음 {bar}/{bars}마디', vxBusy: '루프 녹음이 끝난 뒤에 해 주세요.', vxQuiet: '소리가 거의 들리지 않았어요. 마이크에 조금 더 가까이 대고 다시 해 보세요.', vxNothing: '알아들을 만한 소리를 찾지 못했어요. 조금 더 또렷하게 해 보세요.', vxBeatDone: '{n}번 친 소리를 찾았어요. 낮은 소리는 kick, 중간은 snare, 높고 짧은 소리는 hat이에요.', vxHumDone: '{k} 음계에 맞췄어요.', vxShift: '{n}옥타브 올렸어요.', vxInsert: '코드에 넣기', vxUndo: '되돌리기', vxInserted: '넣었어요. 다음 마디부터 들려요.', vxUndone: '넣기 전으로 돌렸어요.',
     share: '공유', shareTitle: '이 곡을 링크나 녹음으로 보내요', shareTitle2: '이 곡 공유하기', shareLink: '링크로 보내기', shareLinkD: '코드 전체가 링크 안에 들어가요. 받는 사람이 열면 이 곡이 그대로 열리고, 고쳐서 다시 보낼 수도 있어요.', shareSend: '보내기…', shareCopy: '링크 복사', shareCopied: '링크를 복사했어요', shareChars: '자', shareAudio: '소리로 보내기', shareAudioD: '다음 마디부터 연주를 그대로 녹음해 오디오 파일로 만들어요. 멈춰 있으면 처음부터 틀면서 녹음해요.', shareB4: '4마디', shareB8: '8마디', shareB16: '16마디', shareWhole: '곡 전체', shareStop: '녹음 끝내기', shareWaiting: '다음 마디에서 녹음을 시작해요…', shareRecording: '녹음 중 {a}/{b}마디', shareReady: '{s}초 녹음했어요 ({kb} KB)', shareSendFile: '파일 보내기…', shareSave: '저장', shareSaved: '{n} 파일로 저장했어요', shareHint: '휴대폰에서 "보내기"를 누르면 공유 창이 열려 카카오톡, 메시지, 메일 등으로 바로 보낼 수 있어요.', shareNoRec: '이 브라우저는 녹음을 지원하지 않아요.', shareText: 'Tactus로 만든 곡: {n}', shareMine: '내 곡', shareOpened: '공유받은 곡을 열었어요. 원래 코드는 보관해 뒀어요.', shareUndo: '내 코드로 되돌리기', shareBad: '링크가 잘려서 곡을 열 수 없어요. 링크 전체를 받았는지 확인해 주세요.',
     install: '앱으로 설치', installTitle: 'Tactus를 앱으로 설치해 바탕화면이나 홈 화면에서 바로 열어요', installDone: '설치했어요. 이제 앱 목록이나 홈 화면에서 Tactus를 열 수 있어요.', installIos: 'Safari 아래쪽의 공유 버튼을 누르고 "홈 화면에 추가"를 고르세요.', installMenu: '브라우저 메뉴(⋮)에서 "앱 설치" 또는 "홈 화면에 추가"를 고르세요.',
     skin: '스킨', skinStudio: '스튜디오', skinField: '필드', skinPop: '팝', armCode: '코드', armSong: '곡', armNext: '다음 마디', armIn: '{n}마디 뒤', armBeat: '{n}박 뒤', armGo: '지금!',
@@ -1086,6 +1112,7 @@ const I18N = {
     tagline: 'live instrument', play: 'Play', stop: 'Stop', auto: 'Live update', autoTitle: 'When off, changes apply only on Ctrl+Enter',
     bpmTitle: 'Scroll to adjust, T or TAP for tap tempo', lang: '한국어', langTitle: '한국어로 전환',
     queueNext: 'Applies next bar', queueIn: 'Applies in {n} bars',
+    vxTitle: 'Sing it in', vxSmall: 'microphone', vxIntro: 'Beatbox ("boom ts chik ts") or hum a tune in time with the bar and it becomes code. A bar of clicks counts you in. On speakers the music is muted while you record, and only the clicks play.', vxBeat: 'Beatbox', vxHum: 'Hum', vxModeLbl: 'What to record', vxBarsLbl: 'bars', vxRec: 'Record', vxCancel: 'Cancel', vxCount: '{m}: get ready… come in on the beat', vxRecBanner: '{m}: recording bar {bar} of {bars}', vxBusy: 'Wait until the loop recording is done.', vxQuiet: 'Almost nothing came through. Get a little closer to the mic and try again.', vxNothing: 'Nothing clear enough was heard. Try again a little more crisply.', vxBeatDone: 'Found {n} hits. Low sounds became kick, middle ones snare, high short ones hat.', vxHumDone: 'Fitted to {k}.', vxShift: 'Moved up {n} octave(s).', vxInsert: 'Put in the code', vxUndo: 'Undo', vxInserted: 'Added. You will hear it from the next bar.', vxUndone: 'Back to how it was.',
     share: 'Share', shareTitle: 'Send this song as a link or a recording', shareTitle2: 'Share this song', shareLink: 'Send a link', shareLinkD: 'The whole code goes inside the link. Whoever opens it gets this song as it is, and can change it and send it back.', shareSend: 'Send…', shareCopy: 'Copy link', shareCopied: 'Link copied', shareChars: ' characters', shareAudio: 'Send the sound', shareAudioD: 'Records the music from the next bar into an audio file. If it is stopped, it starts playing from the top.', shareB4: '4 bars', shareB8: '8 bars', shareB16: '16 bars', shareWhole: 'Whole song', shareStop: 'Stop recording', shareWaiting: 'Recording starts on the next bar…', shareRecording: 'Recording bar {a} of {b}', shareReady: 'Recorded {s} s ({kb} KB)', shareSendFile: 'Send file…', shareSave: 'Save', shareSaved: 'Saved as {n}', shareHint: 'On a phone, Send opens the share sheet, so it goes straight to KakaoTalk, Messages, mail and the rest.', shareNoRec: 'This browser cannot record.', shareText: 'A song made in Tactus: {n}', shareMine: 'my song', shareOpened: 'Opened a shared song. Your own code is kept.', shareUndo: 'Back to my code', shareBad: 'This link is cut short, so the song cannot open. Check that the whole link came through.',
     install: 'Install app', installTitle: 'Install Tactus as an app and open it from your desktop or home screen', installDone: 'Installed. Open Tactus from your apps or home screen.', installIos: 'Tap Share at the bottom of Safari, then choose "Add to Home Screen".', installMenu: 'Open the browser menu (⋮) and choose "Install app" or "Add to Home screen".',
     skin: 'Skin', skinStudio: 'Studio', skinField: 'Field', skinPop: 'Pop', armCode: 'Code', armSong: 'Song', armNext: 'next bar', armIn: 'in {n} bars', armBeat: 'in {n}', armGo: 'Now!',
@@ -6345,9 +6372,9 @@ function connectCapture(src) {
   LS.capInput.connect(LS.cap);
 }
 function outLat() { return S.ctx.outputLatency || S.ctx.baseLatency || 0.01; }
-function compSec() {
+function compSec(src = LS.source) {
   let base = 0;
-  if (LS.source === 'mic') {
+  if (src === 'mic') {
     if (LS.speaker) base = LS.clap.speaker ?? (LS.rtt != null ? Math.max(0, LS.rtt - outLat()) + 0.02 : 0.025);
     else base = LS.clap.phones ?? LS.rtt ?? outLat() + 0.012;
   }
@@ -6367,7 +6394,7 @@ async function recToggle(i) {
     }
     return;
   }
-  if (tk) return;
+  if (tk || VX.take) return;
   if (LS.source === 'mic') {
     const r = await ensureMic();
     if (r !== 'ok') { LS.source = 'out'; loopMsg(t(r === 'blocked' ? 'micBlocked' : 'micDenied'), 'bad', 6000); renderLoops(); }
@@ -6416,6 +6443,7 @@ function onChunk(f, l, r) {
     const a = Math.max(f, pr.f0), b = Math.min(f + l.length, pr.f0 + pr.L.length);
     if (b > a) pr.L.set(l.subarray(a - f, b - f), a - pr.f0);
   }
+  if (VX.take) vxChunk(f, l);
   const tk = LS.take; if (!tk) return;
   const total = tk.bars * tk.barFrames;
   const a = Math.max(f, tk.f0), b = Math.min(f + l.length, tk.f0 + total);
@@ -8469,7 +8497,15 @@ function frame() {
       const bar = Math.min(tk.bars, Math.floor(c - tk.startC) + 1);
       recText.textContent = t('bannerRec', { name: tk.slot.name, bar, bars: tk.bars }) + ' · ' + (tk.silent ? t('bannerMuted') : tk.src === 'out' ? t('bannerOut') : '');
     }
+  } else if (VX.take && S.playing) {
+    // voice take: count-in beats, then the bar being sung
+    const vt = VX.take, c = transport(now), beat = Math.floor(mod(c, 1) * 4);
+    recbar.hidden = false; document.body.classList.add('recording');
+    beatEls.forEach((b, i) => b.classList.toggle('on', i === beat));
+    if (c < vt.startC) { recCount.textContent = Math.max(1, Math.ceil((vt.startC - c) * 4 - 1e-6)); recText.textContent = t('vxCount', { m: t(vt.mode === 'beat' ? 'vxBeat' : 'vxHum') }); }
+    else { recCount.textContent = '●'; recText.textContent = t('vxRecBanner', { bar: Math.min(vt.bars, Math.floor(c - vt.startC) + 1), bars: vt.bars, m: t(vt.mode === 'beat' ? 'vxBeat' : 'vxHum') }); }
   } else if (!recbar.hidden) { recbar.hidden = true; document.body.classList.remove('recording'); }
+  vxTick(now);
   if (st !== lastTakeState) { lastTakeState = st; renderLoops(); }
   drawWaves();
   drawArr(now);
@@ -8734,6 +8770,387 @@ function shareSave() {
   shareSay(t('shareSaved', { n: SH.file.name }), 'ok');
 }
 shareInit();
+
+// ===================== Voice to code: the analysis =====================
+// Pure functions over a mono recording that starts `pre` seconds before bar 1 of the take. No DOM and no audio
+// context, so tests run them in Node on synthesized voices.
+//   vxBeat: beatboxing ("boom", "tuk", "chik", "ts") -> kick, snare and hat lines on a 16th grid
+//   vxHum:  humming or la-la-la -> a melody line on an 8th grid, in the song's key
+// Both return what they heard (hits, pitch contour) as well as the code, so the page can draw it.
+
+// ---------- small DSP ----------
+function vxFFT(re, im) {
+  const n = re.length;
+  for (let i = 1, j = 0; i < n; i++) {
+    let bit = n >> 1; for (; j & bit; bit >>= 1) j ^= bit; j ^= bit;
+    if (i < j) { let t = re[i]; re[i] = re[j]; re[j] = t; t = im[i]; im[i] = im[j]; im[j] = t; }
+  }
+  for (let len = 2; len <= n; len <<= 1) {
+    const a = -2 * Math.PI / len, wr = Math.cos(a), wi = Math.sin(a);
+    for (let i = 0; i < n; i += len) {
+      let cr = 1, ci = 0;
+      for (let k = 0; k < len / 2; k++) {
+        const p = i + k, q = p + len / 2, tr = re[q] * cr - im[q] * ci, ti = re[q] * ci + im[q] * cr;
+        re[q] = re[p] - tr; im[q] = im[p] - ti; re[p] += tr; im[p] += ti;
+        const nr = cr * wr - ci * wi; ci = cr * wi + ci * wr; cr = nr;
+      }
+    }
+  }
+}
+const vxHann = n => { const w = new Float32Array(n); for (let i = 0; i < n; i++) w[i] = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / (n - 1)); return w; };
+const vxPow2 = x => 1 << Math.round(Math.log2(x));
+// magnitude spectrum of x[i .. i+N) (zero outside)
+function vxSpec(x, i, N, win) {
+  const re = new Float32Array(N), im = new Float32Array(N);
+  for (let k = 0; k < N; k++) { const j = i + k; re[k] = j >= 0 && j < x.length ? x[j] * win[k] : 0; }
+  vxFFT(re, im);
+  const m = new Float32Array(N / 2);
+  for (let k = 0; k < N / 2; k++) m[k] = Math.hypot(re[k], im[k]);
+  return m;
+}
+// the metronome clicks are short sine bursts at one frequency: a notch takes them out of what the mic heard
+function vxNotch(x, sr, f, q = 6) {
+  const w = 2 * Math.PI * f / sr, al = Math.sin(w) / (2 * q), c = Math.cos(w), a0 = 1 + al;
+  const b0 = 1 / a0, b1 = -2 * c / a0, b2 = 1 / a0, a1 = -2 * c / a0, a2 = (1 - al) / a0;
+  const y = new Float32Array(x.length); let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+  for (let i = 0; i < x.length; i++) { const v = b0 * x[i] + b1 * x1 + b2 * x2 - a1 * y1 - a2 * y2; x2 = x1; x1 = x[i]; y2 = y1; y1 = v; y[i] = v; }
+  return y;
+}
+function vxMedian(a) { if (!a.length) return 0; const s = Float64Array.from(a).sort(); return s[s.length >> 1]; }
+// the room's own level: the quietest frames, but never more than a quarter of the loud ones (a take that is all voice)
+function vxFloor(rms, min) { return Math.max(Math.min(vxPct(rms, 0.05) * 3, vxPct(rms, 0.9) * 0.25), min); }
+function vxPct(a, p) { if (!a.length) return 0; const s = Float64Array.from(a).sort(); return s[Math.min(s.length - 1, Math.floor(s.length * p))]; }
+
+// ---------- onsets ----------
+// Spectral flux finds where something starts; the exact sample is then taken from the amplitude envelope.
+function vxOnsets(x, sr, opt = {}) {
+  const N = vxPow2(sr * 0.023), hop = Math.round(sr * 0.005), win = vxHann(N);
+  const frames = Math.max(0, Math.floor((x.length - N) / hop) + 1), lo = Math.floor(40 * N / sr);
+  const flux = new Float32Array(frames), rms = new Float32Array(frames);
+  let prev = null;
+  for (let f = 0; f < frames; f++) {
+    const m = vxSpec(x, f * hop, N, win);
+    let s = 0; for (let k = lo; k < m.length; k++) { const v = Math.log1p(100 * m[k]); if (prev) s += Math.max(0, v - prev[k]); m[k] = v; }
+    flux[f] = s; prev = m;
+    let e = 0; for (let k = 0; k < N; k++) { const v = x[f * hop + k]; e += v * v; } rms[f] = Math.sqrt(e / N);
+  }
+  const floor = vxFloor(rms, opt.gate ?? 0.004), fmax = Math.max(1e-9, ...flux);
+  // a smoothed envelope (about 1 ms) for the exact start
+  const env = new Float32Array(x.length), sm = Math.exp(-1 / (sr * 0.001));
+  for (let i = 0, v = 0; i < x.length; i++) { v = Math.max(Math.abs(x[i]), v * sm); env[i] = v; }
+  const out = [], gap = Math.round((opt.minGap ?? 0.07) * sr / hop);
+  for (let f = 2; f < frames - 1; f++) {
+    let med = []; for (let k = Math.max(0, f - 10); k <= Math.min(frames - 1, f + 10); k++) med.push(flux[k]);
+    const thr = vxMedian(med) * 1.5 + fmax * (opt.delta ?? 0.08);
+    if (flux[f] < thr || flux[f] < flux[f - 1] || flux[f] < flux[f + 1]) continue;
+    // loud enough somewhere in the next 40 ms
+    const w = Math.ceil(0.03 * sr / hop);
+    let loud = 0, before = 0;
+    for (let k = f; k < Math.min(frames, f + w + 2); k++) loud = Math.max(loud, rms[k]);
+    for (let k = Math.max(0, f - w - 2); k < f - 1; k++) before = Math.max(before, rms[k]);
+    // a real start makes it louder; a sound that only changes colour as it fades (a falling kick) does not
+    if (loud < floor || loud < before * 1.4) continue;
+    const a = Math.max(0, f * hop - N / 2), b = Math.min(x.length, f * hop + N + N / 2);
+    let pk = 0, pi = a; for (let i = a; i < b; i++) if (env[i] > pk) { pk = env[i]; pi = i; }
+    let i0 = pi; while (i0 > a && env[i0 - 1] > pk * 0.3) i0--;
+    const o = { i: i0, t: i0 / sr, flux: flux[f] / fmax, amp: pk };
+    const last = out[out.length - 1];
+    if (last && (f - last.f) < gap) { if (o.flux > last.flux) { o.f = f; out[out.length - 1] = o; } continue; }
+    o.f = f; out.push(o);
+  }
+  return out;
+}
+
+// ---------- beatbox ----------
+function vxHitFeatures(x, sr, i) {
+  const N = vxPow2(sr * 0.04), m = vxSpec(x, i, N, vxHann(N));
+  let s = 0, sw = 0, lo = 0, hi = 0;
+  for (let k = 1; k < m.length; k++) { const f = k * sr / N, p = m[k] * m[k]; s += p; sw += p * f; if (f < 250) lo += p; if (f > 5000) hi += p; }
+  return { cent: s ? sw / s : 1000, lo: s ? lo / s : 0, hi: s ? hi / s : 0 };
+}
+// 1-D k-means on log-centroid; keeps k (1..3) only while the groups sit far enough apart to be different sounds
+function vxCluster(vals) {
+  let best = { k: 1, lab: vals.map(() => 0), means: [vxMedian(vals)] };
+  const sorted = [...vals].sort((a, b) => a - b);
+  for (let k = 2; k <= Math.min(3, vals.length); k++) {
+    let means = Array.from({ length: k }, (_, j) => sorted[Math.floor((j + 0.5) * sorted.length / k)]), lab = [];
+    for (let it = 0; it < 30; it++) {
+      lab = vals.map(v => { let b = 0; for (let j = 1; j < k; j++) if (Math.abs(v - means[j]) < Math.abs(v - means[b])) b = j; return b; });
+      means = means.map((m, j) => { const g = vals.filter((_, i) => lab[i] === j); return g.length ? g.reduce((a, b) => a + b) / g.length : m; });
+    }
+    const used = new Set(lab).size === k, ms = [...means].sort((a, b) => a - b);
+    let sep = Infinity; for (let j = 1; j < k; j++) sep = Math.min(sep, ms[j] - ms[j - 1]);
+    // groups count as different sounds when the gap between them is wide next to how much each one wanders
+    const sd = Math.sqrt(vals.reduce((a, v, i) => a + (v - means[lab[i]]) ** 2, 0) / vals.length);
+    if (used && sep >= Math.max(0.45, 3 * sd)) best = { k, lab, means };
+  }
+  return best;
+}
+function vxBeat(x, sr, barSec, bars, pre = 0, opt = {}) {
+  const steps = 16, stepSec = barSec / steps;
+  const ons = vxOnsets(x, sr, opt).map(o => ({ ...o, t: o.t - pre, ...vxHitFeatures(x, sr, o.i) }))
+    .filter(o => o.t > -stepSec / 2 && o.t < bars * barSec - stepSec / 2);
+  if (!ons.length) return { hits: [], lines: {}, steps };
+  const cl = vxCluster(ons.map(o => Math.log2(o.cent)));
+  const order = cl.means.map((m, j) => j).sort((a, b) => cl.means[a] - cl.means[b]);
+  const kindOf = {};
+  if (cl.k === 3) { kindOf[order[0]] = 'kick'; kindOf[order[1]] = 'snare'; kindOf[order[2]] = 'hat'; }
+  else if (cl.k === 2) {
+    const hiG = ons.filter((_, i) => cl.lab[i] === order[1]), hiHz = 2 ** cl.means[order[1]];
+    // a high, busy sound is a hi-hat ("ts ts ts"); a high sound on a few beats is a snare ("chik")
+    kindOf[order[0]] = 'kick'; kindOf[order[1]] = hiHz > 5500 && hiG.length / bars >= 6 ? 'hat' : 'snare';
+  } else {
+    const hz = 2 ** cl.means[0];
+    kindOf[0] = hz < 1400 ? 'kick' : hz > 5500 ? 'hat' : 'snare';
+  }
+  const hits = ons.map((o, i) => ({ t: o.t, step: Math.round(o.t / stepSec), kind: kindOf[cl.lab[i]], amp: o.amp, cent: o.cent, err: o.t / stepSec - Math.round(o.t / stepSec) }));
+  const lines = {};
+  for (const h of hits) {
+    if (h.step < 0 || h.step >= bars * steps) continue;
+    const g = (lines[h.kind] = lines[h.kind] || Array(bars * steps).fill('.'));
+    g[h.step] = 'x';
+  }
+  return { hits, lines, steps };
+}
+
+// ---------- humming ----------
+// YIN pitch at sample i: cumulative-mean-normalized difference, first dip under the threshold, parabolic refinement
+function vxYin(x, sr, i, W, tmin, tmax) {
+  const d = new Float32Array(tmax + 1);
+  for (let tau = 1; tau <= tmax; tau++) {
+    let s = 0; for (let j = 0; j < W; j++) { const a = x[i + j] - x[i + j + tau]; s += a * a; } d[tau] = s;
+  }
+  let run = 0; d[0] = 1;
+  for (let tau = 1; tau <= tmax; tau++) { run += d[tau]; d[tau] = run ? d[tau] * tau / run : 1; }
+  let tau = -1;
+  for (let t = tmin; t < tmax; t++) if (d[t] < 0.15) { while (t + 1 < tmax && d[t + 1] < d[t]) t++; tau = t; break; }
+  if (tau < 0) { let b = tmin; for (let t = tmin; t < tmax; t++) if (d[t] < d[b]) b = t; if (d[b] > 0.3) return null; tau = b; }
+  const a = d[tau - 1], b = d[tau], c = d[tau + 1] ?? b, den = a - 2 * b + c, off = den ? 0.5 * (a - c) / den : 0;
+  return { f0: sr / (tau + off), ap: b };
+}
+const VX_SHARP = ['c', 'c#', 'd', 'd#', 'e', 'f', 'f#', 'g', 'g#', 'a', 'a#', 'b'], VX_FLAT = ['c', 'db', 'd', 'eb', 'e', 'f', 'gb', 'g', 'ab', 'a', 'bb', 'b'];
+function vxNoteName(m, flat) { return (flat ? VX_FLAT : VX_SHARP)[((m % 12) + 12) % 12] + (Math.floor(m / 12) - 1); }
+// keys whose signature has flats write flats (F major, Bb, Eb ... and their relative minors)
+function vxFlatKey(root, scale) { const maj = /minor|aeolian|dorian|phrygian|minpent|harmonic|melodic|blues/.test(scale) ? (root + 3) % 12 : root; return [5, 10, 3, 8, 1, 6].includes(maj); }
+function vxHum(x, sr, barSec, bars, pre, key, opt = {}) {
+  const per = opt.per || 8, stepSec = barSec / per, hop = Math.round(sr * 0.01), W = vxPow2(sr * 0.025);
+  const tmin = Math.floor(sr / 1100), tmax = Math.ceil(sr / 70);
+  const contour = [], rmsAll = [];
+  for (let i = 0; i + W + tmax < x.length; i += hop) {
+    let e = 0; for (let j = 0; j < W; j++) e += x[i + j] * x[i + j];
+    rmsAll.push(Math.sqrt(e / W));
+  }
+  const gate = vxFloor(rmsAll, opt.gate ?? 0.006);
+  for (let n = 0, i = 0; i + W + tmax < x.length; i += hop, n++) {
+    const t = (i + W / 2) / sr - pre;
+    if (rmsAll[n] < gate) { contour.push({ t, m: null, rms: rmsAll[n] }); continue; }
+    const p = vxYin(x, sr, i, W, tmin, tmax);
+    contour.push({ t, m: p && p.f0 > 70 && p.f0 < 1100 ? 69 + 12 * Math.log2(p.f0 / 440) : null, rms: rmsAll[n] });
+  }
+  // a five-frame median removes single-frame octave slips
+  const mm = contour.map((c, i) => { const w = contour.slice(Math.max(0, i - 2), i + 3).map(z => z.m).filter(v => v != null); return c.m == null || w.length < 3 ? c.m : vxMedian(w); });
+  const voiced = mm.filter(v => v != null);
+  if (voiced.length < 5) return { notes: [], tokens: [], contour, per, shift: 0, tune: 0 };
+  // sung a little sharp or flat throughout: measure it and take it out before rounding
+  const tune = Math.atan2(vxMedian(voiced.map(v => Math.sin(2 * Math.PI * v))), vxMedian(voiced.map(v => Math.cos(2 * Math.PI * v)))) / (2 * Math.PI);
+  const pcs = (SCALES[key.scale] || SCALES.major).map(s => (s + key.root) % 12);
+  const snap = m => { let best = Math.round(m), bd = 9; for (let r = Math.floor(m) - 2; r <= Math.ceil(m) + 2; r++) if (pcs.includes(((r % 12) + 12) % 12) && Math.abs(r - m) < bd) { bd = Math.abs(r - m); best = r; } return best; };
+  // onsets mark re-sung notes of the same pitch ("la la la")
+  const ons = vxOnsets(x, sr, { gate, delta: 0.12, minGap: 0.09 }).map(o => o.t - pre);
+  const notes = [];
+  for (let k = 0; k < bars * per; k++) {
+    const a = k * stepSec - stepSec * 0.25, b = (k + 1) * stepSec - stepSec * 0.25;
+    const fr = []; let all = 0;
+    contour.forEach((c, i) => { if (c.t >= a && c.t < b) { all++; if (mm[i] != null) fr.push(mm[i]); } });
+    if (!all || fr.length / all < 0.45) { notes.push(null); continue; }
+    const m = snap(vxMedian(fr) - tune);
+    // sung again, not held: an onset in this step, or the voice dipping between the two notes
+    let dip = Infinity, lvl = [];
+    contour.forEach(c => { if (Math.abs(c.t - k * stepSec) < 0.05) dip = Math.min(dip, c.rms); if (c.t >= a - stepSec && c.t < b) lvl.push(c.rms); });
+    notes.push({ m, onset: ons.some(t => t >= a && t < b) || dip < vxMedian(lvl) * 0.35 });
+  }
+  // a melody sits in a melody's register: move it up by octaves until its middle is at least middle C
+  const sung = notes.filter(Boolean).map(n => n.m);
+  let shift = 0; while (sung.length && vxMedian(sung) + shift < 60) shift += 12;
+  const flat = vxFlatKey(key.root, key.scale), tokens = [];
+  notes.forEach((n, k) => {
+    if (!n) { tokens.push('.'); return; }
+    const p = notes[k - 1];
+    // a hold carries a note within its bar; a new bar sings the note again
+    tokens.push(p && p.m === n.m && !n.onset && k % per ? '_' : vxNoteName(n.m + shift, flat));
+  });
+  return { notes, tokens, contour: contour.map((c, i) => ({ t: c.t, m: mm[i] == null ? null : mm[i] - tune + shift })), per, shift, tune };
+}
+
+// ---------- writing patterns ----------
+// One bar of step tokens in as few slots as it needs: 16 steps where only 8ths are used become 8 slots, and so on.
+// For drums the steps inside a slot must be rests; for melodies they must continue the slot's note.
+function vxBar(tok, melodic) {
+  const n = tok.length;
+  for (const d of [1, 2, 4, 8, 16, 32]) {
+    if (n % d) continue;
+    const w = n / d; let ok = true;
+    for (let s = 0; s < d && ok; s++) {
+      const first = tok[s * w];
+      for (let j = 1; j < w && ok; j++) { const v = tok[s * w + j]; ok = melodic ? (v === '_' || (v === '.' && first === '.')) : v === '.'; }
+    }
+    if (ok) return Array.from({ length: d }, (_, s) => tok[s * w]).join(' ');
+  }
+  return tok.join(' ');
+}
+// several bars: the same bar repeated is written once; different bars take turns with <>
+function vxPattern(tok, bars, melodic) {
+  const per = tok.length / bars, bs = [];
+  for (let b = 0; b < bars; b++) bs.push(vxBar(tok.slice(b * per, (b + 1) * per), melodic));
+  if (bs.every(s => s === bs[0])) return bs[0];
+  if (bars === 4 && bs[0] === bs[2] && bs[1] === bs[3]) return `<[${bs[0]}] [${bs[1]}]>`;
+  return `<${bs.map(s => `[${s}]`).join(' ')}>`;
+}
+if (false) module.exports = { vxFFT, vxOnsets, vxBeat, vxHum, vxPattern, vxBar, vxCluster, vxNotch, vxNoteName };
+
+// ===================== Voice to code: recording and the page =====================
+// Beatbox or hum into the mic for 1, 2 or 4 bars, in time with the music, and get code lines back.
+// The take works like a loop recording (the same capture and latency correction), with a one-bar count-in of clicks.
+// The clicks are a pure 3.8 kHz tone, so a notch takes them back out of what the mic heard. On speakers the music is
+// muted while you record (clicks only), as the loop recorder does, so the mic hears only you.
+
+const VX = { take: null, mode: 'beat', bars: 2, result: null, undo: null };
+const VX_CLICK = 3800;
+
+function vxChunk(f, l) {
+  const tk = VX.take, a = Math.max(f, tk.f0), b = Math.min(f + l.length, tk.f0 + tk.L.length);
+  if (b > a) tk.L.set(l.subarray(a - f, b - f), a - tk.f0);
+}
+async function vxRecord() {
+  if (VX.take) { vxCancel(); return; }
+  if (LS.take || LS.cal) { vxSay(t('vxBusy'), 'bad'); return; }
+  initAudio(); await S.ctx.resume();
+  const r = await ensureMic();
+  if (r !== 'ok') { vxSay(t(r === 'blocked' ? 'micBlocked' : 'micDenied'), 'bad'); return; }
+  await ensureCapture();
+  connectCapture('mic'); LS.capOn(true);
+  if (!S.playing) togglePlay(true);
+  const ctx = S.ctx, sr = ctx.sampleRate, bars = VX.bars, barSec = 1 / S.cps;
+  // at least half a bar from now, so the count-in bar is heard whole
+  const startC = Math.ceil(S.lastC + 0.5 - 1e-6), pre = 0.12, lat = compSec('mic');
+  const t0 = timeOf(startC) + lat;
+  VX.take = { mode: VX.mode, startC, bars, barSec, pre, sr, f0: Math.round((t0 - pre) * sr), L: new Float32Array(Math.ceil((pre + bars * barSec + 0.25) * sr)), endT: timeOf(startC + bars) + lat + 0.3, silent: LS.speaker };
+  for (let k = (startC - 1) * 4; k < (startC + bars) * 4; k++) click(timeOf(k / 4), VX_CLICK, (k % 4 ? 0.12 : 0.3) * (LS.speaker ? 0.7 : 1));
+  if (LS.speaker) { const g = A.out.gain; g.cancelScheduledValues(ctx.currentTime); g.setValueAtTime(g.value, ctx.currentTime); g.setTargetAtTime(0, timeOf(startC), 0.004); g.setTargetAtTime(OUT_GAIN, timeOf(startC + bars), 0.01); }
+  VX.result = null; vxRender();
+}
+function vxRestore() { if (VX.take && VX.take.silent && S.ctx) { const g = A.out.gain, now = S.ctx.currentTime; g.cancelScheduledValues(now); g.setTargetAtTime(OUT_GAIN, now, 0.01); } }
+function vxCancel() { vxRestore(); VX.take = null; if (!LS.take && LS.capOn) LS.capOn(false); vxRender(); }
+// called by the animation loop: finish when the last bar (and the audio still in flight) has arrived
+function vxTick(now) {
+  const tk = VX.take; if (!tk) return;
+  if (!S.playing) { vxCancel(); return; }
+  if (now < tk.endT) return;
+  VX.take = null; if (!LS.take) LS.capOn(false);
+  const x = vxNotch(vxNotch(tk.L, tk.sr, VX_CLICK, 4), tk.sr, VX_CLICK * 2, 4);
+  let pk = 0; for (let i = 0; i < x.length; i++) pk = Math.max(pk, Math.abs(x[i]));
+  if (pk < 0.01) { vxSay(t('vxQuiet'), 'bad'); vxRender(); return; }
+  const key = { root: S.root, scale: S.scale };
+  if (tk.mode === 'beat') {
+    const r = vxBeat(x, tk.sr, tk.barSec, tk.bars, tk.pre);
+    const lines = ['kick', 'snare', 'hat'].filter(k => r.lines[k]).map(k => ({ name: k, pat: vxPattern(r.lines[k], tk.bars, false) }));
+    VX.result = { mode: 'beat', lines, hits: r.hits, x, tk };
+    vxSay(lines.length ? t('vxBeatDone', { n: r.hits.length }) : t('vxNothing'), lines.length ? 'ok' : 'bad');
+  } else {
+    const r = vxHum(x, tk.sr, tk.barSec, tk.bars, tk.pre, key);
+    const has = r.tokens.some(v => v !== '.' && v !== '_');
+    VX.result = { mode: 'hum', lines: has ? [{ name: 'hum', pat: vxPattern(r.tokens, tk.bars, true), params: 'pluck gain .5 delay .15 verb .2' }] : [], hum: r, x, tk };
+    vxSay(has ? t('vxHumDone', { k: S.keySrc }) + (r.shift ? ' ' + t('vxShift', { n: r.shift / 12 }) : '') : t('vxNothing'), has ? 'ok' : 'bad');
+  }
+  vxRender();
+}
+
+// ---------- putting the lines into the code ----------
+// A line with the same name gets the new pattern and keeps its sound after |; a new line goes at the end of the tracks.
+// A new track is added to scenes that list their tracks, so it plays in the song too.
+function vxInsert() {
+  const res = VX.result; if (!res || !res.lines.length) return;
+  VX.undo = srcEl.value;
+  let lines = srcEl.value.split('\n');
+  const has = n => lines.some(l => new RegExp(`^\\s*${n}\\s`).test(l));
+  for (let { name, pat, params } of res.lines) {
+    // the song's own drum names: a beatboxed snare goes to its clap if it has no snare
+    if (name === 'snare' && !has('snare') && has('clap')) name = 'clap';
+    const re = new RegExp(`^(\\s*${name}\\s+)([^|]*?)(\\s*\\|.*)?$`);
+    const i = lines.findIndex(l => re.test(l) && !/^\s*\/\//.test(l));
+    if (i >= 0) { lines[i] = lines[i].replace(re, (m, a, b, c) => a + pat + (c || '')); continue; }
+    let at = lines.length; for (let j = lines.length - 1; j >= 0; j--) if (/^\s*(scene|song)\b/.test(lines[j])) at = j; else if (lines[j].trim() && !/^\s*\/\//.test(lines[j])) break;
+    while (at > 0 && !lines[at - 1].trim()) at--;
+    lines.splice(at, 0, `${name.padEnd(6)} ${pat}${params ? ' | ' + params : ''}`);
+    lines = lines.map(l => {
+      const m = /^(\s*scene\s+\S+\s+)([^|]*?)(\s*\|.*)?$/.exec(l);
+      if (!m || /\ball\b/.test(m[2]) || new RegExp(`\\b${name}\\b`).test(m[2])) return l;
+      return m[1] + m[2] + ' ' + name + (m[3] || '');
+    });
+  }
+  srcEl.value = lines.join('\n');
+  evaluate('bar'); render();
+  vxSay(t('vxInserted'), 'ok'); vxRender();
+}
+function vxUndo() { if (VX.undo == null) return; srcEl.value = VX.undo; VX.undo = null; evaluate('bar'); render(); vxSay(t('vxUndone'), 'ok'); vxRender(); }
+
+// ---------- the panel ----------
+const vxEl = id => document.getElementById(id);
+function vxSay(m, cls = '') { const el = vxEl('vxMsg'); if (el) { el.textContent = m; el.className = 'note vxmsg ' + cls; } }
+function vxRender() {
+  const rec = vxEl('vxRec'); if (!rec) return;
+  rec.textContent = t(VX.take ? 'vxCancel' : 'vxRec'); rec.classList.toggle('on', !!VX.take);
+  document.querySelectorAll('#vxMode button').forEach(b => b.setAttribute('aria-pressed', b.dataset.m === VX.mode));
+  document.querySelectorAll('#vxBars button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.b === VX.bars));
+  const res = VX.result, out = vxEl('vxOut');
+  out.hidden = !(res && res.lines.length);
+  if (res && res.lines.length) out.innerHTML = res.lines.map(l => `<span class="nmn">${esc(l.name.padEnd(6))}</span> ${esc(l.pat)}${l.params ? ` <span class="pipe">|</span> <span class="in">${esc(l.params)}</span>` : ''}`).join('\n');
+  vxEl('vxActs').hidden = !(res && res.lines.length) && VX.undo == null;
+  vxEl('vxInsert').hidden = !(res && res.lines.length);
+  vxEl('vxUndo').hidden = VX.undo == null;
+  vxEl('vxView').hidden = !res;
+  if (res) vxDraw(res);
+}
+// what was heard: the loudness over the take on a beat grid, and on it the hits (beatbox) or the sung pitch and the notes
+function vxDraw(res) {
+  const cv = vxEl('vxView'), dpr = devicePixelRatio || 1, w = cv.clientWidth * dpr, h = cv.clientHeight * dpr;
+  cv.width = w; cv.height = h;
+  const g = cv.getContext('2d'), cs = getComputedStyle(document.documentElement), col = v => cs.getPropertyValue(v).trim();
+  const tk = res.tk, total = tk.bars * tk.barSec, X = tt => (tt / total) * w;
+  g.clearRect(0, 0, w, h);
+  for (let k = 0; k <= tk.bars * 4; k++) { g.fillStyle = col(k % 4 ? '--scr-line' : '--scr-dim'); g.fillRect(Math.round(X(k * tk.barSec / 4)), 0, dpr, h); }
+  // loudness
+  g.fillStyle = col('--scr-faint'); const n = Math.floor(w / dpr), x = res.x, sr = tk.sr;
+  for (let i = 0; i < n; i++) {
+    const a = Math.floor((tk.pre + i / n * total) * sr), b = Math.floor((tk.pre + (i + 1) / n * total) * sr);
+    let m = 0; for (let j = a; j < b && j < x.length; j += 4) m = Math.max(m, Math.abs(x[j]));
+    const v = Math.min(1, Math.sqrt(m) * 1.2) * h * 0.45; g.fillRect(i * dpr, h / 2 - v, dpr, v * 2);
+  }
+  if (res.mode === 'beat') {
+    const kc = { kick: col('--k-orange'), snare: col('--k-blue'), hat: col('--k-yellow') }, row = { kick: 0.78, snare: 0.5, hat: 0.22 };
+    for (const hit of res.hits) {
+      if (!hit.kind) continue;
+      g.fillStyle = kc[hit.kind]; g.beginPath(); g.arc(X(hit.t), h * row[hit.kind], 4.5 * dpr, 0, 7); g.fill();
+      g.fillRect(X(hit.step * tk.barSec / 16) - dpr, h * row[hit.kind] - 9 * dpr, 2 * dpr, 18 * dpr);
+    }
+  } else {
+    const hm = res.hum, ms = hm.contour.filter(c => c.m != null).map(c => c.m), lo = Math.min(...ms) - 2, hi = Math.max(...ms) + 2, Y = m => h - (m - lo) / Math.max(1, hi - lo) * h;
+    g.fillStyle = col('--scr-fg');
+    for (const c of hm.contour) if (c.m != null && c.t >= 0 && c.t < total) g.fillRect(X(c.t), Y(c.m) - dpr, dpr * 1.5, dpr * 2);
+    g.fillStyle = col('--k-green'); const step = tk.barSec / hm.per;
+    hm.notes.forEach((nt, k) => { if (nt) g.fillRect(X(k * step) + dpr, Y(nt.m + hm.shift) - 3 * dpr, X(step) - 2 * dpr, 6 * dpr); });
+  }
+}
+function vxInit() {
+  const box = vxEl('vxBox'); if (!box) return;
+  vxEl('vxMode').addEventListener('click', e => { const b = e.target.closest('[data-m]'); if (b && !VX.take) { VX.mode = b.dataset.m; vxRender(); } });
+  vxEl('vxBars').addEventListener('click', e => { const b = e.target.closest('[data-b]'); if (b && !VX.take) { VX.bars = +b.dataset.b; vxRender(); } });
+  vxEl('vxRec').addEventListener('click', vxRecord);
+  vxEl('vxInsert').addEventListener('click', vxInsert);
+  vxEl('vxUndo').addEventListener('click', vxUndo);
+  vxRender();
+}
+vxInit();
 
 // ===================== Tactus visualizations (drawn behind the code) =====================
 // roll: piano roll (1 bar past, 3 bars ahead) · grid: each track's 2-bar steps on its own code line
