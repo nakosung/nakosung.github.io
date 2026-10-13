@@ -402,7 +402,7 @@ html[lang=ko] body { word-break: keep-all; }
 
   <section class="facts" aria-label="Facts">
     <div class="fact"><b>30</b><span data-ko="CC0 녹음 악기. 피아노는 세기별 3단 레이어" data-en="CC0 sampled instruments, piano in three velocity layers">CC0 녹음 악기. 피아노는 세기별 3단 레이어</span></div>
-    <div class="fact"><b>34</b><span data-ko="예제 곡. 트랜스부터 굿거리, 바흐, 8비트 게임 음악까지" data-en="example songs, from trance to gutgeori, Bach and 8-bit game music">예제 곡. 트랜스부터 굿거리, 바흐, 8비트 게임 음악까지</span></div>
+    <div class="fact"><b>39</b><span data-ko="예제 곡. 트랜스부터 굿거리, 바흐, 8비트 게임 음악까지" data-en="example songs, from trance to gutgeori, Bach and 8-bit game music">예제 곡. 트랜스부터 굿거리, 바흐, 8비트 게임 음악까지</span></div>
     <div class="fact"><b>8</b><span data-ko="자동 작곡 스타일" data-en="composing styles">자동 작곡 스타일</span></div>
     <div class="fact"><b>16</b><span data-ko="연주 패드, 모두 코드로 수정" data-en="performance pads, all editable as code">연주 패드, 모두 코드로 수정</span></div>
     <div class="fact"><b>4</b><span data-ko="루프 슬롯, 지연 자동 보정" data-en="loop slots with automatic latency calibration">루프 슬롯, 지연 자동 보정</span></div>
@@ -498,6 +498,7 @@ const I18N = {
     needVal: '{w} 뒤에 값이 필요해요',
     badVal: "'{v}' 는 {w} 값으로 읽을 수 없어요",
     unknownParam: "'{w}' 는 모르는 파라미터예요",
+    lfoFmt: 'lfo 는 이렇게 써요: lfo 대상 주기(마디, 1/8은 8분음표) [sine|tri|saw|ramp|square|rand] [깊이]. 대상: {list}',
     lineStart: '줄은 트랙 이름으로 시작해요 (예: kick x . x .)',
     keyFmt: 'key 는 "A minor" 처럼 써요',
     noScale: "'{s}' 스케일은 없어요: {list}",
@@ -550,6 +551,9 @@ const I18N = {
     bks_gain: '크기', bks_delay: '메아리', bks_verb: '울림', bks_cut: '밝기', bks_shape: '지글지글',
     bi_kick: '쿵 (킥)', bi_snare: '짝 (스네어)', bi_clap: '박수', bi_hat: '칙 (하이햇)', bi_ohat: '치익 (오픈햇)', bi_rim: '탁 (림)', bi_tom: '둥 (탐)', bi_crash: '챙 (심벌)', bi_ride: '팅 (라이드)', bi_shaker: '쉐이커', bi_bass: '베이스', bi_mono: '아날로그 모노 베이스', bi_piano: '피아노', bi_pluck: '퉁기는 소리', bi_bell: '종', bi_marimba: '마림바', bi_flute: '플루트', bi_pad: '패드', bi_acid: '애시드', bi_saw: '톱니 신스', bi_square: '네모 신스', bi_tri: '세모 신스', bi_sine: '사인파', bi_supersaw: '슈퍼소', bi_epiano: '전자 피아노', bi_bowed: '현악기', bi_vibes: '비브라폰', bi_harp: '하프', bi_sax: '색소폰', bi_upright: '콘트라베이스', bi_kalimba: '칼림바', bi_harpsi: '하프시코드', bi_membrane: '팀파니', bi_swarm: '스웜', bi_choir: '합창', bi_plate: '금속판', bi_zither: '가야금 같은 현', bi_dantranh: '단짜인', bi_asnare: '스네어 (녹음)', bi_ahat: '하이햇 (녹음)', bi_conga: '콩가', bi_bongo: '봉고', bi_cajon: '카혼', bi_tamb: '탬버린', bi_cowbell: '카우벨', bi_triangle: '트라이앵글', bi_buk: '북', bi_jing: '징', bi_kkwaeng: '꽹과리', bi_kung: '장구 궁편', bi_deok: '장구 덕',
     tabRecord: '녹음', tabSounds: '소리', micTitle: '마이크', micHint: '목소리로 쓰기와 루프 녹음이 함께 써요',
+    smTitle: '소리 따라 만들기', smIntro: '한 음을 길게 연주하거나 불러서 들려주거나, 짧은 소리 파일을 끌어다 놓으면 가장 비슷한 웨이브테이블 신스 줄을 만들어요. 화음이 아닌 한 음, 1~3초가 가장 잘 맞아요.', smRec: '한 음 들려주기', smRecOn: '그만 듣기', smFile: '파일 고르기', smHear: '들어 보기', smInsert: '코드에 넣기', smListen: '듣고 있어요. 한 음을 길게 내 주세요 (최대 3초).', smWorking: '맞추는 중…', smDone: '{note} 음 · {table} 테이블 {scan} 위치 · 배음 차이 평균 {err} dB', smShort: '소리가 너무 짧아요. 한 음을 조금 더 길게 내 주세요.', smPitch: '음높이를 찾지 못했어요. 북소리나 잡음 말고 음이 있는 소리 하나를 들려주세요.', smBad: '이 파일은 읽지 못했어요. wav, mp3, ogg 같은 소리 파일을 써 주세요.',
+    bkSyn: '소리 모양', bkSynHint: '왼쪽: 소리가 커졌다 작아지는 모양. 점을 끌어 atk(올라가는 시간), dec와 sus(줄어드는 시간과 머무는 크기), rel(손 뗀 뒤 남는 시간)을 바꿔요. 가운데: 필터. 좌우로 cut, 위아래로 res. 오른쪽: 이 트랙의 지금 파형.', bkSynFt: '필터 종류', bkSynTable: '테이블', bkSynScope: '파형',
+    mtSong: '곡', mMore: '메뉴 더 보기', mNoSong: '이 곡에는 장면이 없어요. 코드에 scene 줄을 쓰면 여기서 장면을 바꿀 수 있어요.', maxOn: '크게 보기', maxOff: '원래대로 (Esc)', bkFold: '접기', bkUnfold: '펼치기',
     vxTitle: '목소리로 쓰기', vxIntro: '"둠 츠 칙 츠" 비트박스나 흥얼거린 멜로디를 마디에 맞춰 녹음하면 코드 줄로 바꿔요. 한 마디 동안 박자 소리로 준비를 세고 시작해요. 스피커로 들을 때는 녹음하는 동안 음악을 잠시 끄고 박자 소리만 들려줘요.', vxBeat: '비트박스', vxHum: '허밍', vxModeLbl: '무엇을 녹음할지', vxBarsLbl: '마디', vxRec: '녹음', vxCancel: '녹음 취소', vxCount: '{m} 준비… 박자에 맞춰 들어오세요', vxRecBanner: '{m} 녹음 {bar}/{bars}마디', vxBusy: '루프 녹음이 끝난 뒤에 해 주세요.', vxQuiet: '소리가 거의 들리지 않았어요. 마이크에 조금 더 가까이 대고 다시 해 보세요.', vxNothing: '알아들을 만한 소리를 찾지 못했어요. 조금 더 또렷하게 해 보세요.', vxBeatDone: '{n}번 친 소리를 찾았어요. 낮은 소리는 kick, 중간은 snare, 높고 짧은 소리는 hat이에요.', vxHumDone: '{k} 음계에 맞췄어요.', vxShift: '{n}옥타브 올렸어요.', vxInsert: '코드에 넣기', vxUndo: '되돌리기', vxInserted: '넣었어요. 다음 마디부터 들려요.', vxUndone: '넣기 전으로 돌렸어요.',
     share: '공유', shareTitle: '이 곡을 링크나 녹음으로 보내요', shareTitle2: '이 곡 공유하기', shareLink: '링크로 보내기', shareLinkD: '코드 전체가 링크 안에 들어가요. 받는 사람이 열면 이 곡이 그대로 열리고, 고쳐서 다시 보낼 수도 있어요.', shareSend: '보내기…', shareCopy: '링크 복사', shareCopied: '링크를 복사했어요', shareChars: '자', shareAudio: '소리로 보내기', shareAudioD: '다음 마디부터 연주를 그대로 녹음해 오디오 파일로 만들어요. 멈춰 있으면 처음부터 틀면서 녹음해요.', shareB4: '4마디', shareB8: '8마디', shareB16: '16마디', shareWhole: '곡 전체', shareStop: '녹음 끝내기', shareWaiting: '다음 마디에서 녹음을 시작해요…', shareRecording: '녹음 중 {a}/{b}마디', shareReady: '{s}초 녹음했어요 ({kb} KB)', shareSendFile: '파일 보내기…', shareSave: '저장', shareSaved: '{n} 파일로 저장했어요', shareHint: '휴대폰에서 "보내기"를 누르면 공유 창이 열려 카카오톡, 메시지, 메일 등으로 바로 보낼 수 있어요.', shareNoRec: '이 브라우저는 녹음을 지원하지 않아요.', shareText: 'Tactus로 만든 곡: {n}', shareMine: '내 곡', shareOpened: '공유받은 곡을 열었어요. 원래 코드는 보관해 뒀어요.', shareUndo: '내 코드로 되돌리기', shareBad: '링크가 잘려서 곡을 열 수 없어요. 링크 전체를 받았는지 확인해 주세요.',
     install: '앱으로 설치', installTitle: 'Tactus를 앱으로 설치해 바탕화면이나 홈 화면에서 바로 열어요', installDone: '설치했어요. 이제 앱 목록이나 홈 화면에서 Tactus를 열 수 있어요.', installIos: 'Safari 아래쪽의 공유 버튼을 누르고 "홈 화면에 추가"를 고르세요.', installMenu: '브라우저 메뉴(⋮)에서 "앱 설치" 또는 "홈 화면에 추가"를 고르세요.',
@@ -606,7 +610,16 @@ const I18N = {
     h4d: '유클리드 리듬', h5d: '스케일 음정·반음 올림·3화음·7화음',
     h6d: '모든 멜로디의 근음을 마디마다 이동 (fixed로 제외)', h7d: '8마디 주기 LFO. 300>3000/4 는 상승 램프',
     h8d: '매크로 노브에 연결', h9d: '킥에 맞춰 사이드체인',
-    h10d: 'atk dec sus rel len delay verb shape drive detune width vib hpf low high slide acc bright wave sub glide tune fast slow slices',
+    h60d: '박자에 맞춰 값을 흔드는 LFO: 대상, 주기(마디, 1/8은 8분음표), 모양(sine tri saw ramp square rand), 깊이. gain pan lpf hpf 는 채널 전체, 나머지(cut res pitch scan pw fm vowel sync noise)는 음마다',
+    h61d: '필터 종류(lp lp24 ladder hp bp notch)와 필터 엔벨로프(올라가기·내려오기·머무르기), 피치 엔벨로프(반음, 시간)',
+    h62d: '유니즌(겹친 오실레이터 수·어긋남·폭), 노이즈 섞기, 모음 필터(a e i o u, 사이 값도)',
+    h63d: '엔진 악기: analog(펄스 폭·싱크·링), wt(웨이브테이블 basic pwm sync formant growl fm organ fold, scan 으로 훑기), fmsynth(비율·깊이·피드백)',
+    p_fatk: '필터 엔벨로프 올라가는 시간(초)', p_fdec: '필터 엔벨로프 내려오는 시간(초, 기본은 dec)', p_fsus: '필터가 머무는 높이 0–1', p_ftype: '필터 종류 lp lp24 ladder hp bp notch',
+    p_penv: '피치 엔벨로프: 시작할 때 몇 반음 위(음수는 아래)', p_pdec: '피치가 제자리로 오는 시간(초)', p_noise: '노이즈 섞기 0–1', p_voices: '유니즌: 겹쳐 울리는 오실레이터 수 1–7',
+    p_pw: '펄스 폭 0–1 (analog)', p_sync: '하드 싱크 배수 1–8 (analog)', p_ring: '링 변조 0–1 (ratio 배수의 사인과 곱하기)', p_table: '웨이브테이블 basic pwm sync formant growl fm organ fold', p_scan: '웨이브테이블 안의 위치 0–1',
+    p_fm: 'FM 깊이', p_ratio: 'FM 모듈레이터 비율 (링 변조에도 써요)', p_feed: 'FM 피드백 (모듈레이터가 자기 자신을 흔들어 거칠어져요) 0–1', p_fmdec: 'FM 깊이가 줄어드는 시간(초)', p_vowel: '모음 필터 a e i o u (0–4)',
+    bi_analog: '가상 아날로그', bi_wt: '웨이브테이블', bi_fmsynth: 'FM 신스',
+    h10d: 'atk dec sus rel len delay verb shape drive detune width vib hpf low high slide acc bright wave sub glide voices noise penv pdec fatk fdec fsus ftype pw sync ring table scan fm ratio fb fmdec vowel tune fast slow slices',
     h11t: 'Alt+↑↓ · Alt+드래그', h11d: '커서의 숫자 조절. 소리 파라미터는 즉시, 리듬·음은 다음 마디',
     h12d: '다음 마디에 반영 (+Shift: 4마디 경계)', h13d: '줄 주석 토글',
     h14d: '트랙 뮤트 · 솔로 (에디터에선 Alt)', h15d: '재생 · 탭 템포 · 에디터 나가기/들어가기',
@@ -677,7 +690,7 @@ const I18N = {
     busFmt: 'bus 다음에 이름, | 다음에 효과를 써요 (예: bus wash | chorus .5 verb .6)', busName: '"{n}"은 이미 파라미터나 키워드 이름이에요. 다른 버스 이름을 써요',
     mixParam: '"{w}"는 이 줄에서 못 써요. 쓸 수 있는 것: {list}', returnOnly: '{w}는 bus delay · bus verb · master 줄에서만 써요',
     p_lpf: '로우패스 Hz (트랙 전체)', p_mid: '가운데 대역 dB', p_midf: '가운데 대역 주파수 Hz', p_chorus: '코러스 0–1', p_phaser: '페이저 0–1', p_dist: '디스토션 0–1', p_crush: '비트 크러시 0–1',
-    p_thr: '컴프레서 스레숄드 dB', p_ratio: '컴프레서 비율', p_catk: '컴프레서 어택 ms', p_crel: '컴프레서 릴리스 ms', p_time: '딜레이 시간 (16분음표 단위)', p_fb: '딜레이 피드백 0–.9', p_pre: '리버브 프리딜레이 ms', p_limit: '리미터 천장 dB',
+    p_thr: '컴프레서 스레숄드 dB', p_ratio: '트랙 줄: FM 모듈레이터 비율 · master/bus 줄: 컴프레서 비율', p_catk: '컴프레서 어택 ms', p_crel: '컴프레서 릴리스 ms', p_time: '딜레이 시간 (16분음표 단위)', p_fb: '딜레이 피드백 0–.9', p_pre: '리버브 프리딜레이 ms', p_limit: '리미터 천장 dB',
     ac_bus: '버스: 효과를 거는 채널. 트랙에서 버스 이름으로 보내요', ac_space: '리버브 공간', ac_viz: '배경을 코드로 정하기', ac_shader: 'WGSL 식으로 배경 그리기', ac_send: '이 버스로 보내는 양 0–1',
     hgMix: '믹스: 이펙트 · 센드 · 컴프레서', hgPhrase: '프레이즈와 패턴 변형',
     hm1d: '트랙 채널에 거는 효과. 로우패스, 가운데 대역 EQ, 디스토션, 비트 크러시, 코러스, 페이저',
@@ -719,6 +732,7 @@ const I18N = {
     needVal: '{w} needs a value',
     badVal: "Can't read '{v}' as a value for {w}",
     unknownParam: "Unknown parameter '{w}'",
+    lfoFmt: 'Write lfo as: lfo target period (bars, 1/8 is an eighth note) [sine|tri|saw|ramp|square|rand] [depth]. Targets: {list}',
     lineStart: 'Start each line with a track name (e.g. kick x . x .)',
     keyFmt: 'Write key like "A minor"',
     noScale: "There's no '{s}' scale. Try: {list}",
@@ -770,6 +784,9 @@ const I18N = {
     bks_gain: 'Loud', bks_delay: 'Echo', bks_verb: 'Space', bks_cut: 'Bright', bks_shape: 'Crunch',
     bi_kick: 'Boom (kick)', bi_snare: 'Snap (snare)', bi_clap: 'Clap', bi_hat: 'Tick (hi-hat)', bi_ohat: 'Tsss (open hat)', bi_rim: 'Click (rim)', bi_tom: 'Tom', bi_crash: 'Crash', bi_ride: 'Ride', bi_shaker: 'Shaker', bi_bass: 'Bass', bi_mono: 'Analog mono bass', bi_piano: 'Piano', bi_pluck: 'Pluck', bi_bell: 'Bell', bi_marimba: 'Marimba', bi_flute: 'Flute', bi_pad: 'Pad', bi_acid: 'Acid', bi_saw: 'Saw synth', bi_square: 'Square synth', bi_tri: 'Triangle synth', bi_sine: 'Sine', bi_supersaw: 'Supersaw', bi_epiano: 'Electric piano', bi_bowed: 'Strings', bi_vibes: 'Vibraphone', bi_harp: 'Harp', bi_sax: 'Sax', bi_upright: 'Double bass', bi_kalimba: 'Kalimba', bi_harpsi: 'Harpsichord', bi_membrane: 'Timpani', bi_swarm: 'Swarm', bi_choir: 'Choir', bi_plate: 'Metal plate', bi_zither: 'Zither', bi_dantranh: 'Dan tranh', bi_asnare: 'Snare (recorded)', bi_ahat: 'Hi-hat (recorded)', bi_conga: 'Conga', bi_bongo: 'Bongo', bi_cajon: 'Cajon', bi_tamb: 'Tambourine', bi_cowbell: 'Cowbell', bi_triangle: 'Triangle', bi_buk: 'Buk', bi_jing: 'Jing', bi_kkwaeng: 'Kkwaenggwari', bi_kung: 'Janggu (gung)', bi_deok: 'Janggu (deok)',
     tabRecord: 'Record', tabSounds: 'Sounds', micTitle: 'Microphone', micHint: 'Shared by Sing it in and loop recording',
+    smTitle: 'Match a sound', smIntro: 'Play or sing one held note, or drop in a short sound file, and get the closest wavetable synth line. One note (not a chord), 1 to 3 seconds long, works best.', smRec: 'Play a note', smRecOn: 'Stop listening', smFile: 'Choose a file', smHear: 'Listen', smInsert: 'Put in the code', smListen: 'Listening. Hold one note (up to 3 seconds).', smWorking: 'Matching…', smDone: 'Note {note} · {table} table at {scan} · harmonics off by {err} dB on average', smShort: 'Too short. Hold the note a little longer.', smPitch: 'No pitch found. Use a sound with a note in it, not a drum or noise.', smBad: 'Could not read this file. Use a sound file such as wav, mp3 or ogg.',
+    bkSyn: 'Sound shape', bkSynHint: 'Left: how the sound rises and falls. Drag the points for atk (rise), dec and sus (fall and the level it holds), rel (what is left after the note). Middle: the filter, cut across and res up and down. Right: this track as it plays.', bkSynFt: 'Filter type', bkSynTable: 'Table', bkSynScope: 'scope',
+    mtSong: 'Song', mMore: 'More', mNoSong: 'This piece has no scenes. Write scene lines in the code to switch them here.', maxOn: 'Fill the window', maxOff: 'Back (Esc)', bkFold: 'Fold', bkUnfold: 'Open',
     vxTitle: 'Sing it in', vxIntro: 'Beatbox ("boom ts chik ts") or hum a tune in time with the bar and it becomes code. A bar of clicks counts you in. On speakers the music is muted while you record, and only the clicks play.', vxBeat: 'Beatbox', vxHum: 'Hum', vxModeLbl: 'What to record', vxBarsLbl: 'bars', vxRec: 'Record', vxCancel: 'Cancel', vxCount: '{m}: get ready… come in on the beat', vxRecBanner: '{m}: recording bar {bar} of {bars}', vxBusy: 'Wait until the loop recording is done.', vxQuiet: 'Almost nothing came through. Get a little closer to the mic and try again.', vxNothing: 'Nothing clear enough was heard. Try again a little more crisply.', vxBeatDone: 'Found {n} hits. Low sounds became kick, middle ones snare, high short ones hat.', vxHumDone: 'Fitted to {k}.', vxShift: 'Moved up {n} octave(s).', vxInsert: 'Put in the code', vxUndo: 'Undo', vxInserted: 'Added. You will hear it from the next bar.', vxUndone: 'Back to how it was.',
     share: 'Share', shareTitle: 'Send this song as a link or a recording', shareTitle2: 'Share this song', shareLink: 'Send a link', shareLinkD: 'The whole code goes inside the link. Whoever opens it gets this song as it is, and can change it and send it back.', shareSend: 'Send…', shareCopy: 'Copy link', shareCopied: 'Link copied', shareChars: ' characters', shareAudio: 'Send the sound', shareAudioD: 'Records the music from the next bar into an audio file. If it is stopped, it starts playing from the top.', shareB4: '4 bars', shareB8: '8 bars', shareB16: '16 bars', shareWhole: 'Whole song', shareStop: 'Stop recording', shareWaiting: 'Recording starts on the next bar…', shareRecording: 'Recording bar {a} of {b}', shareReady: 'Recorded {s} s ({kb} KB)', shareSendFile: 'Send file…', shareSave: 'Save', shareSaved: 'Saved as {n}', shareHint: 'On a phone, Send opens the share sheet, so it goes straight to KakaoTalk, Messages, mail and the rest.', shareNoRec: 'This browser cannot record.', shareText: 'A song made in Tactus: {n}', shareMine: 'my song', shareOpened: 'Opened a shared song. Your own code is kept.', shareUndo: 'Back to my code', shareBad: 'This link is cut short, so the song cannot open. Check that the whole link came through.',
     install: 'Install app', installTitle: 'Install Tactus as an app and open it from your desktop or home screen', installDone: 'Installed. Open Tactus from your apps or home screen.', installIos: 'Tap Share at the bottom of Safari, then choose "Add to Home Screen".', installMenu: 'Open the browser menu (⋮) and choose "Install app" or "Add to Home screen".',
@@ -823,7 +840,16 @@ const I18N = {
     h4d: 'Euclidean rhythm', h5d: 'scale degrees · sharp · triad · seventh chord',
     h6d: 'Moves the root of every melody each bar (opt out with fixed)', h7d: 'LFO over 8 bars. 300>3000/4 is a rising ramp',
     h8d: 'Bind to a macro knob', h9d: 'Sidechain to the kick',
-    h10d: 'atk dec sus rel len delay verb shape drive detune width vib hpf low high slide acc bright wave sub glide tune fast slow slices',
+    h60d: 'A tempo-locked wobble: target, period (bars, 1/8 is an eighth note), shape (sine tri saw ramp square rand), depth. gain pan lpf hpf move the channel; cut res pitch scan pw fm vowel sync noise move each note',
+    h61d: 'Filter type (lp lp24 ladder hp bp notch) and its envelope (rise, fall, hold), and a pitch envelope (semitones, time)',
+    h62d: 'Unison (oscillators, spread, width), noise, and a vowel filter (a e i o u, or between)',
+    h63d: 'Engine instruments: analog (pulse width, sync, ring), wt (wavetables basic pwm sync formant growl fm organ fold, scanned with scan), fmsynth (ratio, depth, feedback)',
+    p_fatk: 'filter envelope rise (s)', p_fdec: 'filter envelope fall (s, dec by default)', p_fsus: 'where the filter rests 0–1', p_ftype: 'filter type lp lp24 ladder hp bp notch',
+    p_penv: 'pitch envelope: semitones above at the start (below if negative)', p_pdec: 'time for the pitch to settle (s)', p_noise: 'noise 0–1', p_voices: 'unison: oscillators sounding together 1–7',
+    p_pw: 'pulse width 0–1 (analog)', p_sync: 'hard sync ratio 1–8 (analog)', p_ring: 'ring mod 0–1 (by a sine at ratio)', p_table: 'wavetable basic pwm sync formant growl fm organ fold', p_scan: 'position in the wavetable 0–1',
+    p_fm: 'FM depth', p_ratio: 'FM modulator ratio (ring mod uses it too)', p_feed: 'FM feedback (the modulator wobbles itself, for grit) 0–1', p_fmdec: 'time for the FM depth to fall (s)', p_vowel: 'vowel filter a e i o u (0–4)',
+    bi_analog: 'Virtual analog', bi_wt: 'Wavetable', bi_fmsynth: 'FM synth',
+    h10d: 'atk dec sus rel len delay verb shape drive detune width vib hpf low high slide acc bright wave sub glide voices noise penv pdec fatk fdec fsus ftype pw sync ring table scan fm ratio fb fmdec vowel tune fast slow slices',
     h11t: 'Alt+↑↓ · Alt+drag', h11d: 'Nudge the number at the cursor. Sound changes now, rhythm and notes at the next bar',
     h12d: 'Apply at the next bar (+Shift: next 4-bar phrase)', h13d: 'Toggle line comment',
     h14d: 'Mute · solo tracks (Alt in the editor)', h15d: 'Play · tap tempo · leave/enter the editor',
@@ -893,7 +919,7 @@ const I18N = {
     busFmt: 'Write a name after bus and effects after | (e.g. bus wash | chorus .5 verb .6)', busName: '"{n}" is already a parameter or keyword. Pick another bus name',
     mixParam: '"{w}" does not work on this line. Available: {list}', returnOnly: '{w} only works on bus delay, bus verb and master lines',
     p_lpf: 'low-pass Hz (whole track)', p_mid: 'mid band dB', p_midf: 'mid band frequency Hz', p_chorus: 'chorus 0–1', p_phaser: 'phaser 0–1', p_dist: 'distortion 0–1', p_crush: 'bit crush 0–1',
-    p_thr: 'compressor threshold dB', p_ratio: 'compressor ratio', p_catk: 'compressor attack ms', p_crel: 'compressor release ms', p_time: 'delay time (in 16ths)', p_fb: 'delay feedback 0–.9', p_pre: 'reverb pre-delay ms', p_limit: 'limiter ceiling dB',
+    p_thr: 'compressor threshold dB', p_ratio: 'track lines: FM modulator ratio · master and bus lines: compressor ratio', p_catk: 'compressor attack ms', p_crel: 'compressor release ms', p_time: 'delay time (in 16ths)', p_fb: 'delay feedback 0–.9', p_pre: 'reverb pre-delay ms', p_limit: 'limiter ceiling dB',
     ac_bus: 'bus: an effects channel. Tracks send to it by its name', ac_space: 'reverb space', ac_viz: 'pick the backdrop in code', ac_shader: 'draw a backdrop with a WGSL expression', ac_send: 'amount sent to this bus 0–1',
     hgMix: 'Mix: effects · sends · compressors', hgPhrase: 'Phrases and pattern changes',
     hm1d: 'Effects on a track\'s channel: low-pass, mid EQ, distortion, bit crush, chorus, phaser',
@@ -1378,19 +1404,21 @@ const DRUMS = ['kick', 'snare', 'clap', 'hat', 'ohat', 'rim', 'tom', 'ride', 'cr
   // Korean percussion: janggu low and high heads, buk and its shell, jing, kkwaenggwari open and muted
   'kung', 'deok', 'buk', 'buktak', 'jing', 'kkwaeng', 'kkwaengm'];
 const LOOPS = ['loop1', 'loop2', 'loop3', 'loop4'];
-const SYNTHS = ['sine', 'tri', 'saw', 'square', 'supersaw', 'pad', 'bass', 'mono', 'acid', 'pluck', 'bell', 'flute', 'bowed', 'epiano', 'zither', 'piano', 'vibes', 'harp', 'sax', 'dantranh', 'harpsi', 'marimba', 'kalimba', 'swarm', 'choir', 'plate', 'membrane', 'nsax', 'upright'];
+const SYNTHS = ['sine', 'tri', 'saw', 'square', 'supersaw', 'pad', 'bass', 'mono', 'analog', 'wt', 'fmsynth', 'acid', 'pluck', 'bell', 'flute', 'bowed', 'epiano', 'zither', 'piano', 'vibes', 'harp', 'sax', 'dantranh', 'harpsi', 'marimba', 'kalimba', 'swarm', 'choir', 'plate', 'membrane', 'nsax', 'upright'];
 const NAME_INST = [
   ['kung', 'kung'], ['deok', 'deok'], ['janggu', 'kung'], ['buktak', 'buktak'], ['buk', 'buk'], ['kkwaengm', 'kkwaengm'], ['kkwaeng', 'kkwaeng'], ['kkwang', 'kkwaeng'],
   ['kick', 'kick'], ['bd', 'kick'], ['snare', 'snare'], ['sd', 'snare'], ['clap', 'clap'], ['cp', 'clap'],
   ['ohat', 'ohat'], ['open', 'ohat'], ['oh', 'ohat'], ['hat', 'hat'], ['hh', 'hat'], ['rim', 'rim'], ['tom', 'tom'],
-  ['bass', 'bass'], ['sub', 'sine'], ['mono', 'mono'], ['acid', 'acid'], ['lead', 'supersaw'], ['pad', 'pad'], ['chord', 'pad'],
+  ['bass', 'bass'], ['sub', 'sine'], ['mono', 'mono'], ['acid', 'acid'], ['reese', 'analog'], ['hoover', 'analog'], ['analog', 'analog'], ['wavetable', 'wt'], ['growl', 'wt'], ['wt', 'wt'], ['fm', 'fmsynth'], ['lead', 'supersaw'], ['pad', 'pad'], ['chord', 'pad'],
   ['arp', 'pluck'], ['pluck', 'pluck'], ['stab', 'pluck'], ['bell', 'bell'],
   ['ride', 'ride'], ['crash', 'crash'], ['cym', 'crash'], ['shaker', 'shaker'], ['shk', 'shaker'],
   ['gayageum', 'zither'], ['zither', 'zither'], ['koto', 'zither'], ['guitar', 'zither'],
   ['upright', 'upright'], ['dbass', 'upright'], ['contrabass', 'upright'], ['grand', 'piano'], ['vibe', 'vibes'], ['harpsi', 'harpsi'], ['cembalo', 'harpsi'], ['harp', 'harp'], ['sax', 'sax'], ['marimba', 'marimba'], ['kalimba', 'kalimba'], ['dantranh', 'dantranh'], ['jing', 'jing'],
   ['swarm', 'swarm'], ['choir', 'choir'], ['plate', 'plate'], ['membrane', 'membrane'], ['timp', 'membrane'], ['nsax', 'nsax'], ['daegeum', 'flute'], ['flute', 'flute'], ['haegeum', 'bowed'], ['string', 'bowed'], ['keys', 'epiano'], ['rhodes', 'epiano'], ['piano', 'piano'],
 ];
-const PARAMS = ['gain', 'pan', 'oct', 'cut', 'res', 'env', 'atk', 'dec', 'sus', 'rel', 'len', 'delay', 'verb', 'duck', 'shape', 'detune', 'tune', 'slices', 'hpf', 'low', 'high', 'drive', 'width', 'vib', 'slide', 'acc', 'bright', 'wave', 'sub', 'glide', 'vel', 'nudge', 'human', 'swing', 'sgrid', 'comp', 'rate', 'tr', 'range', 'seed', 'dens', 'evolve', 'bars',
+const PARAMS = ['gain', 'pan', 'oct', 'cut', 'res', 'env', 'atk', 'dec', 'sus', 'rel', 'len', 'delay', 'verb', 'duck', 'shape', 'detune', 'tune', 'slices', 'hpf', 'low', 'high', 'drive', 'width', 'vib', 'slide', 'acc', 'bright', 'wave', 'sub', 'glide',
+  // the synth engine: filter envelope and type, pitch envelope, noise, unison, pulse width, sync, ring, wavetable, FM, vowel
+  'fatk', 'fdec', 'fsus', 'ftype', 'penv', 'pdec', 'noise', 'voices', 'pw', 'sync', 'ring', 'table', 'scan', 'fm', 'ratio', 'feed', 'fmdec', 'vowel', 'vel', 'nudge', 'human', 'swing', 'sgrid', 'comp', 'rate', 'tr', 'range', 'seed', 'dens', 'evolve', 'bars',
   // channel strip: more EQ, insert effects, compressor detail
   'lpf', 'mid', 'midf', 'chorus', 'phaser', 'dist', 'crush', 'thr', 'ratio', 'catk', 'crel',
   // only on 'bus delay', 'bus verb' and 'master' lines
@@ -1399,6 +1427,17 @@ const RETURN_ONLY = ['time', 'fb', 'pre', 'limit'];
 // names of the code's own buses: each also works as a send parameter on track lines (set while compiling)
 let BUS_NAMES = new Set();
 const EXP_PARAMS = new Set(['cut', 'hpf', 'lpf', 'midf']);
+// values that can be written as words: ftype lp, table growl, vowel a (a pattern of them works too: vowel <a o>)
+const WORD_VALS = {
+  ftype: { lp: 0, lp24: 1, ladder: 2, hp: 3, bp: 4, notch: 5 },
+  table: { basic: 0, pwm: 1, sync: 2, formant: 3, growl: 4, fm: 5, organ: 6, fold: 7 },
+  vowel: { a: 0, e: 1, i: 2, o: 3, u: 4 },
+};
+// lfo <target> <period in bars, 1/8 is an eighth note> [shape] [depth]: a tempo-locked wobble on one value.
+// gain, pan, lpf and hpf move the whole channel; the rest move each note of the synth
+const LFO_TARGETS = ['cut', 'res', 'pitch', 'scan', 'pw', 'fm', 'vowel', 'sync', 'noise', 'gain', 'pan', 'lpf', 'hpf'];
+const LFO_SHAPES = ['sine', 'tri', 'saw', 'ramp', 'square', 'rand'];
+const LFO_DEPTH = { cut: 600, res: 2, pitch: 30, scan: 0.3, pw: 0.2, fm: 2, vowel: 2, sync: 1, noise: 0.2, gain: 0.5, pan: 0.8, lpf: 2000, hpf: 300 };
 const GLOBALS = new Set(['bpm', 'key', 'scale', 'swing', 'prog', 'scene', 'song', 'master', 'seed', 'fx', 'auto', 'let', 'sample', 'space', 'viz', 'shader', 'bus']);
 // generator parameters shape the notes, so they are part of the pattern rather than the sound
 const GEN_PARAMS = ['seed', 'dens', 'evolve', 'bars'];
@@ -1512,7 +1551,7 @@ function parseParams(src, base) {
   const chunks = splitChunks(src, base);
   const params = {};
   let inst = null, fixed = false, speed = 1, voicing = null, arp = null;
-  const every = [], tf = [];
+  const every = [], tf = [], lfos = [];
   for (let i = 0; i < chunks.length; i++) {
     const w = chunks[i].s;
     if (isInst(w)) { inst = w; continue; }
@@ -1536,9 +1575,21 @@ function parseParams(src, base) {
       speed *= w === 'fast' ? +c.s : 1 / +c.s;
       continue;
     }
+    if (w === 'lfo') {
+      const tg = chunks[++i], rc = chunks[++i], at = chunks[i - 2].c0;
+      if (!tg || !LFO_TARGETS.includes(tg.s)) throw new PErr(t('lfoFmt', { list: LFO_TARGETS.join(' ') }), tg ? tg.c0 : at);
+      const fr = rc && /^(\d+)\/(\d+)$/.exec(rc.s), per = fr ? +fr[1] / +fr[2] : rc && RE_NUM.test(rc.s) ? +rc.s : 0;
+      if (!(per > 0)) throw new PErr(t('lfoFmt', { list: LFO_TARGETS.join(' ') }), rc ? rc.c0 : tg.c0);
+      let shape = 'sine', depth = LFO_DEPTH[tg.s];
+      if (chunks[i + 1] && LFO_SHAPES.includes(chunks[i + 1].s)) shape = chunks[++i].s;
+      if (chunks[i + 1] && RE_NUM.test(chunks[i + 1].s)) depth = +chunks[++i].s;
+      lfos.push({ target: tg.s, per, shape, depth });
+      continue;
+    }
     if (PARAMS.includes(w) || BUS_NAMES.has(w)) {
-      const c = chunks[++i];
+      let c = chunks[++i];
       if (!c) throw new PErr(t('needVal', { w }), chunks[i - 1].c0);
+      if (WORD_VALS[w]) { const m = WORD_VALS[w]; c = { ...c, s: c.s.replace(/[a-z]\w*/gi, x => x in m ? String(m[x]) : x) }; }
       const v = parseValue(c);
       if (!v) throw new PErr(t('badVal', { v: c.s, w }), c.c0);
       params[w] = v;
@@ -1546,7 +1597,7 @@ function parseParams(src, base) {
     }
     throw new PErr(t('unknownParam', { w }), chunks[i].c0);
   }
-  return { params, inst, fixed, speed, voicing, arp, every, tf };
+  return { params, inst, fixed, speed, voicing, arp, every, tf, lfos };
 }
 // a change to a pattern, as every, jux, sometimes, chunk and superimpose take it: rev inv skip fast K slow K ply K +K -K
 function fnAt(chunks, i, errKey) {
@@ -1782,7 +1833,7 @@ function parseLine(text) {
   for (const ev of pr.every) p = everyWrap(p, ev.n, ev.fn);
   const inst = pr.inst || instForName(name);
   return {
-    type: 'track', name, pat: p, params: pr.params, inst, fixed: pr.fixed, opts: { voicing: pr.voicing, arp: pr.arp }, gen: spec,
+    type: 'track', name, pat: p, params: pr.params, lfos: pr.lfos, inst, fixed: pr.fixed, opts: { voicing: pr.voicing, arp: pr.arp }, gen: spec,
     kind: isHit(inst) ? 'drum' : LOOPS.includes(inst) ? 'loop' : 'synth',
     chop: patSrc.trim() !== '',
     patKey: inst + '|' + patSrc.replace(/\s+/g, ' ').trim() + '|' + pr.speed + '|' + pr.every.map(x => x.src).join(',') + '|' + pr.tf.map(x => x.src).join(',') + varsUsed.map(n => '|$' + n + '=' + VARS.get(n).src).join('') + (spec ? `|g${spec.seed},${spec.dens},${spec.bars},${spec.evolve},${spec.range}` : ''),
