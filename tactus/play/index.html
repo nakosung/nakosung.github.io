@@ -791,7 +791,7 @@ body.recording .editor { border-color: var(--c-err); }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.13 14:25<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.13 15:17<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -10256,19 +10256,36 @@ function bkSortEnd(d) {
 }
 
 // ---------- hearing it ----------
-// Stopped, an edit plays what it made (the note, the chord, the drum hit) on the track's own sound, so a lane can be
-// played like a keyboard. Playing, the loop itself plays the change at the next bar, so nothing extra sounds.
-function bkHear(L, v, steps = 1) {
-  if (!BK.clicks || !v || !L || !L.def || S.playing) return;
+// Stopped, the roll plays like a keyboard: a note sounds when it is pressed and keeps sounding while held (up to a
+// few seconds), and lets go with a short release when the pointer does. Each sounding goes through its own gain, so
+// a new one never cuts the last off mid-sound: dragging a note to another pitch releases the old pitch over ~0.1 s
+// while the new one starts (the way a hand slides along keys). Chords and several chosen notes sound together.
+// Playing, the loop itself plays the change at the next bar, so nothing extra sounds.
+const BK_AUD = new Set();
+// press: what = [{ v, s }] (the value and its step in the line, so the step's vel applies), steps = the note's length
+function bkPress(L, what, steps = 1) {
+  if (!BK.clicks || !L || !L.def || S.playing || !what.length) return null;
   initAudio(); S.ctx.resume();
-  const def = { ...L.def, name: '__pv' };
-  if (!KIT.ready && (SAMPLE_PITCHED.has(def.inst) || SAMPLE_HITS.has(def.inst))) { const l = loadKit(); if (l) { l.then(() => bkHear(L, v, steps)); return; } }
-  const now = S.ctx.currentTime, cps = (S.bpm || 120) / 240, t0 = now + 0.035, r = pvStrip();
-  // the last one stops where this one starts
-  const g = A.pvIn.gain; g.cancelScheduledValues(now); g.setTargetAtTime(0, now, 0.006); g.setValueAtTime(0, t0 - 0.004); g.setValueAtTime(1, t0 - 0.003);
-  const e = { v, s: 0, d: Math.min(1, Math.max(steps / BK_STEPS, 0.22 * cps)), loc: {} };
-  try { pvPlayEvent(def, e, t0, cps, L.page || 0, r, r.input); } catch (err) { }
+  // the line as it is now (a vel just changed in the code is already in S.tracks when stopped)
+  const now0 = S.tracks.get(L.def.name), base = now0 && now0.line === L.def.line ? now0 : L.def, def = { ...base, name: '__pv' };
+  if (!KIT.ready && (SAMPLE_PITCHED.has(def.inst) || SAMPLE_HITS.has(def.inst))) { const l = loadKit(); if (l) l.then(() => bkRelease(bkPress(L, what, steps))); return null; }
+  for (const a of BK_AUD) bkRelease(a, true);
+  const ctx = S.ctx, now = ctx.currentTime, cps = (S.bpm || 120) / 240, t0 = now + 0.02, r = pvStrip();
+  const g = ctx.createGain(); g.connect(r.input);
+  const r2 = { ...r, input: g }, hold = Math.min(4, 3 * cps);   // scheduled long; the release ends it sooner
+  try { for (const w of what.slice(0, 8)) pvPlayEvent(def, { v: w.v, s: w.s || 0, d: hold, loc: {} }, t0, cps, w.s || 0, r2, g); } catch (err) { }
+  const a = { g, t0, min: Math.max(0.2, Math.min(0.8, steps / BK_STEPS / cps)) };
+  BK_AUD.add(a); return a;
 }
+// let go: after at least the note's own length (so a quick tap still sounds like the note), or now when another takes over
+function bkRelease(a, now) {
+  if (!a || a.done) return; a.done = true; BK_AUD.delete(a);
+  const t = Math.max(S.ctx.currentTime, now ? 0 : a.t0 + a.min);
+  a.g.gain.setTargetAtTime(0, t, now ? 0.05 : 0.07);   // a slide overlaps the next pitch a little, so a slow-starting pad does not dip
+  setTimeout(() => { try { a.g.disconnect(); } catch (e) { } }, (t - S.ctx.currentTime + 0.6) * 1000);
+}
+const bkHear = (L, v, steps = 1, s = 0) => bkRelease(bkPress(L, [{ v, s }], steps));
+const bkWhat = (L, ids) => ids.map(j => L.notes[j]).filter(Boolean).map(o => ({ v: o.v, s: o.s / BK_STEPS }));
 // a small sound for a press, in the skin's character: a light tick, a relay click, a bubble. Straight to the speakers,
 // so it never lands in a recording; quieter while the music plays. The speaker button on the board turns it off.
 function bkClick(kind = 'tap') {
@@ -10324,9 +10341,14 @@ function bkRollDown(e, L, t0) {
     if (e.shiftKey) { const s2 = new Set(sel); if (s2.has(j)) s2.delete(j); else s2.add(j); bkSelSet(L, [...s2]); bkRedraw(L); BK.busy = false; return; }
     const again = sel.has(j) && sel.size === 1;
     if (!sel.has(j)) bkSelSet(L, [j]);
-    BK.drag = { kind: 'nmove', L, j, ids: [...bkSelOf(L)], base, g, rows, k0: k, r0: r, ...at, copy: e.altKey, moved: false, again, dk: 0, dr: 0 };
+    const ids = [...bkSelOf(L)];
+    BK.drag = { kind: 'nmove', L, j, ids, base, g, rows, k0: k, r0: r, ...at, copy: e.altKey, moved: false, again, dk: 0, dr: 0, aud: bkPress(L, bkWhat(L, ids), L.notes[j].len) };
     bkRedraw(L);
-  } else BK.drag = { kind: 'marq', L, g, rows, k0: k, r0: r, ...at, started: false, keep: e.shiftKey ? [...sel] : [] };
+  } else {
+    // an empty step sounds the note it would put in, at once; a drag turns it into a box instead and the sound lets go
+    const row = rows[r], aud = row && !e.shiftKey ? bkPress(L, [{ v: bkBrushVal(L, row.n), s: (L.page * BK_STEPS + k) / BK_STEPS }], bkDefLen(L)) : null;
+    BK.drag = { kind: 'marq', L, g, rows, k0: k, r0: r, ...at, started: false, keep: e.shiftKey ? [...sel] : [], aud };
+  }
   boardEl.setPointerCapture && boardEl.setPointerCapture(e.pointerId);
 }
 function bkRollMove(e, d) {
@@ -10347,9 +10369,11 @@ function bkRollMove(e, d) {
     if (d.copy) { notes = [...d.base, ...m.out]; sel = m.out.map((_, q) => d.base.length + q); }
     else { notes = d.base.map(o => ({ ...o })); d.ids.forEach((j, q) => { notes[j] = m.out[q]; }); sel = d.ids; }
     bkNotesPut(L, notes, sel); bkRedraw(L);
-    if (pitch) { const o = m.out[d.ids.indexOf(d.j)]; bkHear(L, o.v, o.len); }
+    // a new pitch: the old one lets go as the new one starts (all the moved notes, so a chord is heard as a chord)
+    if (pitch) { bkRelease(d.aud, true); d.aud = bkPress(L, m.out.map(o => ({ v: o.v, s: o.s / BK_STEPS })), m.out[0].len); }
   } else if (d.kind === 'marq') {
     if (!d.started && Math.hypot(e.clientX - d.x0, e.clientY - d.y0) < 6) return;
+    if (!d.started) bkRelease(d.aud, true);
     d.started = true;
     const k0 = Math.min(k, d.k0), k1 = Math.max(k, d.k0), r0 = Math.min(r, d.r0), r1 = Math.max(r, d.r0);
     d.marq = [k0, k1, r0, r1];
@@ -10363,15 +10387,15 @@ function bkRollMove(e, d) {
 }
 function bkRollEnd(d) {
   const L = d.L, off = L.page * BK_STEPS;
+  bkRelease(d.aud);
   if (d.kind === 'nmove' && !d.moved) {
     // a tap on a note: the first chooses it (and plays it), the next takes it out
     if (d.again) { const notes = L.notes.filter((_, j) => j !== d.j); bkNotesPut(L, notes, []); bkClick('off'); }
-    else { const o = L.notes[d.j]; bkHear(L, o.v, o.len); }
   } else if (d.kind === 'marq' && !d.started) {
     // a tap on an empty step: a new note there, as long as the last one set (it stays chosen, so a second tap takes it out)
     const row = d.rows[d.r0]; if (!row) return;
     const len = Math.min(bkDefLen(L), BK_STEPS - d.k0), v = bkBrushVal(L, row.n);
-    bkNotesPut(L, [...L.notes, { s: off + d.k0, len, v }], [L.notes.length]); bkHear(L, v, len);
+    bkNotesPut(L, [...L.notes, { s: off + d.k0, len, v }], [L.notes.length]);
   } else if (d.kind === 'marq') d.marq = null;
 }
 // the keyboard on a focused roll: Delete, arrows (Shift: a beat or an octave's worth of rows), Ctrl/Cmd+A, Ctrl/Cmd+D, Escape
@@ -10387,7 +10411,7 @@ function bkRollKey(L, e) {
   const big = e.shiftKey ? (arrows[0] ? 4 : (L.mode === 'deg' ? (SCALES[BK.key.scale] || SCALES.major).length : 7)) : 1;
   const m = bkMoved(L, L.notes, sel, arrows[0] * big, arrows[1] * big, L.rows); if (!m.dk && !m.dr) return true;
   const notes = L.notes.map(o => ({ ...o })); sel.forEach((j, q) => { notes[j] = m.out[q]; });
-  bkNotesPut(L, notes, sel); if (m.dr) bkHear(L, m.out[0].v, m.out[0].len); bkRender(); return true;
+  bkNotesPut(L, notes, sel); if (m.dr) bkRelease(bkPress(L, m.out.map(o => ({ v: o.v, s: o.s / BK_STEPS })), m.out[0].len)); bkRender(); return true;
 }
 // a copy of the chosen notes right after them (what does not fit in the bar is left out); the copy is chosen
 function bkDup(L, sel) {
@@ -10401,7 +10425,7 @@ function bkChordSet(L, j, val) {
   const o = L.notes[j]; if (!o) return;
   let notes;
   if (val === '\u0001loose') { const acc = bkAcc(o.v); notes = [...L.notes.filter((_, q) => q !== j), ...bkAtom(o.v, L).map(n => ({ ...o, v: (L.mode === 'deg' ? String(n) : bkSpell(L, n)) + acc }))]; }
-  else { notes = L.notes.map((x, q) => q === j ? { ...x, v: val } : x); bkHear(L, val, o.len); }
+  else { notes = L.notes.map((x, q) => q === j ? { ...x, v: val } : x); bkHear(L, val, o.len, o.s / BK_STEPS); }
   bkNotesPut(L, notes, []); bkRender();
 }
 // velocity: drag over the bars, higher is louder
@@ -10412,6 +10436,11 @@ function bkVelAt(d, e) {
   if (d.vals[d.L.page][k] === v) return;
   d.vals[d.L.page][k] = v; vb.firstElementChild.style.height = Math.round(v * 100) + '%';
   bkVelWrite(d.L, d.vals, true);
+  if (vb.classList.contains('on')) {
+    const at = d.L.page * BK_STEPS + k;
+    if (d.L.tok) bkHear(d.L, d.L.tok[at], 1, at / BK_STEPS);
+    else { const os = d.L.notes.filter(o => o.s === at); bkRelease(bkPress(d.L, os.map(o => ({ v: o.v, s: at / BK_STEPS })), os[0] ? os[0].len : 1)); }
+  }
 }
 function bkRuleEdit(L, j, field, value) {
   const r = L.rules[j]; if (!r) return;
@@ -10460,7 +10489,7 @@ function bkInit() {
       const d = BK.drag = { L, kind: 'drum', v, done: new Set([k]), cell, k };
       d.timer = setTimeout(() => { if (BK.drag !== d || d.done.size > 1) return; const m = was === 'x?' ? 'x' : 'x?'; bkPaintDrum(cell, m); bkSetDrum(L, k, m); bkBuzz(); bkClick('lift'); d.held = true; }, LONG);
       bkPaintDrum(cell, v); bkSetDrum(L, k, v);
-      if (v === '.') bkClick('off'); else if (S.playing) bkClick('on'); else bkHear(L, v);
+      if (v === '.') bkClick('off'); else if (S.playing) bkClick('on'); else bkHear(L, v, 1, (L.page * BK_STEPS + k) / BK_STEPS);
     }
     boardEl.setPointerCapture && boardEl.setPointerCapture(e.pointerId);
   });
@@ -10486,7 +10515,7 @@ function bkInit() {
     if (d.kind === 'drum') {
       if (d.done.has(k)) return; d.done.add(k); clearTimeout(d.timer);
       bkPaintDrum(cell, d.v); bkSetDrum(d.L, k, d.v);
-      if (d.v === '.') bkClick('off'); else bkHear(d.L, d.v);
+      if (d.v === '.') bkClick('off'); else bkHear(d.L, d.v, 1, (d.L.page * BK_STEPS + k) / BK_STEPS);
     }
   });
   const end = () => {
