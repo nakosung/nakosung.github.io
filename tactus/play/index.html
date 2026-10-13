@@ -475,7 +475,9 @@ body.recording .editor { border-color: var(--c-err); }
 .bk-cell.on, .bk-steps .bk-cell.on:nth-child(4n+1) { background: var(--tc); border-color: color-mix(in srgb, var(--tc) 70%, #000); }
 .bk-cell.maybe, .bk-steps .bk-cell.maybe:nth-child(4n+1) { background: repeating-linear-gradient(135deg, var(--tc) 0 4px, color-mix(in srgb, var(--tc) 25%, var(--panel)) 4px 8px); }
 .bk-cell.acc { box-shadow: inset 0 0 0 2px color-mix(in srgb, #000 35%, var(--tc)); }
-.bk-cell.ph { outline: 2px solid var(--fg); outline-offset: -2px; }
+/* the playhead: a soft wash down the column it is on, and the notes it plays light up; no frame, so it reads as light passing, not a selection */
+.bk-cell.ph:not(.on), .bk-steps .bk-cell.ph:not(.on):nth-child(4n+1), .bk-row:nth-child(even) .bk-cell.ph:not(.on) { background: color-mix(in srgb, var(--tc) 16%, var(--panel)); }
+.bk-cell.ph.on { filter: brightness(1.18) saturate(1.1); }
 .bk-lane { display: grid; gap: 2px; touch-action: none; }
 .bk-row { display: grid; grid-template-columns: 30px repeat(16, minmax(0, 1fr)); gap: 0 3px; align-items: center; }
 .bk-row:nth-child(even) .bk-cell:not(.on) { background: color-mix(in srgb, var(--fg) 4%, var(--panel)); }
@@ -757,7 +759,7 @@ body.recording .editor { border-color: var(--c-err); }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.13 12:58<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.13 13:32<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -3270,6 +3272,119 @@ kick   x . . . x . . .                    | gain .25 dec .6
 scene day     flute guitar bass brush kick
 scene evening all
 song day:16 evening:16
+`,
+  },
+  {
+    id: 'hopper', name: 'Pipe Hopper (8-bit platformer)',
+    head: {
+      ko: '// Pipe Hopper — 슈퍼 마리오 같은 8비트 플랫포머 음악 감성으로 새로 쓴 곡이에요 (원곡 없음). C장조 180 BPM, 한 마디 = 8분음표 8칸\n// 사각파 선율과 오프비트로 통통 튀는 사각파 화음, 삼각파 베이스, 잡음 같은 드럼(crush). 7마디째 Ab→Bb→C 는 게임 음악에서 사랑받는 "골인" 진행이에요\n// 두 번째 바퀴엔 콩가가 라틴 리듬을 넣고, 벨이 한 옥타브 위에서 반짝여요',
+      en: '// Pipe Hopper — an original in the spirit of 8-bit platformer music like Super Mario (not based on any song). C major at 180 BPM, one bar = eight eighths\n// A square-wave tune over offbeat square chords, a triangle bass and noisy drums (crush). The Ab→Bb→C in bar 7 is the "level clear" move game music loves\n// On the second pass congas add a Latin lilt and a bell sparkles an octave up',
+    },
+    body: `bpm 180
+key C major
+prog <C F C G7 C F [Ab Bb] C F C Dm G F E7 [Dm G7] C>
+master loud
+space room
+
+let tune = <[g4 c5 . e5 . g5 e5 .] [f5 . a5 f5 . c5 d5 .] [e5 g5 . c6 . g5 a5 g5] [f5 _ d5 . b4 . g4 .] [g4 c5 . e5 . g5 c6 .] [a5 . c6 a5 . f5 g5 a5] [ab5 _ eb5 c5 bb5 _ f5 d5] [c6 . g5 . c5 _ . .] [a5 . . f5 . c5 f5 a5] [g5 . . e5 . c5 e5 g5] [f5 . . d5 . a4 d5 f5] [e5 _ d5 _ b4 . . .] [a5 . . f5 . c6 a5 c6] [b5 _ g#5 _ e5 . . .] [d5 f5 a5 . b5 g5 f5 d5] [c5 _ e5 _ g5 _ c6 .]>
+
+lead   $tune                         | square cut 9000 env 0 dec .3 sus .7 rel .05 vib 5 gain .34 delay .1
+bell   $tune                         | bell oct 6 gain .12 verb .3
+chord  [. 0^ . 0^ . 0^ . 0^']        | square oct 4 cut 5000 env 0 dec .08 sus 0 rel .03 gain .1 duck .2
+bass   [0 . 4 . 0' . 4 4]            | tri oct 2 cut 8000 env 0 dec .12 sus .6 rel .04 gain .5
+kick   x . . . x . . .               | gain .7 dec .5
+snare  . . x . . . x .               | gain .5 crush .55 tune 1.2
+hat    [. x]*4                       | gain .22 crush .6 pan .15
+conga  [. . x . . x . x]             | gain .35 pan -.3 human .2
+crash  <x . . . . . . . x . . . . . . .> | gain .25 crush .3
+
+scene world  lead chord bass kick snare hat crash
+scene bonus  all
+song world:16 bonus:16
+`,
+  },
+  {
+    id: 'herofield', name: "Hero's Field (adventure overworld)",
+    head: {
+      ko: '// Hero\'s Field — 젤다 같은 모험 게임 필드 음악 감성으로 새로 쓴 곡이에요 (원곡 없음). Bb장조 132 BPM 행진\n// 길게 뻗는 사각파 팡파르, 셋잇단 사각파 아르페지오, 행진 스네어, 삼각파 베이스. Ab·Ebm·Gb 처럼 장조 밖에서 빌려 온 화음이 영웅적인 색을 내요\n// B단락(Gm부터)은 더 높이 올라가고, 두 번째 바퀴엔 플루트가 같은 선율을 살짝 늦게 겹쳐 부드럽게 받쳐요',
+      en: '// Hero\'s Field — an original in the spirit of adventure-game overworld music like Zelda (not based on any song). A 132 BPM march in Bb major\n// A long-breathed square fanfare, a triplet square arpeggio, a marching snare, a triangle bass. Chords borrowed from outside the key (Ab, Ebm, Gb) give it the heroic colour\n// The B part (from Gm) climbs higher; on the second pass a flute doubles the tune a hair late, softening it',
+    },
+    body: `bpm 132
+key Bb major
+prog <Bb Bb Ab Bb Eb Ebm Bb F7 Gm Eb Bb F Gm Eb [Gb Ab] Bb>
+master loud
+space hall
+
+let fanfare = <[bb4@6 f4@2 bb4 _ c5 d5 eb5 _ f5 _] [f5@10 . . f5 . g5 _] [ab5@8 c6@4 ab5@2 eb5@2] [bb5@12 . . d5 f5] [g5@4 eb5@2 g5@2 bb5@4 g5@2 eb5@2] [gb5@4 eb5@2 gb5@2 bb5@4 ab5@2 gb5@2] [f5@6 d5@2 bb4@4 d5@2 f5@2] [c5@4 f4@2 a4@2 c5@2 eb5@2 f5@2 a5@2] [d6@6 bb5@2 g5@4 bb5@2 d6@2] [eb6@8 d6@2 c6@2 bb5@2 g5@2] [f5@6 bb5@2 d6@8] [c6@12 a5@2 f5@2] [g5@4 bb5@4 d6@4 g6@4] [f6@6 eb6@2 bb5@4 g5@4] [gb5@4 bb5@2 db6@2 ab5@4 c6@2 eb6@2] [d6@4 f6@4 bb6@8]>
+
+lead   $fanfare                      | square cut 7000 env .1 dec .4 sus .7 rel .1 vib 8 gain .36 delay .2 verb .3
+flute  $fanfare                      | flute gain .18 verb .4 atk .05 nudge 15
+arp    [0 2 4 7 4 2]*2               | square oct 4 cut 4000 env 0 dec .1 sus .2 gain .1 pan .25
+pad    0^                            | pad gain .16 atk .5 rel 1 verb .5
+bass   [0 . . 0 0 . 4 . 0 . . 0 4 . 7 .] | tri oct 2 cut 8000 env 0 dec .15 sus .6 gain .5
+snare  [x . . x x . x . x . . x x x x x] | gain .4 vel [1 .4 .5 .7 .9 .4 .7 .4 1 .4 .5 .7 .6 .7 .8 1] crush .35 tune 1.1 human .15
+kick   x . . . . . . . x . . . . . . .  | gain .6 dec .7
+crash  <x . . . . . . . x . . . . . . .> | gain .28
+
+scene field  lead arp bass snare kick crash
+scene quest  all
+song field:16 quest:16
+`,
+  },
+  {
+    id: 'korobeiniki', name: 'Korobeiniki (falling-block chip)',
+    head: {
+      ko: '// Korobeiniki — 러시아 민요 「코로베이니키」(19세기, 퍼블릭 도메인) 선율. 테트리스로 널리 알려진 노래예요. A단조 150 BPM\n// 선율은 민요 그대로, 편곡(3도 아래 화음 대선율, 옥타브로 뛰는 삼각파 베이스, 잡음 드럼, 아르페지오)은 새로 썼어요\n// 첫 바퀴는 선율과 베이스만, 두 번째 바퀴에 대선율과 드럼이 들어와요',
+      en: '// Korobeiniki — the Russian folk song (19th century, public domain), famous from Tetris. A minor at 150 BPM\n// The tune is the folk melody; the arrangement (a harmony line a third below, an octave-jumping triangle bass, noisy drums, an arpeggio) is new\n// The first pass is tune and bass alone; the harmony and drums join on the second',
+    },
+    body: `bpm 150
+key A minor
+prog <E Am E Am Dm Am E Am>
+master loud
+space room
+
+let tune = <[e5@4 b4@2 c5@2 d5@4 c5@2 b4@2] [a4@4 a4@2 c5@2 e5@4 d5@2 c5@2] [b4@6 c5@2 d5@4 e5@4] [c5@4 a4@4 a4@4 .@4] [.@2 d5@4 f5@2 a5@4 g5@2 f5@2] [e5@6 c5@2 e5@4 d5@2 c5@2] [b4@4 b4@2 c5@2 d5@4 e5@4] [c5@4 a4@4 a4@4 .@4]>
+let third = <[g#4@4 g#4@2 a4@2 b4@4 a4@2 g#4@2] [e4@4 e4@2 a4@2 c5@4 b4@2 a4@2] [g#4@6 a4@2 b4@4 c5@4] [a4@4 e4@4 e4@4 .@4] [.@2 f4@4 a4@2 f5@4 e5@2 d5@2] [c5@6 a4@2 c5@4 b4@2 a4@2] [g#4@4 g#4@2 a4@2 b4@4 c5@4] [a4@4 e4@4 e4@4 .@4]>
+
+lead   $tune                         | square cut 9000 env 0 dec .3 sus .7 rel .05 vib 4 gain .34 delay .1
+alto   $third                        | square cut 4500 env 0 dec .3 sus .6 rel .05 gain .13 pan -.25
+arp    [0 2 4 2]*4                   | square oct 5 cut 3500 env 0 dec .06 sus 0 gain .07 pan .3
+bass   [0 7]*4                       | tri oct 2 cut 8000 env 0 dec .12 sus .6 rel .04 gain .5
+kick   x . . . x . . .               | gain .65 dec .5
+snare  . . x . . . x .               | gain .45 crush .55 tune 1.25
+hat    x*8                           | gain .2 vel [1 .5]*4 crush .6 pan .15
+
+scene solo  lead bass
+scene full  all
+song solo:8 full:16
+`,
+  },
+  {
+    id: 'steelstage', name: 'Steel Stage (8-bit action rock)',
+    head: {
+      ko: '// Steel Stage — 록맨 같은 8비트 액션 게임 스테이지 음악 감성으로 새로 쓴 곡이에요 (원곡 없음). E단조 160 BPM\n// 내달리는 삼각파 8분 베이스, 근음과 5도로 긁는 사각파 리듬, 16분 아르페지오, 애틋하게 치솟는 사각파 선율\n// 마지막 마디의 B장조(화성단음계의 V)가 처음 Em로 다시 끌어당겨요',
+      en: '// Steel Stage — an original in the spirit of 8-bit action-game stage music like Mega Man (not based on any song). E minor at 160 BPM\n// A driving eighth-note triangle bass, square-wave power chords (root and fifth), a sixteenth arpeggio, a soaring square lead\n// The B major in the last bar (the harmonic-minor V) pulls back to Em',
+    },
+    body: `bpm 160
+key E minor
+prog <Em C D Bm Em C D B>
+master loud
+space room
+
+let hero = <[e5@4 b4@2 e5@2 g5@2 f#5@2 e5@2 d5@2] [e5@6 c5@2 e5@2 g5@2 c6@2 b5@2] [a5@4 f#5@2 d5@2 a5@2 b5@2 a5@2 f#5@2] [b5@8 f#5@2 d5@2 b4@2 d5@2] [e5 _ g5 _ b5 _ e6 _ d6 _ b5 _ g5 _ b5 _] [c6@4 b5@2 a5@2 g5@4 e5@2 g5@2] [f#5@2 a5@2 d6@2 c6@2 b5@2 a5@2 f#5@2 d5@2] [d#5@4 f#5@4 b5@4 a5@2 f#5@2]>
+
+lead   $hero                         | square cut 9000 env 0 dec .3 sus .75 rel .05 vib 6 gain .34 delay .15 verb .15
+chug   [[0,4] . [0,4] [0,4] . [0,4] . [0,4]] | square oct 3 cut 2200 env .3 dec .1 sus .2 gain .12 pan -.2
+arp    [0 2 4 7]*4                   | square oct 5 cut 4000 env 0 dec .06 sus 0 gain .08 pan .3
+bass   [0 0 7 0 0 7 0 7]             | tri oct 2 cut 8000 env 0 dec .1 sus .6 rel .03 gain .55
+kick   x . . . . . x . x . . . . . . .  | gain .85
+snare  . . . . x . . . . . . . x . . x? | gain .55 crush .5 tune 1.1
+hat    x*8                           | gain .22 vel [1 .5]*4 crush .6 pan .15
+crash  <x . . . . . . .>             | gain .3 crush .3
+
+scene intro arp bass hat
+scene stage all
+song intro:8 stage:16
 `,
   },
   {
