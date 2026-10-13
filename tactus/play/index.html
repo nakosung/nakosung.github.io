@@ -431,6 +431,16 @@ body.recording .editor { border-color: var(--c-err); }
 .pwa-tip { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 80; max-width: min(460px, calc(100vw - 32px)); padding: 12px 16px; border-radius: var(--r-l, 12px);
   background: var(--fg); color: var(--body); font-size: 14px; line-height: 1.45; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
 
+/* ---- composing a whole song: a pop-over under its button ---- */
+.cmpwrap { position: relative; flex: none; }
+#composeBtn::after { content: ''; display: inline-block; width: 0; height: 0; margin-left: 7px; vertical-align: 2px; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid currentColor; }
+#composeBtn[aria-expanded="true"]::after { transform: rotate(180deg); }
+.cmppop { position: absolute; top: calc(100% + 8px); left: 0; z-index: 45; width: 360px; display: grid; gap: 10px; padding: 14px; border-radius: var(--r-l); background: var(--panel); border: 1px solid var(--line); box-shadow: 0 18px 40px rgba(0,0,0,.35); }
+[data-skin="field"] .cmppop { border-color: #000; box-shadow: 6px 6px 0 #000; }
+[data-skin="pop"] .cmppop { border: 2px solid var(--line); box-shadow: 0 6px 0 var(--key-edge), 0 18px 40px rgba(40,30,90,.2); }
+@media (max-width: 900px) { .cmppop { position: fixed; top: 76px; left: 16px; right: 16px; width: auto; } }
+.micbox { display: grid; gap: 6px; padding: 10px; border-radius: var(--r-l); border: 1px solid var(--line); background: var(--panel); }
+.sndcredit { font-size: 11px; }
 /* ---- voice to code ---- */
 .vxbox { display: grid; gap: 8px; }
 .vxrow { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
@@ -600,7 +610,7 @@ body.recording .editor { border-color: var(--c-err); }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.13 09:45<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.13 09:56<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -608,7 +618,22 @@ body.recording .editor { border-color: var(--c-err); }
       <div class="cell"><label data-i18n="barLbl">BAR</label><div class="row"><output id="pos">1.1</output><span class="pips" aria-hidden="true"><i class="pip"></i><i class="pip"></i><i class="pip"></i><i class="pip"></i></span></div></div>
     </div>
     <select class="preset" id="preset" data-i18n-aria="presetLabel" data-i18n-title="presetLabel"></select>
-    <button class="btn" id="composeBtn" data-i18n="composeBtn"></button>
+    <div class="cmpwrap">
+      <button class="btn" id="composeBtn" aria-expanded="false" aria-controls="cmpPop" data-i18n="composeBtn"></button>
+      <div class="cmppop" id="cmpPop" role="dialog" aria-labelledby="cmpH" hidden>
+        <h2 class="sec-h" id="cmpH"><span data-i18n="cmpTitle"></span></h2>
+        <p class="note" data-i18n="cmpIntro"></p>
+        <div class="chips" id="cmpStyles" role="group" data-i18n-aria="cmpStyle"></div>
+        <div class="seedrow">
+          <label for="cmpSeed">SEED<input type="number" id="cmpSeed" value="1" min="0" max="999999"></label>
+          <button class="btn" id="cmpDice" data-i18n="cmpDice" data-i18n-title="cmpDiceTitle"></button>
+        </div>
+        <div class="row-btns">
+          <button class="btn go" id="cmpGo" data-i18n="cmpGo"></button>
+          <button class="btn ghost" id="cmpUndo" data-i18n="cmpUndo" disabled></button>
+        </div>
+      </div>
+    </div>
     <button class="btn" id="shareBtn" data-i18n="share" data-i18n-title="shareTitle"></button>
     <div class="queue" id="queue" role="status" hidden><i class="qled"></i><b class="qwhat"></b> <span class="qwhen"></span><span class="qseg" aria-hidden="true"><i></i><i></i><i></i><i></i></span></div>
     <div class="spacer"></div>
@@ -649,8 +674,8 @@ body.recording .editor { border-color: var(--c-err); }
     <aside class="rack">
       <div class="tabs" role="tablist">
         <button role="tab" id="tab-perform" aria-controls="pane-perform" aria-selected="true" data-i18n="tabPerform"></button>
-        <button role="tab" id="tab-compose" aria-controls="pane-compose" aria-selected="false" data-i18n="tabCompose"></button>
-        <button role="tab" id="tab-loops" aria-controls="pane-loops" aria-selected="false" data-i18n="tabLoops"></button>
+        <button role="tab" id="tab-record" aria-controls="pane-record" aria-selected="false" data-i18n="tabRecord"></button>
+        <button role="tab" id="tab-sounds" aria-controls="pane-sounds" aria-selected="false" data-i18n="tabSounds"></button>
         <button role="tab" id="tab-guide" aria-controls="pane-guide" aria-selected="false" data-i18n="tabGuide"></button>
       </div>
 
@@ -674,20 +699,21 @@ body.recording .editor { border-color: var(--c-err); }
         <div class="gstrip" id="gestStrip" data-gestures="mini" hidden></div>
       </section>
 
-      <section class="pane" id="pane-compose" role="tabpanel" aria-labelledby="tab-compose" hidden>
-        <h2 class="sec-h"><span data-i18n="cmpTitle"></span></h2>
-        <p class="note" data-i18n="cmpIntro"></p>
-        <div class="chips" id="cmpStyles" role="group" data-i18n-aria="cmpStyle"></div>
-        <div class="seedrow">
-          <label for="cmpSeed">SEED<input type="number" id="cmpSeed" value="1" min="0" max="999999"></label>
-          <button class="btn" id="cmpDice" data-i18n="cmpDice" data-i18n-title="cmpDiceTitle"></button>
-        </div>
-        <div class="row-btns">
-          <button class="btn go" id="cmpGo" data-i18n="cmpGo"></button>
-          <button class="btn ghost" id="cmpUndo" data-i18n="cmpUndo" disabled></button>
+      <section class="pane" id="pane-record" role="tabpanel" aria-labelledby="tab-record" hidden>
+        <div class="micbox">
+          <h2 class="sec-h"><span data-i18n="micTitle"></span><small data-i18n="micHint"></small></h2>
+          <div class="loopctl">
+            <label class="chk" data-i18n-title="speakerTitle"><input type="checkbox" id="speaker" checked><span data-i18n="speaker"></span></label>
+            <label class="lat" data-i18n-title="latencyTitle"><span data-i18n="latency"></span><input type="number" id="latency" value="0" step="5" min="-200" max="200">ms</label>
+          </div>
+          <div class="loopctl cal">
+            <button class="calbtn" id="calAuto" data-i18n="calAuto" data-i18n-title="calAutoTitle"></button>
+            <button class="calbtn" id="calClap" data-i18n="calClap" data-i18n-title="calClapTitle"></button>
+            <span class="calinfo" id="calInfo"></span>
+          </div>
         </div>
         <div class="vxbox" id="vxBox">
-          <h2 class="sec-h"><span data-i18n="vxTitle"></span><small data-i18n="vxSmall"></small></h2>
+          <h2 class="sec-h"><span data-i18n="vxTitle"></span></h2>
           <p class="note" data-i18n="vxIntro"></p>
           <div class="vxrow">
             <div class="seg" id="vxMode" role="group" data-i18n-aria="vxModeLbl"><button data-m="beat" data-i18n="vxBeat"></button><button data-m="hum" data-i18n="vxHum"></button></div>
@@ -700,37 +726,22 @@ body.recording .editor { border-color: var(--c-err); }
           <div class="row-btns" id="vxActs" hidden><button class="btn go" id="vxInsert" data-i18n="vxInsert"></button><button class="btn ghost" id="vxUndo" data-i18n="vxUndo"></button></div>
           <p class="note vxmsg" id="vxMsg" aria-live="polite"></p>
         </div>
-        <h2 class="sec-h"><span data-i18n="genTitle"></span></h2>
-        <dl class="gens">
-          <dt><code>~beat four</code></dt><dd data-i18n="genBeat"></dd>
-          <dt><code>~bass offbeat</code></dt><dd data-i18n="genBass"></dd>
-          <dt><code>~melody</code></dt><dd data-i18n="genMelody"></dd>
-          <dt><code>~chords stab</code></dt><dd data-i18n="genChords"></dd>
-          <dt><code>~arp broken</code></dt><dd data-i18n="genArp"></dd>
-          <dt><code>prog ~gen 4</code></dt><dd data-i18n="genProg"></dd>
-          <dt><code>seed 42</code></dt><dd data-i18n="genSeed"></dd>
-          <dt><code>dens evolve bars</code></dt><dd data-i18n="genParams"></dd>
-          <dt><code>Ctrl+B</code></dt><dd data-i18n="genBake"></dd>
-        </dl>
-      </section>
-
-      <section class="pane" id="pane-loops" role="tabpanel" aria-labelledby="tab-loops" hidden>
         <h2 class="sec-h"><span data-i18n="loops"></span><small data-i18n="loopsHint"></small></h2>
         <div class="loopctl">
           <span class="seg" data-i18n-title="srcTitle"><button id="srcMic" data-i18n="srcMic" aria-pressed="false"></button><button id="srcOut" data-i18n="srcOut" aria-pressed="true"></button></span>
-          <label class="chk" data-i18n-title="speakerTitle"><input type="checkbox" id="speaker" checked><span data-i18n="speaker"></span></label>
-          <label class="lat" data-i18n-title="latencyTitle"><span data-i18n="latency"></span><input type="number" id="latency" value="0" step="5" min="-200" max="200">ms</label>
-        </div>
-        <div class="loopctl cal">
-          <button class="calbtn" id="calAuto" data-i18n="calAuto" data-i18n-title="calAutoTitle"></button>
-          <button class="calbtn" id="calClap" data-i18n="calClap" data-i18n-title="calClapTitle"></button>
-          <span class="calinfo" id="calInfo"></span>
         </div>
         <div class="slots" id="slots"></div>
         <div class="loopio">
           <label for="file"><span data-i18n="loadFile"></span><input type="file" id="file" accept="audio/*"></label>
           <button id="export" data-i18n="exportZip"></button>
         </div>
+      </section>
+
+      <section class="pane" id="pane-sounds" role="tabpanel" aria-labelledby="tab-sounds" hidden>
+        <h2 class="sec-h"><span data-i18n="h27t"></span></h2>
+        <p class="note" data-i18n="h27d"></p>
+        <div id="sounds" class="sounds"></div>
+        <p class="note sndcredit" data-i18n="h28d"></p>
       </section>
 
       <section class="pane help" id="pane-guide" role="tabpanel" aria-labelledby="tab-guide" hidden>
@@ -833,9 +844,20 @@ body.recording .editor { border-color: var(--c-err); }
           <dt>Q W E R</dt><dd data-i18n="h17d"></dd>
           <dt>Space · T · Esc</dt><dd data-i18n="h15d"></dd>
         </dl>
+        <h3 data-i18n="genTitle"></h3>
+        <dl class="gens">
+          <dt><code>~beat four</code></dt><dd data-i18n="genBeat"></dd>
+          <dt><code>~bass offbeat</code></dt><dd data-i18n="genBass"></dd>
+          <dt><code>~melody</code></dt><dd data-i18n="genMelody"></dd>
+          <dt><code>~chords stab</code></dt><dd data-i18n="genChords"></dd>
+          <dt><code>~arp broken</code></dt><dd data-i18n="genArp"></dd>
+          <dt><code>prog ~gen 4</code></dt><dd data-i18n="genProg"></dd>
+          <dt><code>seed 42</code></dt><dd data-i18n="genSeed"></dd>
+          <dt><code>dens evolve bars</code></dt><dd data-i18n="genParams"></dd>
+          <dt><code>Ctrl+B</code></dt><dd data-i18n="genBake"></dd>
+        </dl>
         <h3 data-i18n="hgSamples"></h3>
         <dl>
-          <dt data-i18n="h27t"></dt><dd><span data-i18n="h27d"></span><div id="sounds" class="sounds"></div></dd>
           <dt data-i18n="h28t"></dt><dd data-i18n="h28d"></dd>
         </dl>
       </section>
@@ -912,7 +934,8 @@ const I18N = {
     tagline: 'live instrument', play: '재생', stop: '정지', auto: '자동 반영', autoTitle: '끄면 Ctrl+Enter로만 반영',
     bpmTitle: '휠로 조절, T 또는 TAP으로 탭 템포', lang: 'EN', langTitle: 'Switch to English',
     queueNext: '다음 마디에 반영', queueIn: '{n}마디 뒤 반영',
-    vxTitle: '목소리로 쓰기', vxSmall: '마이크', vxIntro: '"둠 츠 칙 츠" 비트박스나 흥얼거린 멜로디를 마디에 맞춰 녹음하면 코드 줄로 바꿔요. 한 마디 동안 박자 소리로 준비를 세고 시작해요. 스피커로 들을 때는 녹음하는 동안 음악을 잠시 끄고 박자 소리만 들려줘요.', vxBeat: '비트박스', vxHum: '허밍', vxModeLbl: '무엇을 녹음할지', vxBarsLbl: '마디', vxRec: '녹음', vxCancel: '녹음 취소', vxCount: '{m} 준비… 박자에 맞춰 들어오세요', vxRecBanner: '{m} 녹음 {bar}/{bars}마디', vxBusy: '루프 녹음이 끝난 뒤에 해 주세요.', vxQuiet: '소리가 거의 들리지 않았어요. 마이크에 조금 더 가까이 대고 다시 해 보세요.', vxNothing: '알아들을 만한 소리를 찾지 못했어요. 조금 더 또렷하게 해 보세요.', vxBeatDone: '{n}번 친 소리를 찾았어요. 낮은 소리는 kick, 중간은 snare, 높고 짧은 소리는 hat이에요.', vxHumDone: '{k} 음계에 맞췄어요.', vxShift: '{n}옥타브 올렸어요.', vxInsert: '코드에 넣기', vxUndo: '되돌리기', vxInserted: '넣었어요. 다음 마디부터 들려요.', vxUndone: '넣기 전으로 돌렸어요.',
+    tabRecord: '녹음', tabSounds: '소리', micTitle: '마이크', micHint: '목소리로 쓰기와 루프 녹음이 함께 써요',
+    vxTitle: '목소리로 쓰기', vxIntro: '"둠 츠 칙 츠" 비트박스나 흥얼거린 멜로디를 마디에 맞춰 녹음하면 코드 줄로 바꿔요. 한 마디 동안 박자 소리로 준비를 세고 시작해요. 스피커로 들을 때는 녹음하는 동안 음악을 잠시 끄고 박자 소리만 들려줘요.', vxBeat: '비트박스', vxHum: '허밍', vxModeLbl: '무엇을 녹음할지', vxBarsLbl: '마디', vxRec: '녹음', vxCancel: '녹음 취소', vxCount: '{m} 준비… 박자에 맞춰 들어오세요', vxRecBanner: '{m} 녹음 {bar}/{bars}마디', vxBusy: '루프 녹음이 끝난 뒤에 해 주세요.', vxQuiet: '소리가 거의 들리지 않았어요. 마이크에 조금 더 가까이 대고 다시 해 보세요.', vxNothing: '알아들을 만한 소리를 찾지 못했어요. 조금 더 또렷하게 해 보세요.', vxBeatDone: '{n}번 친 소리를 찾았어요. 낮은 소리는 kick, 중간은 snare, 높고 짧은 소리는 hat이에요.', vxHumDone: '{k} 음계에 맞췄어요.', vxShift: '{n}옥타브 올렸어요.', vxInsert: '코드에 넣기', vxUndo: '되돌리기', vxInserted: '넣었어요. 다음 마디부터 들려요.', vxUndone: '넣기 전으로 돌렸어요.',
     share: '공유', shareTitle: '이 곡을 링크나 녹음으로 보내요', shareTitle2: '이 곡 공유하기', shareLink: '링크로 보내기', shareLinkD: '코드 전체가 링크 안에 들어가요. 받는 사람이 열면 이 곡이 그대로 열리고, 고쳐서 다시 보낼 수도 있어요.', shareSend: '보내기…', shareCopy: '링크 복사', shareCopied: '링크를 복사했어요', shareChars: '자', shareAudio: '소리로 보내기', shareAudioD: '다음 마디부터 연주를 그대로 녹음해 오디오 파일로 만들어요. 멈춰 있으면 처음부터 틀면서 녹음해요.', shareB4: '4마디', shareB8: '8마디', shareB16: '16마디', shareWhole: '곡 전체', shareStop: '녹음 끝내기', shareWaiting: '다음 마디에서 녹음을 시작해요…', shareRecording: '녹음 중 {a}/{b}마디', shareReady: '{s}초 녹음했어요 ({kb} KB)', shareSendFile: '파일 보내기…', shareSave: '저장', shareSaved: '{n} 파일로 저장했어요', shareHint: '휴대폰에서 "보내기"를 누르면 공유 창이 열려 카카오톡, 메시지, 메일 등으로 바로 보낼 수 있어요.', shareNoRec: '이 브라우저는 녹음을 지원하지 않아요.', shareText: 'Tactus로 만든 곡: {n}', shareMine: '내 곡', shareOpened: '공유받은 곡을 열었어요. 원래 코드는 보관해 뒀어요.', shareUndo: '내 코드로 되돌리기', shareBad: '링크가 잘려서 곡을 열 수 없어요. 링크 전체를 받았는지 확인해 주세요.',
     install: '앱으로 설치', installTitle: 'Tactus를 앱으로 설치해 바탕화면이나 홈 화면에서 바로 열어요', installDone: '설치했어요. 이제 앱 목록이나 홈 화면에서 Tactus를 열 수 있어요.', installIos: 'Safari 아래쪽의 공유 버튼을 누르고 "홈 화면에 추가"를 고르세요.', installMenu: '브라우저 메뉴(⋮)에서 "앱 설치" 또는 "홈 화면에 추가"를 고르세요.',
     skin: '스킨', skinStudio: '스튜디오', skinField: '필드', skinPop: '팝', armCode: '코드', armSong: '곡', armNext: '다음 마디', armIn: '{n}마디 뒤', armBeat: '{n}박 뒤', armGo: '지금!',
@@ -1113,7 +1136,8 @@ const I18N = {
     tagline: 'live instrument', play: 'Play', stop: 'Stop', auto: 'Live update', autoTitle: 'When off, changes apply only on Ctrl+Enter',
     bpmTitle: 'Scroll to adjust, T or TAP for tap tempo', lang: '한국어', langTitle: '한국어로 전환',
     queueNext: 'Applies next bar', queueIn: 'Applies in {n} bars',
-    vxTitle: 'Sing it in', vxSmall: 'microphone', vxIntro: 'Beatbox ("boom ts chik ts") or hum a tune in time with the bar and it becomes code. A bar of clicks counts you in. On speakers the music is muted while you record, and only the clicks play.', vxBeat: 'Beatbox', vxHum: 'Hum', vxModeLbl: 'What to record', vxBarsLbl: 'bars', vxRec: 'Record', vxCancel: 'Cancel', vxCount: '{m}: get ready… come in on the beat', vxRecBanner: '{m}: recording bar {bar} of {bars}', vxBusy: 'Wait until the loop recording is done.', vxQuiet: 'Almost nothing came through. Get a little closer to the mic and try again.', vxNothing: 'Nothing clear enough was heard. Try again a little more crisply.', vxBeatDone: 'Found {n} hits. Low sounds became kick, middle ones snare, high short ones hat.', vxHumDone: 'Fitted to {k}.', vxShift: 'Moved up {n} octave(s).', vxInsert: 'Put in the code', vxUndo: 'Undo', vxInserted: 'Added. You will hear it from the next bar.', vxUndone: 'Back to how it was.',
+    tabRecord: 'Record', tabSounds: 'Sounds', micTitle: 'Microphone', micHint: 'Shared by Sing it in and loop recording',
+    vxTitle: 'Sing it in', vxIntro: 'Beatbox ("boom ts chik ts") or hum a tune in time with the bar and it becomes code. A bar of clicks counts you in. On speakers the music is muted while you record, and only the clicks play.', vxBeat: 'Beatbox', vxHum: 'Hum', vxModeLbl: 'What to record', vxBarsLbl: 'bars', vxRec: 'Record', vxCancel: 'Cancel', vxCount: '{m}: get ready… come in on the beat', vxRecBanner: '{m}: recording bar {bar} of {bars}', vxBusy: 'Wait until the loop recording is done.', vxQuiet: 'Almost nothing came through. Get a little closer to the mic and try again.', vxNothing: 'Nothing clear enough was heard. Try again a little more crisply.', vxBeatDone: 'Found {n} hits. Low sounds became kick, middle ones snare, high short ones hat.', vxHumDone: 'Fitted to {k}.', vxShift: 'Moved up {n} octave(s).', vxInsert: 'Put in the code', vxUndo: 'Undo', vxInserted: 'Added. You will hear it from the next bar.', vxUndone: 'Back to how it was.',
     share: 'Share', shareTitle: 'Send this song as a link or a recording', shareTitle2: 'Share this song', shareLink: 'Send a link', shareLinkD: 'The whole code goes inside the link. Whoever opens it gets this song as it is, and can change it and send it back.', shareSend: 'Send…', shareCopy: 'Copy link', shareCopied: 'Link copied', shareChars: ' characters', shareAudio: 'Send the sound', shareAudioD: 'Records the music from the next bar into an audio file. If it is stopped, it starts playing from the top.', shareB4: '4 bars', shareB8: '8 bars', shareB16: '16 bars', shareWhole: 'Whole song', shareStop: 'Stop recording', shareWaiting: 'Recording starts on the next bar…', shareRecording: 'Recording bar {a} of {b}', shareReady: 'Recorded {s} s ({kb} KB)', shareSendFile: 'Send file…', shareSave: 'Save', shareSaved: 'Saved as {n}', shareHint: 'On a phone, Send opens the share sheet, so it goes straight to KakaoTalk, Messages, mail and the rest.', shareNoRec: 'This browser cannot record.', shareText: 'A song made in Tactus: {n}', shareMine: 'my song', shareOpened: 'Opened a shared song. Your own code is kept.', shareUndo: 'Back to my code', shareBad: 'This link is cut short, so the song cannot open. Check that the whole link came through.',
     install: 'Install app', installTitle: 'Install Tactus as an app and open it from your desktop or home screen', installDone: 'Installed. Open Tactus from your apps or home screen.', installIos: 'Tap Share at the bottom of Safari, then choose "Add to Home Screen".', installMenu: 'Open the browser menu (⋮) and choose "Install app" or "Add to Home screen".',
     skin: 'Skin', skinStudio: 'Studio', skinField: 'Field', skinPop: 'Pop', armCode: 'Code', armSong: 'Song', armNext: 'next bar', armIn: 'in {n} bars', armBeat: 'in {n}', armGo: 'Now!',
@@ -6943,7 +6967,7 @@ function pvHide() { if (PV.card) PV.card.hidden = true; }
 
 // ---------- where previews start ----------
 function pvInit() {
-  // the guide's sound list
+  // the sound list (its own tab)
   const box = document.getElementById('sounds');
   if (box) {
     box.innerHTML = PV_GROUPS.map(([k, list]) => `<div class="sgrp"><h4 data-i18n="${k}">${esc(t(k))}</h4><div>${list.map(n => `<button class="snd" data-inst="${n}">${n}</button>`).join('')}</div></div>`).join('');
@@ -7082,7 +7106,7 @@ async function sndLoadSaved() {
   if (rows.length) { sndRender(); evaluate('bar'); }
 }
 
-// ---------- the guide's "my sounds" group, and dropping files on the page ----------
+// ---------- the "my sounds" group in the sound list, and dropping files on the page ----------
 function sndRender() {
   const box = document.getElementById('mySounds'); if (!box) return;
   const names = [...USER_SOUNDS.keys()];
@@ -8050,7 +8074,8 @@ $('#padCode').addEventListener('click', () => {
 });
 
 // ---------- control surface tabs ----------
-const TABS = ['perform', 'compose', 'loops', 'guide'];
+// perform, record (voice and loops, with the mic settings they share), sounds (hear every instrument), guide
+const TABS = ['perform', 'record', 'sounds', 'guide'];
 function showTab(name) {
   for (const n of TABS) { $('#tab-' + n).setAttribute('aria-selected', n === name); $('#pane-' + n).hidden = n !== name; }
   try { localStorage.setItem('pulse-tab', name); } catch (e) { }
@@ -8061,7 +8086,12 @@ $('.tabs').addEventListener('keydown', e => {
   const d = e.key === 'ArrowRight' ? 1 : e.key === 'ArrowLeft' ? -1 : 0; if (!d) return;
   e.preventDefault(); const n = TABS[mod(i + d, TABS.length)]; showTab(n); $('#tab-' + n).focus();
 });
-$('#composeBtn').addEventListener('click', () => { showTab('compose'); $('#cmpGo').focus(); });
+// composing a whole song starts a piece, like picking an example, so it opens from the top bar next to them
+const cmpBtn = $('#composeBtn'), cmpPop = $('#cmpPop');
+function cmpOpen(on) { cmpPop.hidden = !on; cmpBtn.setAttribute('aria-expanded', on); if (on) $('#cmpGo').focus(); }
+cmpBtn.addEventListener('click', () => cmpOpen(cmpPop.hidden));
+document.addEventListener('pointerdown', e => { if (!cmpPop.hidden && !e.target.closest('.cmpwrap')) cmpOpen(false); });
+cmpPop.addEventListener('keydown', e => { if (e.key === 'Escape') { e.stopPropagation(); cmpOpen(false); cmpBtn.focus(); } });
 
 // ---------- GPU status and benchmark ----------
 function syncGpu() {
@@ -8599,7 +8629,8 @@ presetEl.addEventListener('change', () => {
 });
 applyI18n();
 buildChips();
-try { const tb = localStorage.getItem('pulse-tab'); if (TABS.includes(tb)) showTab(tb); } catch (e) { }
+// tabs saved by an older version: compose and loops live in record now
+try { const tb = { compose: 'record', loops: 'record' }[localStorage.getItem('pulse-tab')] || localStorage.getItem('pulse-tab'); if (TABS.includes(tb)) showTab(tb); } catch (e) { }
 buildSlots();
 buildPresets();
 buildArr();
