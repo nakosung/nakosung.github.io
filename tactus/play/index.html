@@ -819,9 +819,28 @@ body[data-max="rack"] .pad { min-height: 96px; }
 body.mob { overflow: auto; }
 body.mob .app { height: auto; min-height: 100dvh; padding: 0 12px calc(var(--mtab, 0px) + 12px); gap: 8px; }
 body.mob.mland .app { padding-right: 76px; padding-bottom: 12px; }
-body.mob .top { position: sticky; top: 0; z-index: 40; margin: 0 -12px; padding: 8px 12px; gap: 8px; background: var(--body); border-bottom: 1px solid var(--line); flex-wrap: wrap; }
-body.mob:not(.mmore-on) .top > :not(.brand, .play, .lcd, .mmore, .queue) { display: none; }
-body.mob.mmore-on .top > .spacer { display: none; }
+/* the bar: play, the song's name and ⋯ on top; the display and the scope under them; the armed change when there is one */
+body.mob .top { position: sticky; top: 0; z-index: 40; margin: 0 -12px; padding: 8px 12px; background: var(--body); border-bottom: 1px solid var(--line);
+  display: grid; grid-template-columns: auto minmax(0, 1fr) 56px; grid-template-areas: "play song more" "lcd lcd scope" "queue queue queue"; gap: 8px; align-items: center; }
+body.mob .top > :not(.play, .preset, .mmore, .lcd, #scope, .queue) { display: none; }
+body.mob .top .play { grid-area: play; }
+body.mob .top .preset { grid-area: song; min-width: 0; width: 100%; max-width: none; font-weight: 700; }
+body.mob .top .mmore { grid-area: more; justify-self: stretch; }
+body.mob .top .lcd { grid-area: lcd; }
+body.mob .top #scope { grid-area: scope; width: 100%; height: 38px; display: block; }
+body.mob .top .queue { grid-area: queue; }
+body.mob.mland .top { grid-template-columns: auto minmax(0, 1fr) minmax(0, 1.4fr) 64px auto; grid-template-areas: "play song lcd scope more" "queue queue queue queue queue"; }
+body.mob .lcd .cell:nth-child(2) { flex: 1 1 auto; }
+body.mob .lcd output { overflow: hidden; text-overflow: ellipsis; }
+/* the sheet under ⋯ */
+.msheet { display: none; }
+body.mob .msheet:not([hidden]) { display: grid; gap: 0; position: fixed; z-index: 60; top: calc(var(--mtop, 0px) + 6px); right: 10px; left: 10px; max-width: 440px; margin-left: auto;
+  padding: 6px 12px; border-radius: var(--r-l); background: var(--raised); border: 1px solid var(--line); box-shadow: 0 12px 32px rgba(0, 0, 0, .18); }
+body.mob .msheet .msg { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 10px 0; }
+body.mob .msheet .msg + .msg { border-top: 1px solid var(--line); }
+body.mob .msheet .msg:empty { display: none; }
+body.mob .msheet .skins span { display: inline; }
+body.mob .cmppop { z-index: 70; top: calc(var(--mtop, 0px) + 6px); }
 body.mob .brand .build, body.mob .brand .dsp { display: none; }
 body.mob .brand b { font-size: 16px; }
 body.mob .play { width: 38px; height: 38px; }
@@ -829,7 +848,6 @@ body.mob .lcd { flex: 1 1 auto; min-width: 0; }
 body.mob .lcd .cell { padding: 4px 8px; min-width: 0; }
 body.mob .lcd output { font-size: 14px; }
 body.mob .mmore { display: inline-grid; place-items: center; font-size: 20px; line-height: 1; padding: 6px 10px; }
-body.mob .queue { order: 9; flex-basis: 100%; }
 body.mob .mtabs { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
   padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); gap: 3px; background: var(--panel); border-top: 1px solid var(--line); }
 body.mob .mtabs button { border: 0; background: transparent; color: var(--dim); font: inherit; font-size: 11.5px; font-weight: 700; padding: 9px 0; border-radius: var(--r-s); cursor: pointer; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -854,22 +872,53 @@ body.mob .pad { min-height: 78px; }
 body.mob .vizbar:not(.open) > :not([aria-pressed="true"]) { display: none; }
 body.mob .vizbar.open { left: 8px; right: 8px; max-width: none; justify-content: flex-start; }
 /* block cards fold to their name row */
-body.mob .bk-fold { display: inline-grid; place-items: center; border: 0; background: transparent; color: var(--dim); font-size: 15px; width: 30px; height: 30px; cursor: pointer; order: -1; }
+/* block cards fold to one row each, on shared columns so the rows read as a small step sequencer:
+   ▸ · light · name · the bar's steps · M S. Delete lives in the opened card. */
+.bk-mini, .bk-led { display: none; }
+body.mob .bk-fold { display: inline-grid; place-items: center; border: 0; background: transparent; color: var(--dim); font-size: 13px; width: 24px; height: 32px; cursor: pointer; padding: 0; }
+body.mob .bk-cards { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+body.mob .bk-card, body.mob .bk-card > * { min-width: 0; }
+body.mob .bk-gridbox { overflow-x: auto; }
+body.mob .bk-card.fold { padding: 4px 8px 4px 4px; gap: 0; }
 body.mob .bk-card.fold > :not(header) { display: none; }
-body.mob .bk-card.fold > header { cursor: pointer; }
-body.mob .bk-card.fold { padding-block: 5px; transition: background-color .12s; }
-body.mob .bk-card.fold .bk-nm small { display: none; }
-body.mob .bk-card.fold .bk-ico { display: inline-block; transform-origin: 50% 70%; }
-body.mob .bk-card.fold.sounding { background: color-mix(in srgb, var(--tc) 16%, var(--raised)); }
-body.mob .bk-card.fold.muted .bk-mini { opacity: .35; }
-.bk-mini { display: none; }
-body.mob .bk-card.fold .bk-mini { display: grid; grid-template-columns: repeat(16, 1fr); gap: 2px; flex: 1 1 96px; max-width: 150px; height: 14px; margin-inline: 6px auto; align-self: center; }
-body.mob .bk-mini i { border-radius: 2px; background: color-mix(in srgb, var(--fg) 8%, transparent); }
-body.mob .bk-mini i[data-b] { background: color-mix(in srgb, var(--fg) 14%, transparent); }
-body.mob .bk-mini i.on { background: color-mix(in srgb, var(--tc) 85%, var(--fg)); }
-body.mob .bk-mini i.cur { background: var(--fg); }
-body.mob .bk-mini i.on.cur { background: var(--tc); box-shadow: 0 0 0 1.5px var(--fg); }
-body.mob .bk-mini.free { display: none; }
+body.mob .bk-card.fold > header { display: grid; grid-template-columns: 24px 10px 74px minmax(0, 1fr) auto auto; align-items: center; column-gap: 6px; min-height: 36px; cursor: pointer; }
+body.mob .bk-card.fold .bk-fold { order: -3; }
+body.mob .bk-card.fold .bk-led { order: -2; }
+body.mob .bk-card.fold .bk-nm { order: -1; overflow: hidden; }
+body.mob .bk-card.fold :is(.bk-ico, .bk-nm small, .bk-x, .bk-use) { display: none; }
+body.mob .bk-card.phrase.fold > header { grid-template-columns: 24px 10px 74px minmax(0, 1fr); }
+body.mob .bk-card.phrase.fold .bk-led { visibility: hidden; }
+body.mob .bk-card.fold .bk-nm b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 13px; }
+body.mob .bk-card.fold .bk-tg { width: 30px; height: 30px; padding: 0; }
+/* the light: lit while the notes sound, brighter for louder ones */
+body.mob .bk-led { display: block; width: 9px; height: 9px; border-radius: 50%; background: color-mix(in srgb, var(--tc) 22%, var(--line)); transition: background-color .18s, box-shadow .18s; }
+body.mob .bk-card.sounding .bk-led { background: var(--tc); box-shadow: 0 0 0 2px color-mix(in srgb, var(--tc) 30%, transparent), 0 0 calc(10px * var(--hv, 1)) var(--tc); transition-duration: .02s; }
+body.mob .bk-card.fold.muted :is(.bk-mini, .bk-nm) { opacity: .4; }
+/* the steps: lit where the notes are (a melody's height is its pitch, a held note is fainter), the step now in ink */
+body.mob .bk-mini { display: grid; gap: 2px; align-self: stretch; align-content: center; }
+body.mob .bk-mcells { display: grid; grid-template-columns: repeat(16, minmax(0, 1fr)); gap: 2px; height: 20px; align-items: end; }
+body.mob .bk-mcells i { height: 100%; border-radius: 2px; background: color-mix(in srgb, var(--fg) 7%, transparent); }
+body.mob .bk-mcells i.b { background: color-mix(in srgb, var(--fg) 13%, transparent); }
+body.mob .bk-mcells i:is(.on, .hold) { height: calc(100% * var(--h, 1)); background: color-mix(in srgb, var(--tc) 85%, var(--fg)); }
+body.mob .bk-mcells i.hold { background: color-mix(in srgb, var(--tc) 40%, transparent); }
+body.mob .bk-mcells i.cur { box-shadow: inset 0 -3px 0 var(--fg); }
+body.mob .bk-mcells i:is(.on, .hold).cur { background: var(--tc); box-shadow: 0 0 0 1.5px var(--fg); }
+body.mob .bk-mbars { display: flex; gap: 2px; height: 3px; min-width: 0; overflow: hidden; }
+body.mob .bk-mbars i { flex: 0 1 8px; min-width: 2px; border-radius: 2px; background: color-mix(in srgb, var(--fg) 15%, transparent); }
+body.mob .bk-mbars i.cur { background: var(--fg); }
+/* no steps to show (a drone, a generator): how loud it is right now */
+body.mob .bk-mlvl { display: block; height: 8px; border-radius: 4px; background: color-mix(in srgb, var(--fg) 8%, transparent); overflow: hidden; }
+body.mob .bk-mlvl i { display: block; height: 100%; width: 100%; transform-origin: left; transform: scaleX(0); background: var(--tc); transition: transform .35s ease-out; }
+body.mob .bk-card.sounding .bk-mlvl i { transform: scaleX(var(--hv, 1)); transition-duration: .03s; }
+/* the song's tempo, key and chords fold into one summary row above the cards */
+.bk-set > summary { display: flex; align-items: baseline; gap: 10px; padding: 6px 2px; cursor: pointer; font-size: 13px; color: var(--dim); list-style: none; }
+.bk-set > summary::-webkit-details-marker { display: none; }
+.bk-set > summary::before { content: '▸'; font-size: 11px; }
+.bk-set[open] > summary::before { content: '▾'; }
+.bk-set > summary b { color: var(--fg); font-family: var(--f-code); }
+.bk-set > summary .bk-sprog { font-family: var(--f-code); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.bk-set[open] { display: grid; gap: 10px; padding-bottom: 6px; }
+@media (prefers-reduced-motion: reduce) { body.mob .bk-led, body.mob .bk-mlvl i { transition: none; } }
 body.mob:not(.mland) .brand { display: none; }
 html:has(body.mob) { scroll-padding-top: calc(var(--mtop, 0px) + 8px); scroll-padding-bottom: calc(var(--mtab, 0px) + 8px); }
 /* the status line: only news (an error, a done) and then just above the tab bar, where it is seen */
@@ -883,7 +932,7 @@ body.mob.mland .pad { min-height: 60px; }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.14 03:23<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.14 03:37<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -11134,8 +11183,9 @@ function bkRender() {
       const g = bkLoad(L, p.pat, kind);
       BK.items.push(L);
       const body = g ? `<div class="bk-gridbox">${bkGridHTML(L, null, d0)}</div>` : `<div class="bk-chip"><code>${esc(p.pat.trim())}</code><button class="bk-link" data-act="goto">${esc(t('bkInCode'))}</button></div>`;
-      cards.push(`<article class="bk-card phrase" data-i="${i}" data-sort="card" style="--tc:${bkHue(p.name)}">
-        <header><span class="bk-ico" aria-hidden="true">🧩</span><span class="bk-nm"><b>$${esc(p.name)}</b><small>${esc(t('bkPhrase'))}</small></span><small class="bk-use">${esc(us.length ? t('bkPhraseUse', { list: us.map(u => u.name).join(', ') }) : t('bkPhraseNone'))}</small></header>
+      const pfold = document.body.classList.contains('mob') && !BK.unfold.has(key);
+      cards.push(`<article class="bk-card phrase${pfold ? ' fold' : ''}" data-i="${i}" data-sort="card" style="--tc:${bkHue(p.name)}">
+        <header><span class="bk-ico" aria-hidden="true">🧩</span>${pfold ? '<i class="bk-led" aria-hidden="true"></i>' : ''}<span class="bk-nm"><b>$${esc(p.name)}</b><small>${esc(t('bkPhrase'))}</small></span>${pfold && g ? bkMiniHTML(L) : ''}<button class="bk-fold" data-act="fold" aria-expanded="${!pfold}" aria-label="${esc(t(pfold ? 'bkUnfold' : 'bkFold'))} $${esc(p.name)}">${pfold ? '▸' : '▾'}</button><small class="bk-use">${esc(us.length ? t('bkPhraseUse', { list: us.map(u => u.name).join(', ') }) : t('bkPhraseNone'))}</small></header>
         ${r.errors.get(i) ? `<p class="bk-err">${esc(r.errors.get(i).msg)}</p>` : ''}${body}<div class="bk-foot"><p class="bk-why">${esc(t('bkPhraseHint'))}</p>${L.grid ? bkMoreMenu(L, null) : ''}</div></article>`);
       return;
     }
@@ -11169,7 +11219,7 @@ function bkRender() {
     // on a phone the cards are folded to their name row; one tap opens a card
     const fold = document.body.classList.contains('mob') && !BK.unfold.has(name);
     cards.push(`<article class="bk-card${fold ? ' fold' : ''}${err ? ' bad' : ''}${m ? ' muted' : ''}${L.rules.length ? ' ruled' : ''}" data-i="${i}" data-sort="card" style="--tc:${col}">
-      <header><span class="bk-ico" aria-hidden="true">${BK_ICON(def.inst)}</span><span class="bk-nm"><b>${esc(name)}</b><small>${esc(bkName(def.inst))}</small></span>${fold ? bkMiniHTML(L) : ''}
+      <header><span class="bk-ico" aria-hidden="true">${BK_ICON(def.inst)}</span>${fold ? '<i class="bk-led" aria-hidden="true"></i>' : ''}<span class="bk-nm"><b>${esc(name)}</b><small>${esc(bkName(def.inst))}</small></span>${fold ? bkMiniHTML(L) : ''}
         <button class="bk-fold" data-act="fold" aria-expanded="${!fold}" aria-label="${esc(t(fold ? 'bkUnfold' : 'bkFold'))} ${esc(name)}">${fold ? '▸' : '▾'}</button><button class="bk-tg${m ? ' on' : ''}" data-act="mute" aria-pressed="${m}" title="${esc(t('bkMute'))}">M</button><button class="bk-tg${so ? ' on' : ''}" data-act="solo" aria-pressed="${so}" title="${esc(t('bkSolo'))}">S</button><button class="bk-x" data-act="del" title="${esc(t('bkDel'))}" aria-label="${esc(t('bkDel'))} ${esc(name)}">×</button></header>
       ${err ? `<p class="bk-err">${esc(err.msg)}</p>` : ''}${body}${synOpen ? bkSynHTML(L) : ''}
       <div class="bk-foot">${synBtn}${rules ? `<span class="bk-rules" title="${esc(t('bkRuleHint'))}">${rules}</span>` : ''}${st}${more}</div>
@@ -11198,12 +11248,15 @@ function bkRender() {
   const songBox = `<section class="bk-song"><h3>${esc(t('bkSong'))}</h3><p class="bk-why">${esc(t('bkSongHint'))}</p>
       ${sceneRows}<div class="bk-row2"><button class="bk-add" data-act="sceneadd">${esc(t('bkSceneAdd'))}</button></div>
       ${BK.scenes.length ? (r.song ? `<div class="bk-trainrow"><b>${esc(t('bkTrain'))}</b>${train}<button class="bk-bar add" data-act="caradd" aria-label="${esc(t('bkCarAdd'))}" title="${esc(t('bkCarAdd'))}">+</button></div>` : `<button class="bk-add" data-act="songnew">${esc(t('bkSongNew'))}</button>`) : ''}</section>`;
-  boardEl.innerHTML = `<p class="bk-hint">${esc(t('bkHint'))}</p><div class="bk-top">
+  const mob = document.body.classList.contains('mob');
+  const progTxt = P.toks ? P.toks.map(v => { const c = chords.find(c => (P.names ? c.name : c.deg) === v); return c ? c.name : v; }).join(' ') : '';
+  const setSum = `<summary><b>♩ ${bpm}</b><span>${esc(NOTE_NAMES[BK.key.root] + ' ' + bkT('bkm_' + sc, sc))}</span>${progTxt ? `<span class="bk-sprog">${esc(progTxt)}</span>` : ''}</summary>`;
+  boardEl.innerHTML = `${mob ? `<details class="bk-set"${BK.setOpen ? ' open' : ''}>${setSum}` : ''}<p class="bk-hint">${esc(t('bkHint'))}</p><div class="bk-top">
       <label class="bk-tempo"><span aria-hidden="true">🐢</span><input type="range" id="bkBpm" min="60" max="180" step="1" value="${bpm}" aria-label="${esc(t('bkTempo'))}"><span aria-hidden="true">🐇</span><b>${bpm}</b></label>
       <span class="bk-key"><select id="bkRoot" aria-label="${esc(t('bkRoot'))}">${roots}</select><span class="seg">${moods}</span><select id="bkScale" aria-label="${esc(t('bkScale'))}">${scales}</select></span>
       <button class="bk-snd" data-act="clicks" aria-pressed="${BK.clicks}" title="${esc(t('bkClicks'))}" aria-label="${esc(t('bkClicks'))}">${BK.clicks ? '🔊' : '🔈'}</button>
     </div>
-    <div class="bk-chords"><b>${esc(t('bkChords'))}</b>${chordRow}</div>
+    <div class="bk-chords"><b>${esc(t('bkChords'))}</b>${chordRow}</div>${mob ? '</details>' : ''}
     <div class="bk-cards">${cards.join('') || `<p class="bk-empty">${esc(t('bkEmpty'))}</p>`}</div>
     <div class="bk-pal"><b>${esc(t('bkAdd'))}</b>${BK_PALETTE.map(([n]) => `<button class="bk-add" data-add="${n}"><span aria-hidden="true">${BK_ICON(n)}</span>${esc(bkName(n))}</button>`).join('')}</div>
     ${songBox}
@@ -11579,7 +11632,7 @@ function bkInit() {
   });
   boardEl.addEventListener('click', e => {
     // a folded card's name row opens it, as its ▸ does
-    const nm = !e.target.closest('button') && e.target.closest('.bk-card.fold > header'); if (nm) { const L = bkLine(nm); if (L) { toggleSet(BK.unfold, L.name); bkRender(); } return; }
+    const nm = !e.target.closest('button') && e.target.closest('.bk-card.fold > header'); if (nm) { const L = bkLine(nm); if (L) bkOpen(L, nm.querySelector('.bk-mini')); return; }
     const b = e.target.closest('button'); if (!b) return;
     if (b.dataset.pick != null) { bkMenu(b); return; }
     if (b.dataset.act === 'clicks') { BK.clicks = !BK.clicks; try { localStorage.setItem('tactus-bkclick', BK.clicks ? '1' : '0'); } catch (err) { } b.setAttribute('aria-pressed', BK.clicks); b.textContent = BK.clicks ? '🔊' : '🔈'; if (BK.clicks) bkClick('on'); return; }
@@ -11615,7 +11668,7 @@ function bkInit() {
     if (b.dataset.rx != null) { const r = L.rules[+b.dataset.rx]; bkWrite(L.i, p => { p.params = bkReplace(p.params, r, ''); }); return; }
     if (b.dataset.pdel != null) { const tr = L.train.slice(); tr.splice(+b.dataset.pdel, 1); bkWriteTrain(L, tr); return; }
     if (b.dataset.act === 'padd') { bkWriteTrain(L, [...L.train, L.train[L.train.length - 1]]); return; }
-    if (b.dataset.act === 'fold') { toggleSet(BK.unfold, L.name); bkRender(); return; }
+    if (b.dataset.act === 'fold') { if (BK.unfold.has(L.key)) { BK.unfold.delete(L.key); bkRender(); } else bkOpen(L, b.closest('header').querySelector('.bk-mini')); return; }
     if (b.dataset.act === 'syn') { toggleSet(BK.synOpen, L.name); bkRender(); return; }
     if (b.dataset.ft != null) { bkWrite(L.i, p => { p.params = bkSetWord(p.params, 'ftype', b.dataset.ft); }); bkSynHear(L); return; }
     if (b.dataset.act === 'mute') { toggleSet(S.muted, L.name); syncLoopVols(); render(); bkRender(); }
@@ -11864,19 +11917,42 @@ function bkSynInit() {
 }
 
 // ---------- folded cards show what is playing ----------
-// A folded card keeps a strip of the bar's steps (lit where the pattern has a note, with the step now playing) and
-// lights up on each note as it is heard, for as long as it sounds, so a phone's list of cards still shows the music.
+// On a phone the cards fold to one row each, laid out on the same columns so the rows read as a small step sequencer:
+// a light, the name, the bar's steps and mute/solo. The steps show where the notes are (for a melody, how high, and
+// how long they are held), the step now playing, and dots for the bar when the pattern is longer than one. The light
+// is lit while the track's notes sound, brighter for louder ones; a track with no steps to show (a drone, a
+// generator) gets a level bar instead. Notes come from the scheduler as they are played (NOTE_LOG), so a muted track or
+// one left out of the scene stays dark.
 function bkMiniBars(L) {
   if (!L.grid || !(L.tok || L.notes)) return null;
-  const bars = Array.from({ length: L.bars }, () => new Set());
-  if (L.tok) L.tok.forEach((v, k) => { if (v !== '.' && v !== '_') bars[Math.floor(k / BK_STEPS)]?.add(k % BK_STEPS); });
-  else for (const o of L.notes) bars[Math.floor(o.s / BK_STEPS)]?.add(o.s % BK_STEPS);
+  const bars = Array.from({ length: L.bars }, () => Array(BK_STEPS).fill(null));
+  if (L.tok) { L.tok.forEach((v, k) => { if (v !== '.' && v !== '_') { const b = bars[Math.floor(k / BK_STEPS)]; if (b) b[k % BK_STEPS] = { on: 1, h: v === 'X' ? 1 : v === 'x?' ? 0.45 : 0.75 }; } }); return bars; }
+  // a melody: the top note of each onset, scaled between the lowest and highest the track plays
+  const tops = L.notes.map(o => { try { const ns = bkAtom(o.v, L); return ns.length ? Math.max(...ns) : null; } catch (e) { return null; } });
+  const vals = tops.filter(v => v != null), lo = vals.length ? Math.min(...vals) : 0, hi = vals.length ? Math.max(...vals) : 1;
+  L.notes.forEach((o, j) => {
+    const h = tops[j] == null || hi === lo ? 0.65 : 0.3 + 0.7 * (tops[j] - lo) / (hi - lo);
+    for (let q = 0; q < Math.max(1, o.len); q++) {
+      const at = o.s + q, b = bars[Math.floor(at / BK_STEPS)]; if (!b) continue;
+      const cur = b[at % BK_STEPS];
+      if (!cur || (q === 0 && !cur.on) || h > cur.h) b[at % BK_STEPS] = { on: q === 0 || (cur && cur.on) ? 1 : 0, h: Math.max(h, cur ? cur.h : 0) };
+    }
+  });
   return bars;
 }
+const bkCellHTML = (c, k) => `<i class="${c ? (c.on ? 'on' : 'hold') : ''}${(k & 3) === 0 ? ' b' : ''}" style="--h:${c ? c.h.toFixed(2) : 0}"></i>`;
 function bkMiniHTML(L) {
   L.mini = bkMiniBars(L);
-  const on = L.mini ? L.mini[0] : null;
-  return `<span class="bk-mini${on ? '' : ' free'}" aria-hidden="true">${on ? Array.from({ length: BK_STEPS }, (_, k) => `<i${on.has(k) ? ' class="on"' : ''}${(k & 3) === 0 ? ' data-b="1"' : ''}></i>`).join('') : '<i></i>'}</span>`;
+  if (!L.mini) return `<span class="bk-mini free" aria-hidden="true"><span class="bk-mlvl"><i></i></span></span>`;
+  const dots = L.bars > 1 ? `<span class="bk-mbars">${Array.from({ length: Math.min(L.bars, 16) }, (_, j) => `<i${j ? '' : ' class="cur"'}></i>`).join('')}</span>` : '';
+  return `<span class="bk-mini" aria-hidden="true" data-bar="0"><span class="bk-mcells">${L.mini[0].map(bkCellHTML).join('')}</span>${dots}</span>`;
+}
+// open one folded card (the others fold: one open card keeps the list readable), on the bar its strip is showing
+function bkOpen(L, strip) {
+  if (document.body.classList.contains('mob')) BK.unfold = new Set([L.key]); else BK.unfold.add(L.key);
+  if (strip && strip.dataset.bar != null && L.bars > 1) { L.page = +strip.dataset.bar; BK.pages.set(L.key, L.page); }
+  bkRender();
+  const card = boardEl.querySelector(`.bk-card[data-i="${L.i}"]`); if (card) card.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
 }
 function bkHits(c) {
   const folded = BK.view !== 'code' && boardEl.querySelector('.bk-card.fold');
@@ -11888,27 +11964,34 @@ function bkHits(c) {
     if (h.t > now) { keep.push(h); continue; }
     if (now - h.t > 0.25) continue;
     const L = BK.items.find(x => x.name === h.n), card = L && boardEl.querySelector(`.bk-card.fold[data-i="${L.i}"]`); if (!card) continue;
-    const ico = card.querySelector('.bk-ico'), a = Math.min(1.35, 1.08 + 0.2 * Math.min(1, h.v));
-    if (ico && ico.animate) ico.animate([{ transform: `scale(${a})` }, { transform: 'scale(1)' }], { duration: 200, easing: 'cubic-bezier(.2,.8,.2,1)' });
-    BK.lit.set(L.name, Math.max(BK.lit.get(L.name) || 0, h.t + Math.max(0.09, Math.min(h.d, 4))));
+    const v = Math.max(0.35, Math.min(1, h.v));
+    card.style.setProperty('--hv', v.toFixed(2));
+    BK.lit.set(L.name, Math.max(BK.lit.get(L.name) || 0, h.t + Math.max(0.08, Math.min(h.d, 4))));
     card.classList.add('sounding');
   }
   NOTE_LOG.q = keep;
   for (const [n, until] of BK.lit) if (now > until) { BK.lit.delete(n); const L = BK.items.find(x => x.name === n), card = L && boardEl.querySelector(`.bk-card[data-i="${L.i}"]`); if (card) card.classList.remove('sounding'); }
-  // the strip: the bar being played and the step now
   if (c < 0) return;
+  // the strip: the bar being played and the step now
   const k = Math.floor(mod(c, 1) * BK_STEPS), pb = Math.floor(c - patOrigin(c) + 1e-9);
   for (const L of BK.items) {
-    if (!L.mini) continue;
+    // a phrase plays inside other tracks, at their places: its strip stays a picture of its notes
+    if (!L.mini || L.phrase) continue;
     const strip = boardEl.querySelector(`.bk-card.fold[data-i="${L.i}"] .bk-mini`); if (!strip) continue;
     const bar = mod(pb, L.bars), sig = bar + ':' + k; if (strip.dataset.sig === sig) continue;
-    if (strip.dataset.bar !== String(bar)) { strip.dataset.bar = bar; const on = L.mini[bar]; [...strip.children].forEach((x, j) => x.classList.toggle('on', on.has(j))); }
+    const cells = strip.firstElementChild.children;
+    if (strip.dataset.bar !== String(bar)) {
+      strip.dataset.bar = bar;
+      L.mini[bar].forEach((c2, j) => { cells[j].className = (c2 ? (c2.on ? 'on' : 'hold') : '') + ((j & 3) === 0 ? ' b' : ''); cells[j].style.setProperty('--h', c2 ? c2.h.toFixed(2) : 0); });
+      const dots = strip.querySelector('.bk-mbars'); if (dots) [...dots.children].forEach((d, j) => d.classList.toggle('cur', j === bar));
+    }
     strip.dataset.sig = sig;
     // its own class: bkTick clears every .ph when the step moves
-    const ph = strip.querySelector('.cur'); if (ph) ph.classList.remove('cur');
-    strip.children[k] && strip.children[k].classList.add('cur');
+    for (const x of cells) x.classList.remove('cur');
+    cells[k] && cells[k].classList.add('cur');
   }
 }
+boardEl.addEventListener('toggle', e => { if (e.target.classList && e.target.classList.contains('bk-set')) BK.setOpen = e.target.open; }, true);
 bkInit();
 bkSynInit();
 
@@ -12146,7 +12229,12 @@ function mobBuild() {
   nav.innerHTML = MOB_TABS.map(n => `<button role="tab" data-mt="${n}" data-i18n="${lbl[n]}" aria-selected="false">${esc(t(lbl[n]))}</button>`).join('');
   app.appendChild(nav);
   nav.addEventListener('click', e => { const b = e.target.closest('[data-mt]'); if (b) mobTab(b.dataset.mt); });
-  // ⋯ in the top bar: the preset, compose, share, skins and language, folded away on a phone
+  // ⋯ in the top bar opens a sheet with what is not needed while playing: compose and share (things done to the
+  // piece), live update, skin and language (settings), GitHub and install. The song's name, the scope and the display
+  // stay in the bar: they say what is playing and that it is.
+  const sheet = document.createElement('div'); sheet.className = 'msheet'; sheet.id = 'msheet'; sheet.hidden = true;
+  sheet.innerHTML = '<div class="msg" data-g="piece"></div><div class="msg" data-g="set"></div><div class="msg" data-g="more"></div>';
+  document.querySelector('.top').after(sheet);
   const more = document.createElement('button'); more.className = 'btn ghost mmore'; more.id = 'mmore';
   more.setAttribute('aria-expanded', 'false'); more.setAttribute('data-i18n-aria', 'mMore'); more.setAttribute('aria-label', t('mMore')); more.textContent = '⋯';
   document.querySelector('.top .lcd').after(more);
@@ -12163,8 +12251,9 @@ function mobBuild() {
     if (!vb.classList.contains('open')) { e.stopPropagation(); e.preventDefault(); vb.classList.add('open'); return; }
     setTimeout(() => vb.classList.remove('open'), 0);
   }, true);
+  sheet.addEventListener('click', e => { if (e.target.closest('#shareBtn, #srcLink, .installBtn')) mobMore(false); });
   document.addEventListener('pointerdown', e => {
-    if (MOB.more && !e.target.closest('.top')) mobMore(false);
+    if (MOB.more && !e.target.closest('#mmore, #msheet, .cmppop, .sharedlg')) mobMore(false);
     const vb = document.getElementById('vizbar'); if (vb.classList.contains('open') && !e.target.closest('#vizbar')) vb.classList.remove('open');
   });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && MOB.max && !e.defaultPrevented) mobMax(''); });
@@ -12173,7 +12262,18 @@ function mobBuild() {
 function mobMore(on) {
   MOB.more = on; document.body.classList.toggle('mmore-on', on);
   const b = document.getElementById('mmore'); if (b) b.setAttribute('aria-expanded', on);
-  mobSize();
+  const sh = document.getElementById('msheet'); if (sh) sh.hidden = !(on && MOB.on);
+}
+// the top bar's extras move into the sheet on a phone and back to their places on a desktop (moving keeps their handlers)
+const MOB_SHEET = [['piece', '.top .cmpwrap'], ['piece', '#shareBtn'], ['set', '#auto'], ['set', '#skins'], ['set', '#lang'], ['more', '#srcLink'], ['more', '.top .installBtn']];
+function mobSheet(on) {
+  const sh = document.getElementById('msheet'); if (!sh) return;
+  for (const [g, sel] of MOB_SHEET) {
+    const el = MOB.moved && MOB.moved.get(sel) ? MOB.moved.get(sel).el : document.querySelector(sel); if (!el) continue;
+    MOB.moved = MOB.moved || new Map();
+    if (on && !MOB.moved.has(sel)) { const mark = document.createComment(sel); el.before(mark); MOB.moved.set(sel, { el, mark }); sh.querySelector(`[data-g="${g}"]`).appendChild(el); }
+    if (!on && MOB.moved.has(sel)) { const m = MOB.moved.get(sel); m.mark.replaceWith(m.el); MOB.moved.delete(sel); }
+  }
 }
 // the room left for the module: the window less the top bar and the tab bar
 function mobSize() {
@@ -12198,6 +12298,7 @@ function mobApply() {
   const on = MOB_MQ.matches, land = on && MOB_LAND.matches;
   const was = MOB.on; MOB.on = on; MOB.land = land;
   document.body.classList.toggle('mob', on); document.body.classList.toggle('mland', land);
+  mobSheet(on);
   if (on) {
     if (MOB.max) mobMax('');
     let n = MOB.tab; if (!was) try { n = localStorage.getItem('tactus-mtab') || 'code'; } catch (e) { }
