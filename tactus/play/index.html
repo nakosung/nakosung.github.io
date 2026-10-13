@@ -6,6 +6,19 @@
 <meta name="description" content="Tactus live-coding instrument">
 <link rel="icon" type="image/png" sizes="32x32" href="../favicon-32.png">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="manifest" href="../manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tactus">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Tactus">
+<meta property="og:description" content="코드로 연주하는 음악. 링크를 열면 이 곡이 바로 열려요. Open the link to hear this song.">
+<meta property="og:url" content="https://nakosung.github.io/tactus/play/">
+<meta property="og:image" content="https://nakosung.github.io/tactus/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#17191e">
 <meta charset="utf-8">
 <title>Tactus</title>
@@ -378,6 +391,32 @@ body.recording .editor { border-color: var(--c-err); }
 .pad.on .lamp { box-shadow: 0 0 6px var(--on-key); }
 .knob:is(.press, :active) { box-shadow: var(--shadow), 0 0 0 var(--key-edge); transform: translateY(1px); }
 
+/* Skins shared by the welcome page and the instrument (build.py puts this file into both).
+   Each skin is a set of tokens; each page then styles its own parts with them. The choice lives in localStorage
+   ('tactus-skin'), which both pages read, so picking a skin on one page carries over to the other. */
+:root[data-skin="field"] {
+  --body: #e2e3df; --panel: #ebecea; --raised: #f8f8f6; --line: #a9aca7; --fg: #000; --dim: #50534f; --faint: #858884;
+  --k-orange: #ff4f00; --k-blue: #0057ff; --k-green: #00a669; --k-yellow: #ffc400; --k-pink: #ff3f7a; --k-violet: #6a5cff;
+  --on-key: #fff; --shadow: none; --key-edge: #000; --key-depth: 0px; --arm: #ff4f00; --go: #0057ff;
+  --scr: #000; --scr-2: #0a0a0a; --scr-line: #2a2a2a; --scr-fg: #f4f4f4; --scr-dim: #8f8f8f; --scr-faint: #565656;
+  --c-name: #ffffff; --c-glob: #6f9bff; --c-num: #00d18a; --c-op: #ff6a1f; --c-inst: #b9c8ff; --c-err: #ff3f7a; --c-gen: #ffc400;
+  --f-ui: "Archivo", "IBM Plex Sans KR", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  --f-code: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --f-lcd: "Doto", "IBM Plex Mono", ui-monospace, monospace;
+  --r-xs: 2px; --r-s: 3px; --r-m: 4px; --r-l: 5px; --r-xl: 6px;
+  color-scheme: light;
+}
+:root[data-skin="pop"] {
+  --body: #d9e1ff; --panel: #f3f5ff; --raised: #ffffff; --line: #c2cbef; --fg: #241f4f; --dim: #59568a; --faint: #8b88b3;
+  --k-orange: #ff7b29; --k-blue: #3b7bff; --k-green: #1bbf77; --k-yellow: #ffbf2e; --k-pink: #ff5a8f; --k-violet: #8b6bff;
+  --on-key: #fff; --shadow: none; --key-edge: #b3bde6; --key-depth: 4px; --arm: #ff9f1c; --go: #1bbf77; --bezel: #ff5a6e;
+  --scr: #1f1a45; --scr-2: #251f52; --scr-line: #3b3573; --scr-fg: #f5f3ff; --scr-dim: #aaa5da; --scr-faint: #6f69a3;
+  --c-name: #ffd166; --c-glob: #7ec8ff; --c-num: #6ff0b0; --c-op: #ff9f5a; --c-inst: #c6aaff; --c-err: #ff6b8e; --c-gen: #ffe066;
+  --f-ui: "Nunito", "Gowun Dodum", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  --r-xs: 6px; --r-s: 10px; --r-m: 12px; --r-l: 16px; --r-xl: 22px;
+  color-scheme: light;
+}
+
 /* ---- the skin picker ---- */
 .skins { display: inline-flex; gap: 2px; padding: 2px; border-radius: var(--r-m); background: var(--panel); border: 1px solid var(--line); }
 .skins button { display: inline-flex; align-items: center; gap: 6px; border: 0; background: transparent; color: var(--dim); font-size: 11.5px; font-weight: 600; padding: 4px 8px 4px 5px; border-radius: var(--r-s); cursor: pointer; transition: transform .09s; }
@@ -386,6 +425,32 @@ body.recording .editor { border-color: var(--c-err); }
 .skins [data-skin="studio"] i { background: conic-gradient(#ff7a3c 0 25%, #17191e 0 75%, #a48bff 0); }
 .skins [data-skin="field"] i { background: conic-gradient(#ff4f00 0 25%, #e2e3df 0 75%, #000 0); border-radius: 3px; }
 .skins [data-skin="pop"] i { background: conic-gradient(#ff5a6e 0 25%, #ffc53d 0 50%, #1fc77e 0 75%, #3b7bff 0); }
+
+/* ---- a short note from the page (install help) ---- */
+.pwa-tip { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 80; max-width: min(460px, calc(100vw - 32px)); padding: 12px 16px; border-radius: var(--r-l, 12px);
+  background: var(--fg); color: var(--body); font-size: 14px; line-height: 1.45; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+
+/* ---- sharing ---- */
+.sharedlg { width: min(520px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--line); border-radius: var(--r-xl); background: var(--panel); color: var(--fg); box-shadow: 0 24px 60px rgba(0,0,0,.45); }
+.sharedlg::backdrop { background: rgba(0, 0, 0, .5); }
+.sh-head { display: flex; justify-content: space-between; align-items: center; padding: 14px 18px 4px; }
+.sh-head h2 { margin: 0; font-size: 17px; }
+.sharedlg section { padding: 12px 18px; border-top: 1px solid var(--line); margin-top: 8px; }
+.sharedlg h3 { margin: 0 0 4px; font-size: 13.5px; }
+.sharedlg p { margin: 0 0 10px; font-size: 12.5px; line-height: 1.5; color: var(--dim); }
+.sh-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.sh-stop { color: var(--c-err); border-color: color-mix(in srgb, var(--c-err) 50%, var(--line)); }
+.sh-state { margin-top: 10px !important; min-height: 1.5em; font-family: var(--f-code); }
+.sh-state.on::before { content: ''; display: inline-block; width: 8px; height: 8px; margin-right: 7px; border-radius: 50%; background: var(--c-err); box-shadow: 0 0 8px var(--c-err); vertical-align: 1px; }
+.sh-out { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.sh-out span { flex: 1 1 100%; font-size: 12.5px; color: var(--fg); }
+.sh-hint { padding: 0 18px; }
+.sh-msg { padding: 0 18px 8px; min-height: 1.2em; }
+.sh-msg.ok { color: var(--k-green) !important; } .sh-msg.bad { color: var(--c-err) !important; }
+.share-toast { display: flex; align-items: center; gap: 12px; }
+.share-toast button { font: inherit; font-weight: 700; border: 0; border-radius: var(--r-s, 6px); padding: 6px 10px; background: var(--k-orange); color: var(--on-key); cursor: pointer; white-space: nowrap; }
+[data-skin="field"] .sharedlg { border-color: #000; box-shadow: 6px 6px 0 #000; }
+[data-skin="pop"] .sharedlg { border: 3px solid var(--bezel); box-shadow: 0 8px 0 #c33a52; }
 /* the top row stays one row on a desktop: the build stamp, the preset name and the scope give way to the armed chip */
 @media (min-width: 1101px) {
   .top { flex-wrap: nowrap; }
@@ -427,18 +492,6 @@ body.recording .editor { border-color: var(--c-err); }
 @keyframes ring { from { transform: scale(.4); opacity: .9; } to { transform: scale(3.6); opacity: 0; } }
 
 /* =============== Field: aluminium, black ink, a dot-matrix display =============== */
-:root[data-skin="field"] {
-  --body: #e2e3df; --panel: #ebecea; --raised: #f8f8f6; --line: #a9aca7; --fg: #000; --dim: #50534f; --faint: #858884;
-  --k-orange: #ff4f00; --k-blue: #0057ff; --k-green: #00a669; --k-yellow: #ffc400; --k-pink: #ff3f7a; --k-violet: #6a5cff;
-  --on-key: #fff; --shadow: none; --key-edge: #000; --key-depth: 0px; --arm: #ff4f00; --go: #0057ff;
-  --scr: #000; --scr-2: #0a0a0a; --scr-line: #2a2a2a; --scr-fg: #f4f4f4; --scr-dim: #8f8f8f; --scr-faint: #565656;
-  --c-name: #ffffff; --c-glob: #6f9bff; --c-num: #00d18a; --c-op: #ff6a1f; --c-inst: #b9c8ff; --c-err: #ff3f7a; --c-gen: #ffc400;
-  --f-ui: "Archivo", "IBM Plex Sans KR", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
-  --f-code: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
-  --f-lcd: "Doto", "IBM Plex Mono", ui-monospace, monospace;
-  --r-xs: 2px; --r-s: 3px; --r-m: 4px; --r-l: 5px; --r-xl: 6px;
-  color-scheme: light;
-}
 [data-skin="field"] body { background: var(--body) radial-gradient(circle, rgba(0,0,0,.13) 1px, transparent 1.3px) 0 0 / 14px 14px; }
 [data-skin="field"] .brand b { font-stretch: 125%; font-weight: 800; letter-spacing: -.01em; text-transform: lowercase; font-size: 21px; }
 [data-skin="field"] .lcd { border-radius: var(--r-m); border-color: #000; }
@@ -480,16 +533,6 @@ body.recording .editor { border-color: var(--c-err); }
 [data-skin="field"] .help details.gsec, [data-skin="field"] .gcard, [data-skin="field"] .slot, [data-skin="field"] .gpubox { border-color: #000; }
 
 /* =============== Pop: a handheld toy, candy keys, springy presses =============== */
-:root[data-skin="pop"] {
-  --body: #d9e1ff; --panel: #f3f5ff; --raised: #ffffff; --line: #c2cbef; --fg: #241f4f; --dim: #59568a; --faint: #8b88b3;
-  --k-orange: #ff7b29; --k-blue: #3b7bff; --k-green: #1bbf77; --k-yellow: #ffbf2e; --k-pink: #ff5a8f; --k-violet: #8b6bff;
-  --on-key: #fff; --shadow: none; --key-edge: #b3bde6; --key-depth: 4px; --arm: #ff9f1c; --go: #1bbf77; --bezel: #ff5a6e;
-  --scr: #1f1a45; --scr-2: #251f52; --scr-line: #3b3573; --scr-fg: #f5f3ff; --scr-dim: #aaa5da; --scr-faint: #6f69a3;
-  --c-name: #ffd166; --c-glob: #7ec8ff; --c-num: #6ff0b0; --c-op: #ff9f5a; --c-inst: #c6aaff; --c-err: #ff6b8e; --c-gen: #ffe066;
-  --f-ui: "Nunito", "Gowun Dodum", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
-  --r-xs: 6px; --r-s: 10px; --r-m: 12px; --r-l: 16px; --r-xl: 22px;
-  color-scheme: light;
-}
 [data-skin="pop"] body { background: var(--body) radial-gradient(circle, rgba(255,255,255,.7) 2.2px, transparent 2.6px) 0 0 / 22px 22px; }
 [data-skin="pop"] .brand b { font-weight: 900; font-stretch: 100%; letter-spacing: .02em; font-size: 22px; text-transform: lowercase; color: var(--bezel); }
 [data-skin="pop"] .lcd { border-radius: 999px; border: 0; box-shadow: 0 4px 0 #b3bde6; padding-inline: 6px; }
@@ -545,7 +588,7 @@ body.recording .editor { border-color: var(--c-err); }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.13 09:13<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.13 09:27<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -554,13 +597,15 @@ body.recording .editor { border-color: var(--c-err); }
     </div>
     <select class="preset" id="preset" data-i18n-aria="presetLabel" data-i18n-title="presetLabel"></select>
     <button class="btn" id="composeBtn" data-i18n="composeBtn"></button>
+    <button class="btn" id="shareBtn" data-i18n="share" data-i18n-title="shareTitle"></button>
     <div class="queue" id="queue" role="status" hidden><i class="qled"></i><b class="qwhat"></b> <span class="qwhen"></span><span class="qseg" aria-hidden="true"><i></i><i></i><i></i><i></i></span></div>
     <div class="spacer"></div>
     <canvas id="scope" aria-hidden="true"></canvas>
     <button class="btn ghost toggle" id="auto" aria-pressed="true" data-i18n="auto" data-i18n-title="autoTitle"></button>
     <a class="btn ghost" id="srcLink" href="https://github.com/nakosung/tactus" target="_blank" rel="noopener" data-i18n-title="srcTitle">GitHub</a>
-    <div class="skins" id="skins" role="radiogroup" data-i18n-aria="skin">
-      <button role="radio" data-skin="studio" data-i18n-title="skinStudio"><i></i><span data-i18n="skinStudio"></span></button><button role="radio" data-skin="field" data-i18n-title="skinField"><i></i><span data-i18n="skinField"></span></button><button role="radio" data-skin="pop" data-i18n-title="skinPop"><i></i><span data-i18n="skinPop"></span></button>
+    <button class="btn ghost installBtn" hidden data-i18n="install" data-i18n-title="installTitle"></button>
+    <div class="skins" id="skins" role="radiogroup">
+      <button role="radio" data-skin="studio"><i></i><span></span></button><button role="radio" data-skin="field"><i></i><span></span></button><button role="radio" data-skin="pop"><i></i><span></span></button>
     </div>
     <button class="btn ghost" id="lang" data-i18n="lang" data-i18n-title="langTitle"></button>
   </header>
@@ -773,6 +818,24 @@ body.recording .editor { border-color: var(--c-err); }
   </main>
 
   <footer class="status" id="status" role="status"></footer>
+
+  <dialog id="shareDlg" class="sharedlg" aria-labelledby="shareH">
+    <div class="sh-head"><h2 id="shareH" data-i18n="shareTitle2"></h2><button class="btn ghost sh-close" data-i18n="guideClose"></button></div>
+    <section>
+      <h3 data-i18n="shareLink"></h3>
+      <p data-i18n="shareLinkD"></p>
+      <div class="sh-row"><button class="btn sh-send" data-i18n="shareSend"></button><button class="btn sh-copy" data-i18n="shareCopy"></button></div>
+    </section>
+    <section class="sh-rec">
+      <h3 data-i18n="shareAudio"></h3>
+      <p data-i18n="shareAudioD"></p>
+      <div class="sh-row"><button class="btn" data-bars="4" data-i18n="shareB4"></button><button class="btn" data-bars="8" data-i18n="shareB8"></button><button class="btn" data-bars="16" data-i18n="shareB16"></button><button class="btn" data-bars="song" data-i18n="shareWhole"></button><button class="btn sh-stop" hidden data-i18n="shareStop"></button></div>
+      <p class="sh-state" aria-live="polite"></p>
+      <div class="sh-out" hidden><span></span><button class="btn sh-fsend" data-i18n="shareSendFile"></button><button class="btn sh-save" data-i18n="shareSave"></button></div>
+    </section>
+    <p class="sh-hint" data-i18n="shareHint"></p>
+    <p class="sh-msg" aria-live="polite"></p>
+  </dialog>
 </div>
 
 <script>
@@ -823,6 +886,8 @@ const I18N = {
     tagline: 'live instrument', play: '재생', stop: '정지', auto: '자동 반영', autoTitle: '끄면 Ctrl+Enter로만 반영',
     bpmTitle: '휠로 조절, T 또는 TAP으로 탭 템포', lang: 'EN', langTitle: 'Switch to English',
     queueNext: '다음 마디에 반영', queueIn: '{n}마디 뒤 반영',
+    share: '공유', shareTitle: '이 곡을 링크나 녹음으로 보내요', shareTitle2: '이 곡 공유하기', shareLink: '링크로 보내기', shareLinkD: '코드 전체가 링크 안에 들어가요. 받는 사람이 열면 이 곡이 그대로 열리고, 고쳐서 다시 보낼 수도 있어요.', shareSend: '보내기…', shareCopy: '링크 복사', shareCopied: '링크를 복사했어요', shareChars: '자', shareAudio: '소리로 보내기', shareAudioD: '다음 마디부터 연주를 그대로 녹음해 오디오 파일로 만들어요. 멈춰 있으면 처음부터 틀면서 녹음해요.', shareB4: '4마디', shareB8: '8마디', shareB16: '16마디', shareWhole: '곡 전체', shareStop: '녹음 끝내기', shareWaiting: '다음 마디에서 녹음을 시작해요…', shareRecording: '녹음 중 {a}/{b}마디', shareReady: '{s}초 녹음했어요 ({kb} KB)', shareSendFile: '파일 보내기…', shareSave: '저장', shareSaved: '{n} 파일로 저장했어요', shareHint: '휴대폰에서 "보내기"를 누르면 공유 창이 열려 카카오톡, 메시지, 메일 등으로 바로 보낼 수 있어요.', shareNoRec: '이 브라우저는 녹음을 지원하지 않아요.', shareText: 'Tactus로 만든 곡: {n}', shareMine: '내 곡', shareOpened: '공유받은 곡을 열었어요. 원래 코드는 보관해 뒀어요.', shareUndo: '내 코드로 되돌리기', shareBad: '링크가 잘려서 곡을 열 수 없어요. 링크 전체를 받았는지 확인해 주세요.',
+    install: '앱으로 설치', installTitle: 'Tactus를 앱으로 설치해 바탕화면이나 홈 화면에서 바로 열어요', installDone: '설치했어요. 이제 앱 목록이나 홈 화면에서 Tactus를 열 수 있어요.', installIos: 'Safari 아래쪽의 공유 버튼을 누르고 "홈 화면에 추가"를 고르세요.', installMenu: '브라우저 메뉴(⋮)에서 "앱 설치" 또는 "홈 화면에 추가"를 고르세요.',
     skin: '스킨', skinStudio: '스튜디오', skinField: '필드', skinPop: '팝', armCode: '코드', armSong: '곡', armNext: '다음 마디', armIn: '{n}마디 뒤', armBeat: '{n}박 뒤', armGo: '지금!',
     // rack
     gestures: '제스처', gesturesHint: '누르는 동안만 · 에디터에선 Alt+키',
@@ -1021,6 +1086,8 @@ const I18N = {
     tagline: 'live instrument', play: 'Play', stop: 'Stop', auto: 'Live update', autoTitle: 'When off, changes apply only on Ctrl+Enter',
     bpmTitle: 'Scroll to adjust, T or TAP for tap tempo', lang: '한국어', langTitle: '한국어로 전환',
     queueNext: 'Applies next bar', queueIn: 'Applies in {n} bars',
+    share: 'Share', shareTitle: 'Send this song as a link or a recording', shareTitle2: 'Share this song', shareLink: 'Send a link', shareLinkD: 'The whole code goes inside the link. Whoever opens it gets this song as it is, and can change it and send it back.', shareSend: 'Send…', shareCopy: 'Copy link', shareCopied: 'Link copied', shareChars: ' characters', shareAudio: 'Send the sound', shareAudioD: 'Records the music from the next bar into an audio file. If it is stopped, it starts playing from the top.', shareB4: '4 bars', shareB8: '8 bars', shareB16: '16 bars', shareWhole: 'Whole song', shareStop: 'Stop recording', shareWaiting: 'Recording starts on the next bar…', shareRecording: 'Recording bar {a} of {b}', shareReady: 'Recorded {s} s ({kb} KB)', shareSendFile: 'Send file…', shareSave: 'Save', shareSaved: 'Saved as {n}', shareHint: 'On a phone, Send opens the share sheet, so it goes straight to KakaoTalk, Messages, mail and the rest.', shareNoRec: 'This browser cannot record.', shareText: 'A song made in Tactus: {n}', shareMine: 'my song', shareOpened: 'Opened a shared song. Your own code is kept.', shareUndo: 'Back to my code', shareBad: 'This link is cut short, so the song cannot open. Check that the whole link came through.',
+    install: 'Install app', installTitle: 'Install Tactus as an app and open it from your desktop or home screen', installDone: 'Installed. Open Tactus from your apps or home screen.', installIos: 'Tap Share at the bottom of Safari, then choose "Add to Home Screen".', installMenu: 'Open the browser menu (⋮) and choose "Install app" or "Add to Home screen".',
     skin: 'Skin', skinStudio: 'Studio', skinField: 'Field', skinPop: 'Pop', armCode: 'Code', armSong: 'Song', armNext: 'next bar', armIn: 'in {n} bars', armBeat: 'in {n}', armGo: 'Now!',
     gestures: 'Gestures', gesturesHint: 'Active while held · Alt+key in the editor',
     gBuild: 'Build-up', gBuildD: 'Snare roll and riser. Release to drop on the next downbeat',
@@ -1179,6 +1246,83 @@ function t(k, v) {
   let s = (I18N[LANG] && I18N[LANG][k]) ?? I18N.ko[k] ?? k;
   if (v) for (const x in v) s = s.split('{' + x + '}').join(v[x]);
   return s;
+}
+
+// ===================== Skins, shared by the welcome page and the instrument =====================
+// The choice is kept in localStorage ('tactus-skin'). Both pages live on the same site, so they read the same value:
+// a skin picked on one page is there on the other, and an open tab follows a change made in another tab.
+// A tiny inline script in each page's head sets the skin before the first paint; this file wires up the picker.
+
+const SKINS = ['studio', 'field', 'pop'];
+const SKIN_KEY = 'tactus-skin';
+function skinNow() { return document.documentElement.dataset.skin || 'studio'; }
+// the browser's title bar (and an installed app's window) takes the skin's body colour
+function skinThemeColor() {
+  const m = document.querySelector('meta[name="theme-color"]'); if (!m) return;
+  const c = getComputedStyle(document.documentElement).getPropertyValue('--body').trim();
+  if (c) m.setAttribute('content', c);
+}
+function skinLabels() {
+  document.querySelectorAll('.skins [data-skin]').forEach(b => {
+    const k = 'skin' + b.dataset.skin[0].toUpperCase() + b.dataset.skin.slice(1), name = t(k);
+    b.title = name; b.setAttribute('aria-label', name);
+    const s = b.querySelector('span'); if (s) s.textContent = name;
+  });
+  document.querySelectorAll('.skins').forEach(g => g.setAttribute('aria-label', t('skin')));
+}
+function setSkin(k, save = true) {
+  if (!SKINS.includes(k)) k = 'studio';
+  document.documentElement.dataset.skin = k;
+  document.querySelectorAll('.skins [data-skin]').forEach(b => { b.setAttribute('aria-checked', b.dataset.skin === k); b.tabIndex = b.dataset.skin === k ? 0 : -1; });
+  if (save) try { localStorage.setItem(SKIN_KEY, k); } catch (e) { }
+  skinThemeColor();
+  if (typeof S !== 'undefined' && S) S.dirty = true;   // the instrument's canvases read the colours on their next draw
+  if (typeof onSkinChange === 'function') onSkinChange(k);
+}
+function skinInit() {
+  for (const g of document.querySelectorAll('.skins')) {
+    g.addEventListener('click', e => { const b = e.target.closest('[data-skin]'); if (b) setSkin(b.dataset.skin); });
+    g.addEventListener('keydown', e => {
+      if (!/^Arrow(Left|Right|Up|Down)$/.test(e.key)) return;
+      const d = /Right|Down/.test(e.key) ? 1 : -1, k = SKINS[(SKINS.indexOf(skinNow()) + d + SKINS.length) % SKINS.length];
+      setSkin(k); g.querySelector(`[data-skin="${k}"]`).focus(); e.preventDefault();
+    });
+  }
+  // another tab (the other page, or this one) changed the skin or the language
+  addEventListener('storage', e => {
+    if (e.key === SKIN_KEY && e.newValue) setSkin(e.newValue, false);
+    if (e.key === 'pulse-lang' && e.newValue && typeof onSharedLang === 'function') onSharedLang(e.newValue);
+  });
+  skinLabels(); setSkin(skinNow(), false);
+}
+
+// ===================== Installing Tactus as an app =====================
+// The site pages link a manifest and register the service worker; the single-file build has neither and skips this.
+// Browsers that offer installing (Chrome, Edge, Android) fire beforeinstallprompt: then the install buttons appear.
+// Safari on iPhone and iPad has no prompt, so the button explains Share > Add to Home Screen instead.
+
+const PWA = { prompt: null, tipEl: null };
+const pwaStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const pwaIos = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function pwaTip(msg) {
+  if (!PWA.tipEl) { PWA.tipEl = document.createElement('div'); PWA.tipEl.className = 'pwa-tip'; PWA.tipEl.setAttribute('role', 'status'); document.body.appendChild(PWA.tipEl); }
+  PWA.tipEl.textContent = msg; PWA.tipEl.hidden = false;
+  clearTimeout(PWA.tipT); PWA.tipT = setTimeout(() => { PWA.tipEl.hidden = true; }, 6000);
+}
+function pwaShow(on) { document.querySelectorAll('.installBtn').forEach(b => { b.hidden = !on; }); }
+function pwaInit() {
+  const link = document.querySelector('link[rel="manifest"]');
+  if (!link || !('serviceWorker' in navigator) || !/^https?:$/.test(location.protocol)) return;
+  navigator.serviceWorker.register(new URL('sw.js', link.href).href, { scope: new URL('./', link.href).href }).catch(() => { });
+  if (pwaStandalone()) return;
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); PWA.prompt = e; pwaShow(true); });
+  addEventListener('appinstalled', () => { PWA.prompt = null; pwaShow(false); pwaTip(t('installDone')); });
+  if (pwaIos()) pwaShow(true);
+  document.querySelectorAll('.installBtn').forEach(b => b.addEventListener('click', async () => {
+    // a prompt can be shown once; if it is dismissed, the browser's own menu still installs
+    if (PWA.prompt) { const p = PWA.prompt; PWA.prompt = null; p.prompt(); const r = await p.userChoice.catch(() => null); if (r && r.outcome === 'accepted') pwaShow(false); }
+    else pwaTip(t(pwaIos() ? 'installIos' : 'installMenu'));
+  }));
 }
 
 // Tactus built-in kit: samples from VCSL (Versilian Community Sample Library), CC0 1.0
@@ -7289,14 +7433,17 @@ function applyI18n() {
   document.querySelectorAll('[data-i18n-aria]').forEach(el => { el.setAttribute('aria-label', t(el.dataset.i18nAria)); });
   syncPlayBtn();
 }
-$('#lang').addEventListener('click', () => {
-  const other = LANG === 'ko' ? 'en' : 'ko';
+function switchLang(other) {
+  if (other === LANG || !['ko', 'en'].includes(other)) return;
   const cur = PRESETS.find(p => srcEl.value === presetText(p, LANG));
   if (cur) srcEl.value = presetText(cur, other);
   LANG = other;
   try { localStorage.setItem('pulse-lang', LANG); } catch (e) { }
-  applyI18n(); buildSlots(); buildPresets(); syncHandsUI(); buildChips(); evaluate('bar'); renderPads(true); renderGestureCards();
-});
+  applyI18n(); skinLabels(); buildSlots(); buildPresets(); syncHandsUI(); buildChips(); evaluate('bar'); renderPads(true); renderGestureCards();
+}
+$('#lang').addEventListener('click', () => switchLang(LANG === 'ko' ? 'en' : 'ko'));
+// the welcome page shares the language: a switch there, in another tab, switches here too
+const onSharedLang = switchLang;
 
 // ---------- evaluation ----------
 function evaluate(mode = 'bar', opts = {}) {
@@ -8267,22 +8414,8 @@ document.addEventListener('pointerdown', e => {
   addEventListener('pointerup', up, true); addEventListener('pointercancel', up, true);
 }, true);
 
-// ---------- skins ----------
-const SKINS = ['studio', 'field', 'pop'];
-function setSkin(k) {
-  if (!SKINS.includes(k)) k = 'studio';
-  document.documentElement.dataset.skin = k;
-  document.querySelectorAll('#skins [data-skin]').forEach(b => b.setAttribute('aria-checked', b.dataset.skin === k));
-  try { localStorage.setItem('tactus-skin', k); } catch (e) { }
-  // canvases read the skin's colours each time they draw, and pictures use the colour variables, so nothing redraws
-}
-$('#skins').addEventListener('click', e => { const b = e.target.closest('[data-skin]'); if (b) setSkin(b.dataset.skin); });
-$('#skins').addEventListener('keydown', e => {
-  if (!/^Arrow(Left|Right)$/.test(e.key)) return;
-  const i = SKINS.indexOf(document.documentElement.dataset.skin), k = SKINS[mod(i + (e.key === 'ArrowRight' ? 1 : -1), 3)];
-  setSkin(k); $(`#skins [data-skin="${k}"]`).focus(); e.preventDefault();
-});
-setSkin(document.documentElement.dataset.skin);
+skinInit();
+pwaInit();
 
 // ---------- animation loop ----------
 const posEl = $('#pos'), pipsEl = [...document.querySelectorAll('.pip')];
@@ -8435,6 +8568,172 @@ function buildGuide() {
   $('#guideClose').addEventListener('click', () => dlg.close());
   dlg.addEventListener('close', () => { pane.appendChild(body); for (const d of body.querySelectorAll('details.gsec')) d.open = d.dataset.was === 'true'; });
 }
+
+// ===================== Sharing a song =====================
+// Two ways to send what you made. A link carries the whole code, compressed, after the # (so it never reaches a
+// server): whoever opens it hears the same song. A recording is the sound itself, a few bars or the whole song,
+// recorded from the master output as it plays. On phones both go through the system share sheet, which is how they
+// reach KakaoTalk, Messages and the rest; elsewhere the link is copied and the recording saved as a file.
+
+const SHARE_SITE = 'https://nakosung.github.io/tactus/play/';
+const SH = { rec: null, file: null, url: '', timer: 0 };
+
+// ---------- the link ----------
+const b64url = bytes => { let s = ''; for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)); return btoa(s).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); };
+const unb64url = s => { const b = atob(s.replace(/-/g, '+').replace(/_/g, '/')); const u = new Uint8Array(b.length); for (let i = 0; i < b.length; i++) u[i] = b.charCodeAt(i); return u; };
+async function pipe(bytes, stream) { return new Uint8Array(await new Response(new Blob([bytes]).stream().pipeThrough(stream)).arrayBuffer()); }
+// "1." is deflate; "0." is plain text, for a browser without CompressionStream
+async function shareEncode(text) {
+  const raw = new TextEncoder().encode(text);
+  if (typeof CompressionStream === 'function') { try { return '1.' + b64url(await pipe(raw, new CompressionStream('deflate-raw'))); } catch (e) { } }
+  return '0.' + b64url(raw);
+}
+async function shareDecode(s) {
+  const [v, body] = [s.slice(0, 1), s.slice(2)], bytes = unb64url(body);
+  return new TextDecoder().decode(v === '1' ? await pipe(bytes, new DecompressionStream('deflate-raw')) : bytes);
+}
+// the site's own address when we are on it; the public one when opened from a file or an embed
+function shareBase() { return /^https?:$/.test(location.protocol) && /\/play\/$/.test(location.pathname) ? location.origin + location.pathname : SHARE_SITE; }
+async function shareLink() { return shareBase() + '#s=' + await shareEncode(srcEl.value); }
+// what the song is called in the message: the example's name, or its first comment, or "my song"
+function shareName() {
+  const p = PRESETS.find(x => srcEl.value === presetText(x, LANG));
+  if (p) return p.name;
+  const c = /^\s*\/\/\s*(.+)$/m.exec(srcEl.value);
+  return c ? c[1].replace(/\s+[—–-]\s.*$/, '').slice(0, 48) : t('shareMine');
+}
+
+// ---------- opening a shared link ----------
+async function shareOpenFromHash() {
+  const m = /^#s=([01]\.[A-Za-z0-9_-]+)/.exec(location.hash); if (!m) return;
+  history.replaceState(null, '', location.pathname + location.search);   // a reload keeps what you do next, not the link
+  let code;
+  try { code = await shareDecode(m[1]); } catch (e) { loopMsg(t('shareBad'), 'bad', 5000); return; }
+  if (!code.trim() || code === srcEl.value) return;
+  // the code that was here is kept, and one press brings it back
+  const before = srcEl.value;
+  try { localStorage.setItem('pulse-src-prev', before); } catch (e) { }
+  srcEl.value = code; srcEl.scrollTop = 0;
+  try { localStorage.setItem('pulse-src', code); } catch (e) { }
+  evaluate(S.playing ? 'phrase' : 'bar', { resetSong: true }); buildPresets();
+  shareToast(t('shareOpened'), t('shareUndo'), () => { srcEl.value = before; evaluate(S.playing ? 'phrase' : 'bar', { resetSong: true }); buildPresets(); });
+}
+function shareToast(msg, act, fn) {
+  let el = document.getElementById('shareToast');
+  if (!el) { el = document.createElement('div'); el.id = 'shareToast'; el.className = 'pwa-tip share-toast'; el.setAttribute('role', 'status'); document.body.appendChild(el); }
+  el.innerHTML = `<span>${esc(msg)}</span>${act ? `<button type="button">${esc(act)}</button>` : ''}`;
+  el.hidden = false;
+  const b = el.querySelector('button'); if (b) b.onclick = () => { el.hidden = true; fn(); };
+  clearTimeout(SH.toastT); SH.toastT = setTimeout(() => { el.hidden = true; }, 12000);
+}
+
+// ---------- sending ----------
+async function shareSend(data) {
+  if (navigator.share && (!data.files || (navigator.canShare && navigator.canShare(data)))) {
+    try { await navigator.share(data); return true; } catch (e) { if (e && e.name === 'AbortError') return true; }
+  }
+  return false;
+}
+async function shareCopy(text) {
+  try { await navigator.clipboard.writeText(text); return true; } catch (e) { }
+  const ta = document.createElement('textarea'); ta.value = text; ta.style.cssText = 'position:fixed;opacity:0'; document.body.appendChild(ta); ta.select();
+  let ok = false; try { ok = document.execCommand('copy'); } catch (e) { }
+  ta.remove(); return ok;
+}
+
+// ---------- recording the sound ----------
+function shareMime() {
+  if (typeof MediaRecorder === 'undefined') return null;
+  // m4a plays almost everywhere (KakaoTalk and iPhones included); webm/opus is the fallback
+  for (const m of ['audio/mp4;codecs=mp4a.40.2', 'audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus']) if (MediaRecorder.isTypeSupported(m)) return m;
+  return '';
+}
+function shareRecStart(bars) {
+  const mime = shareMime(); if (mime === null) { shareSay(t('shareNoRec'), 'bad'); return; }
+  initAudio(); S.ctx.resume();
+  const whole = bars === 'song';
+  if (whole) jumpTo(0, 'bar');
+  if (!S.playing) togglePlay(true);
+  const ctx = S.ctx, now = ctx.currentTime, c = transport(now);
+  // from the next bar (bar 0 when the music has just started), for n bars, plus a second for the reverb to ring out
+  const c0 = c < 0.02 ? 0 : Math.ceil(c - 1e-6), n = whole ? S.song.total : bars;
+  const dest = ctx.createMediaStreamDestination(); A.out.connect(dest);
+  const rec = new MediaRecorder(dest.stream, mime ? { mimeType: mime, audioBitsPerSecond: 160000 } : undefined), chunks = [];
+  rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+  rec.onstop = () => {
+    try { A.out.disconnect(dest); } catch (e) { }
+    clearInterval(SH.timer);
+    if (SH.rec && SH.rec.cancelled) { SH.rec = null; shareRender(); return; }
+    const type = rec.mimeType || mime || 'audio/webm', ext = /mp4/.test(type) ? 'm4a' : /ogg/.test(type) ? 'ogg' : 'webm';
+    const name = `tactus-${shareName().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-|-$/g, '').toLowerCase() || 'song'}.${ext}`;
+    SH.file = new File(chunks, name, { type: type.split(';')[0] });
+    SH.secs = SH.rec.secs; SH.rec = null; shareRender();
+  };
+  const tStart = timeOf(c0), tEnd = timeOf(c0 + n) + 1.0;
+  SH.file = null;
+  SH.rec = { rec, c0, n, secs: tEnd - tStart, startT: setTimeout(() => rec.state === 'inactive' && rec.start(250), Math.max(0, (tStart - now - 0.03) * 1000)), endT: setTimeout(() => rec.state !== 'inactive' && rec.stop(), (tEnd - now) * 1000) };
+  SH.timer = setInterval(shareRender, 150);
+  shareRender();
+}
+function shareRecStop(cancel) {
+  const r = SH.rec; if (!r) return;
+  clearTimeout(r.startT); clearTimeout(r.endT);
+  r.cancelled = !!cancel;
+  if (r.rec.state !== 'inactive') r.rec.stop(); else { SH.rec = null; clearInterval(SH.timer); shareRender(); }
+}
+
+// ---------- the dialog ----------
+const shareDlg = document.getElementById('shareDlg');
+function shareSay(msg, cls = '') { const el = shareDlg.querySelector('.sh-msg'); el.textContent = msg; el.className = 'sh-msg ' + cls; }
+function shareRender() {
+  const r = SH.rec, recBox = shareDlg.querySelector('.sh-rec');
+  recBox.querySelectorAll('[data-bars]').forEach(b => { b.disabled = !!r; b.hidden = b.dataset.bars === 'song' && !S.song; });
+  shareDlg.querySelector('.sh-stop').hidden = !r;
+  const st = shareDlg.querySelector('.sh-state'), out = shareDlg.querySelector('.sh-out');
+  if (r) {
+    const c = S.playing ? transport(S.ctx.currentTime) : 0, k = c - r.c0;
+    st.textContent = k < 0 ? t('shareWaiting') : t('shareRecording', { a: Math.min(r.n, Math.floor(k) + 1), b: r.n });
+    st.classList.toggle('on', k >= 0);
+    if (!S.playing) shareRecStop(false);
+  } else { st.textContent = ''; st.classList.remove('on'); }
+  out.hidden = !SH.file;
+  if (SH.file) out.querySelector('span').textContent = t('shareReady', { s: Math.round(SH.secs), kb: Math.round(SH.file.size / 1024).toLocaleString() });
+}
+function shareOpen() {
+  shareSay(''); shareRender();
+  shareDlg.querySelector('.sh-send').hidden = !navigator.share;
+  shareDlg.showModal();
+}
+function shareInit() {
+  if (!shareDlg) return;
+  document.getElementById('shareBtn').addEventListener('click', shareOpen);
+  shareDlg.querySelector('.sh-close').addEventListener('click', () => shareDlg.close());
+  shareDlg.addEventListener('click', e => { if (e.target === shareDlg) shareDlg.close(); });
+  shareDlg.querySelector('.sh-send').addEventListener('click', async () => {
+    const url = await shareLink();
+    if (!await shareSend({ title: 'Tactus', text: t('shareText', { n: shareName() }), url })) { await shareCopy(url); shareSay(t('shareCopied'), 'ok'); }
+  });
+  shareDlg.querySelector('.sh-copy').addEventListener('click', async () => {
+    const url = await shareLink();
+    shareSay(await shareCopy(url) ? t('shareCopied') + ` (${url.length.toLocaleString()}${t('shareChars')})` : url, 'ok');
+  });
+  shareDlg.querySelector('.sh-rec').addEventListener('click', e => { const b = e.target.closest('[data-bars]'); if (b) shareRecStart(b.dataset.bars === 'song' ? 'song' : +b.dataset.bars); });
+  shareDlg.querySelector('.sh-stop').addEventListener('click', () => shareRecStop(false));
+  shareDlg.querySelector('.sh-fsend').addEventListener('click', async () => {
+    if (!SH.file) return;
+    if (!await shareSend({ files: [SH.file], title: 'Tactus', text: t('shareText', { n: shareName() }) })) shareSave();
+  });
+  shareDlg.querySelector('.sh-save').addEventListener('click', shareSave);
+  shareOpenFromHash();
+  addEventListener('hashchange', shareOpenFromHash);
+}
+function shareSave() {
+  if (!SH.file) return;
+  const a = document.createElement('a'); a.href = URL.createObjectURL(SH.file); a.download = SH.file.name;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+  shareSay(t('shareSaved', { n: SH.file.name }), 'ok');
+}
+shareInit();
 
 // ===================== Tactus visualizations (drawn behind the code) =====================
 // roll: piano roll (1 bar past, 3 bars ahead) · grid: each track's 2-bar steps on its own code line

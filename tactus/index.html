@@ -6,14 +6,26 @@
 <meta name="description" content="Tactus: a live-coding music instrument for the browser. Write it, play it with pads, compose from a seed, conduct it with your hands.">
 <link rel="icon" type="image/png" sizes="32x32" href="favicon-32.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Tactus">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta property="og:type" content="website">
 <meta property="og:title" content="Tactus">
 <meta property="og:description" content="A live-coding music instrument built live, in one conversation with Claude.">
+<meta property="og:url" content="https://nakosung.github.io/tactus/">
+<meta property="og:image" content="https://nakosung.github.io/tactus/og.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#17191e">
 <title>Tactus</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='15' fill='%2317191e'/><path d='M11 13h34v10H33v28H23V23H11z' fill='%23eceef2'/><circle cx='45' cy='44' r='7.5' fill='%23ff7a3c'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&family=Spline+Sans+Mono:wght@400;500;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&family=Spline+Sans+Mono:wght@400;500;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&family=Nunito:wght@500..900&family=Gowun+Dodum&display=swap">
+<script>try { document.documentElement.dataset.skin = localStorage.getItem('tactus-skin') || 'studio'; } catch (e) { document.documentElement.dataset.skin = 'studio'; }</script>
 <style>
 /* Layout: the wordmark is the instrument. Six letters, six tracks: while the demo plays each letter swells when its track hits.
    Under it, the real code of the song lights up note by note; below, four verbs (write, perform, compose, conduct) in one row, then the facts and the way in. */
@@ -41,6 +53,7 @@
   color-scheme: light;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html { scroll-behavior: smooth; }
 body { background: var(--body); color: var(--fg); font-family: var(--f-body); font-size: 16px; line-height: 1.6; padding-inline: 20px; padding-block: 0; }
 a { color: inherit; }
@@ -49,7 +62,7 @@ html[lang=ko] body { word-break: keep-all; }
 .wrap { max-width: 1180px; margin: 0 auto; }
 
 /* nav */
-.nav { display: flex; align-items: center; gap: 14px; padding-block: 18px; }
+.nav { position: relative; z-index: 2; display: flex; align-items: center; gap: 14px; padding-block: 18px; }
 .mark { font-family: var(--f-display); font-weight: 700; font-stretch: 75%; letter-spacing: .16em; font-size: 18px; text-decoration: none; }
 .nav .spacer { flex: 1; }
 .home { font-size: 13px; color: var(--dim); text-decoration: none; border-left: 1px solid var(--line); padding-left: 14px; }
@@ -229,6 +242,91 @@ html[lang=ko] body { word-break: keep-all; }
   .nav .btn { display: none; }
 }
 @media (prefers-reduced-motion: reduce) { .word .ch { animation: none; } .code .at.hit { animation-duration: .01s; } html { scroll-behavior: auto; } }
+/* Skins shared by the welcome page and the instrument (build.py puts this file into both).
+   Each skin is a set of tokens; each page then styles its own parts with them. The choice lives in localStorage
+   ('tactus-skin'), which both pages read, so picking a skin on one page carries over to the other. */
+:root[data-skin="field"] {
+  --body: #e2e3df; --panel: #ebecea; --raised: #f8f8f6; --line: #a9aca7; --fg: #000; --dim: #50534f; --faint: #858884;
+  --k-orange: #ff4f00; --k-blue: #0057ff; --k-green: #00a669; --k-yellow: #ffc400; --k-pink: #ff3f7a; --k-violet: #6a5cff;
+  --on-key: #fff; --shadow: none; --key-edge: #000; --key-depth: 0px; --arm: #ff4f00; --go: #0057ff;
+  --scr: #000; --scr-2: #0a0a0a; --scr-line: #2a2a2a; --scr-fg: #f4f4f4; --scr-dim: #8f8f8f; --scr-faint: #565656;
+  --c-name: #ffffff; --c-glob: #6f9bff; --c-num: #00d18a; --c-op: #ff6a1f; --c-inst: #b9c8ff; --c-err: #ff3f7a; --c-gen: #ffc400;
+  --f-ui: "Archivo", "IBM Plex Sans KR", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  --f-code: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --f-lcd: "Doto", "IBM Plex Mono", ui-monospace, monospace;
+  --r-xs: 2px; --r-s: 3px; --r-m: 4px; --r-l: 5px; --r-xl: 6px;
+  color-scheme: light;
+}
+:root[data-skin="pop"] {
+  --body: #d9e1ff; --panel: #f3f5ff; --raised: #ffffff; --line: #c2cbef; --fg: #241f4f; --dim: #59568a; --faint: #8b88b3;
+  --k-orange: #ff7b29; --k-blue: #3b7bff; --k-green: #1bbf77; --k-yellow: #ffbf2e; --k-pink: #ff5a8f; --k-violet: #8b6bff;
+  --on-key: #fff; --shadow: none; --key-edge: #b3bde6; --key-depth: 4px; --arm: #ff9f1c; --go: #1bbf77; --bezel: #ff5a6e;
+  --scr: #1f1a45; --scr-2: #251f52; --scr-line: #3b3573; --scr-fg: #f5f3ff; --scr-dim: #aaa5da; --scr-faint: #6f69a3;
+  --c-name: #ffd166; --c-glob: #7ec8ff; --c-num: #6ff0b0; --c-op: #ff9f5a; --c-inst: #c6aaff; --c-err: #ff6b8e; --c-gen: #ffe066;
+  --f-ui: "Nunito", "Gowun Dodum", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+  --r-xs: 6px; --r-s: 10px; --r-m: 12px; --r-l: 16px; --r-xl: 22px;
+  color-scheme: light;
+}
+
+/* ---- the skin picker ---- */
+.skins { display: inline-flex; gap: 2px; padding: 2px; border-radius: var(--r-m); background: var(--panel); border: 1px solid var(--line); }
+.skins button { display: inline-flex; align-items: center; gap: 6px; border: 0; background: transparent; color: var(--dim); font-size: 11.5px; font-weight: 600; padding: 4px 8px 4px 5px; border-radius: var(--r-s); cursor: pointer; transition: transform .09s; }
+.skins button[aria-checked="true"] { background: var(--raised); color: var(--fg); box-shadow: var(--shadow); }
+.skins i { width: 14px; height: 14px; border-radius: 50%; flex: none; box-shadow: inset 0 0 0 1px rgba(0,0,0,.25); }
+.skins [data-skin="studio"] i { background: conic-gradient(#ff7a3c 0 25%, #17191e 0 75%, #a48bff 0); }
+.skins [data-skin="field"] i { background: conic-gradient(#ff4f00 0 25%, #e2e3df 0 75%, #000 0); border-radius: 3px; }
+.skins [data-skin="pop"] i { background: conic-gradient(#ff5a6e 0 25%, #ffc53d 0 50%, #1fc77e 0 75%, #3b7bff 0); }
+
+/* ---- a short note from the page (install help) ---- */
+.pwa-tip { position: fixed; left: 50%; bottom: 22px; transform: translateX(-50%); z-index: 80; max-width: min(460px, calc(100vw - 32px)); padding: 12px 16px; border-radius: var(--r-l, 12px);
+  background: var(--fg); color: var(--body); font-size: 14px; line-height: 1.45; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+
+/* ---- skins on this page: the same three bodies as the instrument ---- */
+.nav .skins { margin-right: 2px; }
+.nav .skins span { display: none; }
+.nav .skins button { padding: 5px; }
+.btn, .chip, .mp, .trk, .lang, .skins button { transition: transform .1s cubic-bezier(.2,.8,.2,1), box-shadow .1s, background-color .12s; }
+.btn:active, .chip:active, .mp:active, .trk:active { transform: translateY(2px); }
+
+[data-skin="field"] { --f-display: "Archivo", "IBM Plex Sans KR", system-ui, sans-serif; --f-body: var(--f-ui); }
+[data-skin="field"] body { background: var(--body) radial-gradient(circle, rgba(0,0,0,.13) 1px, transparent 1.3px) 0 0 / 14px 14px; }
+[data-skin="field"] .mark { text-transform: lowercase; font-stretch: 125%; font-weight: 800; letter-spacing: 0; font-size: 20px; }
+[data-skin="field"] .word { text-transform: lowercase; }
+[data-skin="field"] .word .L:nth-child(1) .ch { color: var(--k-orange); }
+[data-skin="field"] :is(.btn, .lang, .trk, .chip, .mp, .skins, .snip, .gbench, .built .next) { border-color: #000; border-radius: 4px; box-shadow: none; }
+[data-skin="field"] .btn.key { color: #000; border-color: #000; box-shadow: none; }
+[data-skin="field"] :is(.btn, .lang, .trk, .chip, .mp):active { background: #000; color: #fff; transform: none; transition: none; }
+[data-skin="field"] .trk[aria-pressed="true"] { background: #000; color: #fff; }
+[data-skin="field"] .trk[aria-pressed="true"] small { color: #bbb; }
+[data-skin="field"] .mp[aria-pressed="true"], [data-skin="field"] .mp.flash { background: #000; border-color: #000; color: #fff; }
+[data-skin="field"] .mp[aria-pressed="true"]::after, [data-skin="field"] .mp.flash::after { content: ''; position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; background: var(--kc); }
+[data-skin="field"] .chip[aria-pressed="true"] { background: var(--k-orange); color: #000; }
+[data-skin="field"] .screen { border: 1px solid #000; border-radius: 6px; box-shadow: none; }
+[data-skin="field"] :is(.verbs, .facts, .verb + .verb, .fact + .fact, .end, .glist, .gi, .gi:nth-child(even), .steps) { border-color: #000; }
+[data-skin="field"] .fact b { font-stretch: 112%; }
+[data-skin="field"] .verb h2, [data-skin="field"] .name h2 { font-stretch: 112%; text-transform: lowercase; }
+[data-skin="field"] .skins button[aria-checked="true"] { background: #000; }
+
+[data-skin="pop"] { --f-display: "Nunito", "Gowun Dodum", system-ui, sans-serif; --f-body: var(--f-ui); }
+[data-skin="pop"] body { background: var(--body) radial-gradient(circle, rgba(255,255,255,.7) 2.2px, transparent 2.6px) 0 0 / 22px 22px; }
+[data-skin="pop"] .mark { color: var(--bezel); text-transform: lowercase; font-weight: 900; letter-spacing: .02em; font-size: 22px; }
+[data-skin="pop"] .word { text-transform: lowercase; }
+[data-skin="pop"] .word .L:nth-child(1) .ch { color: #ff5a6e; } [data-skin="pop"] .word .L:nth-child(2) .ch { color: #ff9f1c; } [data-skin="pop"] .word .L:nth-child(3) .ch { color: #ffbf2e; }
+[data-skin="pop"] .word .L:nth-child(4) .ch { color: #1bbf77; } [data-skin="pop"] .word .L:nth-child(5) .ch { color: #3b7bff; } [data-skin="pop"] .word .L:nth-child(6) .ch { color: #8b6bff; }
+[data-skin="pop"] :is(.btn, .chip, .mp, .trk, .lang) { border-width: 2px; transition: transform .34s cubic-bezier(.34,1.7,.5,1), box-shadow .2s, background-color .12s; }
+[data-skin="pop"] .btn { box-shadow: 0 4px 0 var(--key-edge); font-weight: 800; }
+[data-skin="pop"] .btn.key { background: var(--bezel); border-color: var(--bezel); box-shadow: 0 4px 0 #c33a52; color: #fff; }
+[data-skin="pop"] :is(.btn, .chip, .mp, .trk):active { transform: translateY(4px) scale(1.04, .92); box-shadow: 0 0 0 transparent; transition-duration: .05s; }
+[data-skin="pop"] .mp { background: color-mix(in srgb, var(--kc) 14%, #fff); border-color: color-mix(in srgb, var(--kc) 50%, #fff); box-shadow: 0 4px 0 color-mix(in srgb, var(--kc) 62%, #6a5f9e); border-radius: 12px; }
+[data-skin="pop"] .mp[aria-pressed="true"], [data-skin="pop"] .mp.flash { color: #fff; }
+[data-skin="pop"] .mp[data-cat="rhythm"][aria-pressed="true"] { color: #3a2600; }
+[data-skin="pop"] .trk { border-radius: 16px; }
+[data-skin="pop"] .trk[aria-pressed="true"] { border-color: var(--bezel); box-shadow: 0 4px 0 #c33a52; }
+[data-skin="pop"] .screen { border: 0; border-radius: 22px; box-shadow: 0 0 0 9px var(--bezel), 0 14px 0 9px #c33a52; margin: 9px; }
+[data-skin="pop"] .snip { border-radius: 12px; }
+[data-skin="pop"] .gbench, [data-skin="pop"] .built .next { border-width: 2px; border-radius: 18px; }
+[data-skin="pop"] .verb h2, [data-skin="pop"] .fact b, [data-skin="pop"] .name h2 { font-weight: 900; font-stretch: 100%; }
+@media (prefers-reduced-motion: reduce) { .btn, .chip, .mp, .trk, .lang, .skins button { transition: none !important; } :is(.btn, .chip, .mp, .trk):active { transform: none !important; } }
 </style>
 
 </head>
@@ -238,6 +336,8 @@ html[lang=ko] body { word-break: keep-all; }
     <a class="mark" href="#top">TACTUS</a><a class="home" href="/">Nako Sung</a>
     <div class="spacer"></div>
     <a class="gh" href="https://github.com/nakosung/tactus" target="_blank" rel="noopener">GitHub</a>
+    <button class="lang installBtn" type="button" hidden data-ko="앱으로 설치" data-en="Install app">앱으로 설치</button>
+    <div class="skins" role="radiogroup"><button type="button" role="radio" data-skin="studio"><i></i><span></span></button><button type="button" role="radio" data-skin="field"><i></i><span></span></button><button type="button" role="radio" data-skin="pop"><i></i><span></span></button></div>
     <button class="lang" id="lang" type="button">EN</button>
     <a class="btn small ext" href="./play/" data-ko="Tactus 열기" data-en="Open Tactus">Tactus 열기</a>
   </nav>
@@ -431,6 +531,8 @@ const I18N = {
     tagline: 'live instrument', play: '재생', stop: '정지', auto: '자동 반영', autoTitle: '끄면 Ctrl+Enter로만 반영',
     bpmTitle: '휠로 조절, T 또는 TAP으로 탭 템포', lang: 'EN', langTitle: 'Switch to English',
     queueNext: '다음 마디에 반영', queueIn: '{n}마디 뒤 반영',
+    share: '공유', shareTitle: '이 곡을 링크나 녹음으로 보내요', shareTitle2: '이 곡 공유하기', shareLink: '링크로 보내기', shareLinkD: '코드 전체가 링크 안에 들어가요. 받는 사람이 열면 이 곡이 그대로 열리고, 고쳐서 다시 보낼 수도 있어요.', shareSend: '보내기…', shareCopy: '링크 복사', shareCopied: '링크를 복사했어요', shareChars: '자', shareAudio: '소리로 보내기', shareAudioD: '다음 마디부터 연주를 그대로 녹음해 오디오 파일로 만들어요. 멈춰 있으면 처음부터 틀면서 녹음해요.', shareB4: '4마디', shareB8: '8마디', shareB16: '16마디', shareWhole: '곡 전체', shareStop: '녹음 끝내기', shareWaiting: '다음 마디에서 녹음을 시작해요…', shareRecording: '녹음 중 {a}/{b}마디', shareReady: '{s}초 녹음했어요 ({kb} KB)', shareSendFile: '파일 보내기…', shareSave: '저장', shareSaved: '{n} 파일로 저장했어요', shareHint: '휴대폰에서 "보내기"를 누르면 공유 창이 열려 카카오톡, 메시지, 메일 등으로 바로 보낼 수 있어요.', shareNoRec: '이 브라우저는 녹음을 지원하지 않아요.', shareText: 'Tactus로 만든 곡: {n}', shareMine: '내 곡', shareOpened: '공유받은 곡을 열었어요. 원래 코드는 보관해 뒀어요.', shareUndo: '내 코드로 되돌리기', shareBad: '링크가 잘려서 곡을 열 수 없어요. 링크 전체를 받았는지 확인해 주세요.',
+    install: '앱으로 설치', installTitle: 'Tactus를 앱으로 설치해 바탕화면이나 홈 화면에서 바로 열어요', installDone: '설치했어요. 이제 앱 목록이나 홈 화면에서 Tactus를 열 수 있어요.', installIos: 'Safari 아래쪽의 공유 버튼을 누르고 "홈 화면에 추가"를 고르세요.', installMenu: '브라우저 메뉴(⋮)에서 "앱 설치" 또는 "홈 화면에 추가"를 고르세요.',
     skin: '스킨', skinStudio: '스튜디오', skinField: '필드', skinPop: '팝', armCode: '코드', armSong: '곡', armNext: '다음 마디', armIn: '{n}마디 뒤', armBeat: '{n}박 뒤', armGo: '지금!',
     // rack
     gestures: '제스처', gesturesHint: '누르는 동안만 · 에디터에선 Alt+키',
@@ -629,6 +731,8 @@ const I18N = {
     tagline: 'live instrument', play: 'Play', stop: 'Stop', auto: 'Live update', autoTitle: 'When off, changes apply only on Ctrl+Enter',
     bpmTitle: 'Scroll to adjust, T or TAP for tap tempo', lang: '한국어', langTitle: '한국어로 전환',
     queueNext: 'Applies next bar', queueIn: 'Applies in {n} bars',
+    share: 'Share', shareTitle: 'Send this song as a link or a recording', shareTitle2: 'Share this song', shareLink: 'Send a link', shareLinkD: 'The whole code goes inside the link. Whoever opens it gets this song as it is, and can change it and send it back.', shareSend: 'Send…', shareCopy: 'Copy link', shareCopied: 'Link copied', shareChars: ' characters', shareAudio: 'Send the sound', shareAudioD: 'Records the music from the next bar into an audio file. If it is stopped, it starts playing from the top.', shareB4: '4 bars', shareB8: '8 bars', shareB16: '16 bars', shareWhole: 'Whole song', shareStop: 'Stop recording', shareWaiting: 'Recording starts on the next bar…', shareRecording: 'Recording bar {a} of {b}', shareReady: 'Recorded {s} s ({kb} KB)', shareSendFile: 'Send file…', shareSave: 'Save', shareSaved: 'Saved as {n}', shareHint: 'On a phone, Send opens the share sheet, so it goes straight to KakaoTalk, Messages, mail and the rest.', shareNoRec: 'This browser cannot record.', shareText: 'A song made in Tactus: {n}', shareMine: 'my song', shareOpened: 'Opened a shared song. Your own code is kept.', shareUndo: 'Back to my code', shareBad: 'This link is cut short, so the song cannot open. Check that the whole link came through.',
+    install: 'Install app', installTitle: 'Install Tactus as an app and open it from your desktop or home screen', installDone: 'Installed. Open Tactus from your apps or home screen.', installIos: 'Tap Share at the bottom of Safari, then choose "Add to Home Screen".', installMenu: 'Open the browser menu (⋮) and choose "Install app" or "Add to Home screen".',
     skin: 'Skin', skinStudio: 'Studio', skinField: 'Field', skinPop: 'Pop', armCode: 'Code', armSong: 'Song', armNext: 'next bar', armIn: 'in {n} bars', armBeat: 'in {n}', armGo: 'Now!',
     gestures: 'Gestures', gesturesHint: 'Active while held · Alt+key in the editor',
     gBuild: 'Build-up', gBuildD: 'Snare roll and riser. Release to drop on the next downbeat',
@@ -787,6 +891,83 @@ function t(k, v) {
   let s = (I18N[LANG] && I18N[LANG][k]) ?? I18N.ko[k] ?? k;
   if (v) for (const x in v) s = s.split('{' + x + '}').join(v[x]);
   return s;
+}
+
+// ===================== Skins, shared by the welcome page and the instrument =====================
+// The choice is kept in localStorage ('tactus-skin'). Both pages live on the same site, so they read the same value:
+// a skin picked on one page is there on the other, and an open tab follows a change made in another tab.
+// A tiny inline script in each page's head sets the skin before the first paint; this file wires up the picker.
+
+const SKINS = ['studio', 'field', 'pop'];
+const SKIN_KEY = 'tactus-skin';
+function skinNow() { return document.documentElement.dataset.skin || 'studio'; }
+// the browser's title bar (and an installed app's window) takes the skin's body colour
+function skinThemeColor() {
+  const m = document.querySelector('meta[name="theme-color"]'); if (!m) return;
+  const c = getComputedStyle(document.documentElement).getPropertyValue('--body').trim();
+  if (c) m.setAttribute('content', c);
+}
+function skinLabels() {
+  document.querySelectorAll('.skins [data-skin]').forEach(b => {
+    const k = 'skin' + b.dataset.skin[0].toUpperCase() + b.dataset.skin.slice(1), name = t(k);
+    b.title = name; b.setAttribute('aria-label', name);
+    const s = b.querySelector('span'); if (s) s.textContent = name;
+  });
+  document.querySelectorAll('.skins').forEach(g => g.setAttribute('aria-label', t('skin')));
+}
+function setSkin(k, save = true) {
+  if (!SKINS.includes(k)) k = 'studio';
+  document.documentElement.dataset.skin = k;
+  document.querySelectorAll('.skins [data-skin]').forEach(b => { b.setAttribute('aria-checked', b.dataset.skin === k); b.tabIndex = b.dataset.skin === k ? 0 : -1; });
+  if (save) try { localStorage.setItem(SKIN_KEY, k); } catch (e) { }
+  skinThemeColor();
+  if (typeof S !== 'undefined' && S) S.dirty = true;   // the instrument's canvases read the colours on their next draw
+  if (typeof onSkinChange === 'function') onSkinChange(k);
+}
+function skinInit() {
+  for (const g of document.querySelectorAll('.skins')) {
+    g.addEventListener('click', e => { const b = e.target.closest('[data-skin]'); if (b) setSkin(b.dataset.skin); });
+    g.addEventListener('keydown', e => {
+      if (!/^Arrow(Left|Right|Up|Down)$/.test(e.key)) return;
+      const d = /Right|Down/.test(e.key) ? 1 : -1, k = SKINS[(SKINS.indexOf(skinNow()) + d + SKINS.length) % SKINS.length];
+      setSkin(k); g.querySelector(`[data-skin="${k}"]`).focus(); e.preventDefault();
+    });
+  }
+  // another tab (the other page, or this one) changed the skin or the language
+  addEventListener('storage', e => {
+    if (e.key === SKIN_KEY && e.newValue) setSkin(e.newValue, false);
+    if (e.key === 'pulse-lang' && e.newValue && typeof onSharedLang === 'function') onSharedLang(e.newValue);
+  });
+  skinLabels(); setSkin(skinNow(), false);
+}
+
+// ===================== Installing Tactus as an app =====================
+// The site pages link a manifest and register the service worker; the single-file build has neither and skips this.
+// Browsers that offer installing (Chrome, Edge, Android) fire beforeinstallprompt: then the install buttons appear.
+// Safari on iPhone and iPad has no prompt, so the button explains Share > Add to Home Screen instead.
+
+const PWA = { prompt: null, tipEl: null };
+const pwaStandalone = () => matchMedia('(display-mode: standalone)').matches || navigator.standalone === true;
+const pwaIos = () => /iphone|ipad|ipod/i.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+function pwaTip(msg) {
+  if (!PWA.tipEl) { PWA.tipEl = document.createElement('div'); PWA.tipEl.className = 'pwa-tip'; PWA.tipEl.setAttribute('role', 'status'); document.body.appendChild(PWA.tipEl); }
+  PWA.tipEl.textContent = msg; PWA.tipEl.hidden = false;
+  clearTimeout(PWA.tipT); PWA.tipT = setTimeout(() => { PWA.tipEl.hidden = true; }, 6000);
+}
+function pwaShow(on) { document.querySelectorAll('.installBtn').forEach(b => { b.hidden = !on; }); }
+function pwaInit() {
+  const link = document.querySelector('link[rel="manifest"]');
+  if (!link || !('serviceWorker' in navigator) || !/^https?:$/.test(location.protocol)) return;
+  navigator.serviceWorker.register(new URL('sw.js', link.href).href, { scope: new URL('./', link.href).href }).catch(() => { });
+  if (pwaStandalone()) return;
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); PWA.prompt = e; pwaShow(true); });
+  addEventListener('appinstalled', () => { PWA.prompt = null; pwaShow(false); pwaTip(t('installDone')); });
+  if (pwaIos()) pwaShow(true);
+  document.querySelectorAll('.installBtn').forEach(b => b.addEventListener('click', async () => {
+    // a prompt can be shown once; if it is dismissed, the browser's own menu still installs
+    if (PWA.prompt) { const p = PWA.prompt; PWA.prompt = null; p.prompt(); const r = await p.userChoice.catch(() => null); if (r && r.outcome === 'accepted') pwaShow(false); }
+    else pwaTip(t(pwaIos() ? 'installIos' : 'installMenu'));
+  }));
 }
 
 // ===================== Tactus pattern engine (pure, no audio) =====================
@@ -3195,14 +3376,16 @@ async function gpuBench() {
 // ===================== landing: demo player, live code, letters =====================
 const $ = s => document.querySelector(s);
 const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-let L = (navigator.language || 'ko').toLowerCase().startsWith('ko') ? 'ko' : 'en';
+// the language is shared with the instrument (i18n.js reads the same saved choice)
+let L = LANG;
 function applyLang() {
   document.documentElement.lang = L;
   document.querySelectorAll('[data-ko]').forEach(el => { el.textContent = el.dataset[L]; });
   $('#lang').textContent = L === 'ko' ? 'EN' : '한국어';
-  buildTracks(); rollGen(false);
+  skinLabels(); buildTracks(); rollGen(false);
 }
-$('#lang').addEventListener('click', () => { L = L === 'ko' ? 'en' : 'ko'; applyLang(); });
+function onSharedLang(v) { if (v === L || !['ko', 'en'].includes(v)) return; L = LANG = v; applyLang(); }
+$('#lang').addEventListener('click', () => { L = LANG = L === 'ko' ? 'en' : 'ko'; try { localStorage.setItem('pulse-lang', L); } catch (e) { } applyLang(); });
 
 // ---- demos: compiled with the real engine, so the code lights up exactly where the notes are ----
 const GLOB = new Set(['bpm', 'key', 'scale', 'swing', 'prog', 'scene', 'song', 'master', 'seed', 'fx']);
@@ -3450,6 +3633,10 @@ $('#gbench').addEventListener('click', async () => {
   b.disabled = false;
 });
 
+skinInit();
+pwaInit();
+// a skin brings its own typeface, so the letters' fixed cells are measured again
+function onSkinChange() { (document.fonts ? document.fonts.ready : Promise.resolve()).then(lockLetters); }
 applyLang();
 select(DEMO_LIST[0], false);
 (document.fonts ? document.fonts.ready : Promise.resolve()).then(lockLetters);

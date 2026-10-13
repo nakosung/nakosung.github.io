@@ -1,0 +1,52 @@
+{
+ "name": "Tactus",
+ "short_name": "Tactus",
+ "lang": "ko",
+ "dir": "ltr",
+ "description": "코드로 연주하는 라이브 코딩 악기. A live-coding music instrument.",
+ "id": "./play/",
+ "start_url": "./play/",
+ "scope": "./",
+ "display": "standalone",
+ "display_override": [
+  "window-controls-overlay",
+  "standalone"
+ ],
+ "background_color": "#17191e",
+ "theme_color": "#17191e",
+ "categories": [
+  "music",
+  "entertainment",
+  "education"
+ ],
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-maskable-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "maskable"
+  },
+  {
+   "src": "favicon.svg",
+   "sizes": "any",
+   "type": "image/svg+xml"
+  }
+ ],
+ "shortcuts": [
+  {
+   "name": "Tactus 소개",
+   "short_name": "소개",
+   "url": "./"
+  }
+ ]
+}
