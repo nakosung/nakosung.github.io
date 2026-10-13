@@ -19,13 +19,13 @@
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="theme-color" content="#17191e">
+<meta name="theme-color" content="#e2e3df">
 <title>Tactus</title>
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><rect width='64' height='64' rx='15' fill='%2317191e'/><path d='M11 13h34v10H33v28H23V23H11z' fill='%23eceef2'/><circle cx='45' cy='44' r='7.5' fill='%23ff7a3c'/></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&family=Spline+Sans+Mono:wght@400;500;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&family=Nunito:wght@500..900&family=Gowun+Dodum&display=swap">
-<script>try { document.documentElement.dataset.skin = localStorage.getItem('tactus-skin') || 'studio'; } catch (e) { document.documentElement.dataset.skin = 'studio'; }</script>
+<script>try { document.documentElement.dataset.skin = localStorage.getItem('tactus-skin') || 'field'; } catch (e) { document.documentElement.dataset.skin = 'field'; }</script>
 <style>
 /* Layout: the wordmark is the instrument. Six letters, six tracks: while the demo plays each letter swells when its track hits.
    Under it, the real code of the song lights up note by note; below, four verbs (write, perform, compose, conduct) in one row, then the facts and the way in. */
@@ -337,7 +337,7 @@ html[lang=ko] body { word-break: keep-all; }
     <div class="spacer"></div>
     <a class="gh" href="https://github.com/nakosung/tactus" target="_blank" rel="noopener">GitHub</a>
     <button class="lang installBtn" type="button" hidden data-ko="앱으로 설치" data-en="Install app">앱으로 설치</button>
-    <div class="skins" role="radiogroup"><button type="button" role="radio" data-skin="studio"><i></i><span></span></button><button type="button" role="radio" data-skin="field"><i></i><span></span></button><button type="button" role="radio" data-skin="pop"><i></i><span></span></button></div>
+    <div class="skins" role="radiogroup"><button type="button" role="radio" data-skin="field"><i></i><span></span></button><button type="button" role="radio" data-skin="studio"><i></i><span></span></button><button type="button" role="radio" data-skin="pop"><i></i><span></span></button></div>
     <button class="lang" id="lang" type="button">EN</button>
     <a class="btn small ext" href="./play/" data-ko="Tactus 열기" data-en="Open Tactus">Tactus 열기</a>
   </nav>
@@ -900,9 +900,10 @@ function t(k, v) {
 // a skin picked on one page is there on the other, and an open tab follows a change made in another tab.
 // A tiny inline script in each page's head sets the skin before the first paint; this file wires up the picker.
 
-const SKINS = ['studio', 'field', 'pop'];
+// Field (the light aluminium sampler) is what a first visit sees; Studio is the dark rack, Pop the handheld toy
+const SKINS = ['field', 'studio', 'pop'], SKIN_DEFAULT = 'field';
 const SKIN_KEY = 'tactus-skin';
-function skinNow() { return document.documentElement.dataset.skin || 'studio'; }
+function skinNow() { return document.documentElement.dataset.skin || SKIN_DEFAULT; }
 // the browser's title bar (and an installed app's window) takes the skin's body colour
 function skinThemeColor() {
   const m = document.querySelector('meta[name="theme-color"]'); if (!m) return;
@@ -918,7 +919,7 @@ function skinLabels() {
   document.querySelectorAll('.skins').forEach(g => g.setAttribute('aria-label', t('skin')));
 }
 function setSkin(k, save = true) {
-  if (!SKINS.includes(k)) k = 'studio';
+  if (!SKINS.includes(k)) k = SKIN_DEFAULT;
   document.documentElement.dataset.skin = k;
   document.querySelectorAll('.skins [data-skin]').forEach(b => { b.setAttribute('aria-checked', b.dataset.skin === k); b.tabIndex = b.dataset.skin === k ? 0 : -1; });
   if (save) try { localStorage.setItem(SKIN_KEY, k); } catch (e) { }
