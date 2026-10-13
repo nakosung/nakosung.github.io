@@ -2312,7 +2312,7 @@ const TRACK_COLORS = ['#ff9a4d', '#a48bff', '#5fd6a4', '#6fb6ff', '#ff6b8e', '#f
 // and it draws four backdrops behind the code (terrain, contour, dots, demo) as full-screen shaders.
 // Without WebGPU every part falls back: the GPU instruments to CPU voices, freeze to a looped grain.
 
-const GPU = { state: 'idle', dev: null, name: '', err: '', synth: null, cache: new Map(), bytes: 0, jobs: new Map(), chain: Promise.resolve(), renders: 0, lastMs: 0 };
+const GPU = { state: 'idle', dev: null, name: '', err: '', synth: null, cache: new Map(), bad: new Set(), bytes: 0, jobs: new Map(), chain: Promise.resolve(), renders: 0, lastMs: 0 };
 const GPU_INSTS = { swarm: 'supersaw', choir: 'pad', plate: 'bell', membrane: 'pluck', nsax: 'sax' };   // and their CPU fallbacks
 const GPU_CACHE_BYTES = 160 << 20;
 
@@ -2539,8 +2539,10 @@ function membraneSetup(midi, P, sr) {
   const T60 = 0.35 + 2.0 * dec, sig = 6.9078 / (T60 * sr) * 0.5;   // a timpani-like head rings for seconds
   const kap = 0.0015 + 0.012 * (1 - bright);
   // the note is the (1,1) mode, as on a timpani, where it is the tone you hear: f11 = 3.832 c / (2 pi R).
-  // Pick the radius and Courant number to hit it; this scheme stays stable while lam^2 + 4 kap <= 1/2.
-  const lamMax = Math.sqrt(0.48 - 4 * kap), J = 3.832;
+  // Pick the radius and Courant number to hit it; this scheme stays stable while lam^2 + 4 kap <= 1/2, and a hit
+  // tightens the skin by up to `glide` for a moment, so that headroom is kept too. (Without it, notes from about
+  // A4 up grew without bound within a few hundred samples and came back as NaN.)
+  const glide = 0.12, lamMax = Math.sqrt((0.48 - 4 * kap) / (1 + glide)), J = 3.832;
   let R = 45, lam = 2 * Math.PI * R * f0 / (J * sr);
   if (lam > lamMax) { R = Math.max(8, Math.floor(lamMax * J * sr / (2 * Math.PI * f0))); lam = Math.min(lamMax, 2 * Math.PI * R * f0 / (J * sr)); }
   const c0 = (N - 1) / 2, mask = new Float32Array(N * N);
@@ -2559,7 +2561,7 @@ function membraneSetup(midi, P, sr) {
     }
     vp.set([idx(0.42, 0.3), idx(0.3, -0.45), 1, [0.25, 0.5, 0.75, 1][L]], L * 4);
   }
-  return { N, R, lam2: lam * lam, sig, kap, n, mask, st, vp, glide: 0.12, gtau: 0.06 * sr };
+  return { N, R, lam2: lam * lam, sig, kap, n, mask, st, vp, glide, gtau: 0.06 * sr };
 }
 async function gpuMembrane(midi, P, sr) {
   const d = GPU.dev, m = membraneSetup(midi, P, sr), t0 = performance.now();
@@ -2775,7 +2777,7 @@ async function gpuNeural(midi, dur, P, sr) {
   return { out, n: pl.n };
 }
 function gpuRequestNeural(key, midi, dur, P) {
-  if (GPU.cache.has(key) || GPU.jobs.has(key)) return key;
+  if (GPU.cache.has(key) || GPU.jobs.has(key) || GPU.bad.has(key)) return key;
   const job = GPU.chain = GPU.chain.then(async () => {
     if (GPU.state !== 'ok') return;
     const sr = S.ctx.sampleRate, { out, n } = await gpuNeural(midi, dur, P, sr);
@@ -2789,6 +2791,10 @@ function gpuRequestNeural(key, midi, dur, P) {
 }
 const gpuKey = (inst, midi, dur, P) => [inst, midi, inst === 'nsax' ? ((P.vel ?? 1) < 0.75 ? 0 : 1) + '|' + (P.vib || 0).toFixed(2) : '', inst === 'plate' || inst === 'membrane' ? 0 : Math.round(dur * 8) / 8, (P.bright ?? 0).toFixed(2), (P.detune ?? 0).toFixed(0), (P.dec ?? 0).toFixed(2), (P.width ?? 0).toFixed(2), (P.atk ?? 0).toFixed(2), (P.rel ?? 0).toFixed(2)].join('|');
 function gpuCachePut(key, buf) {
+  for (let ch = 0; ch < buf.numberOfChannels; ch++) {
+    const d = buf.getChannelData(ch);
+    for (let i = 0; i < d.length; i++) if (d[i] - d[i] !== 0) { GPU.bad.add(key.replace(/\|\d$/, '')); console.warn('Tactus: a GPU render came back broken; that note plays on the CPU voice', key); return; }
+  }
   GPU.cache.set(key, buf); GPU.bytes += buf.length * 8;
   while (GPU.bytes > GPU_CACHE_BYTES && GPU.cache.size > 1) { const [k0, b0] = GPU.cache.entries().next().value; GPU.cache.delete(k0); GPU.bytes -= b0.length * 8; }
 }
@@ -2796,7 +2802,7 @@ function gpuRequest(inst, midi, dur, P) {
   const key = gpuKey(inst, midi, dur, P);
   if (inst === 'membrane') return gpuRequestMembrane(key, midi, P);
   if (inst === 'nsax') return gpuRequestNeural(key, midi, dur, P);
-  if (GPU.cache.has(key) || GPU.jobs.has(key)) return key;
+  if (GPU.cache.has(key) || GPU.jobs.has(key) || GPU.bad.has(key)) return key;
   const job = GPU.chain = GPU.chain.then(async () => {
     if (GPU.state !== 'ok') return;
     const sr = S.ctx.sampleRate, v = gpuVoice(inst, midi, dur, P, sr);
@@ -2810,11 +2816,12 @@ function gpuRequest(inst, midi, dur, P) {
 }
 // one render gives all four velocity layers; they are cached as key|0 .. key|3
 function gpuRequestMembrane(key, midi, P) {
-  if (GPU.cache.has(key + '|2') || GPU.jobs.has(key)) return key;
+  if (GPU.cache.has(key + '|2') || GPU.jobs.has(key) || GPU.bad.has(key)) return key;
   const job = GPU.chain = GPU.chain.then(async () => {
     if (GPU.state !== 'ok') return;
     const sr = S.ctx.sampleRate, { out, n } = await gpuMembrane(midi, P, sr);
     let pk = 0; for (let i = 0; i < out.length; i++) pk = Math.max(pk, Math.abs(out[i]));
+    if (!isFinite(pk)) { GPU.bad.add(key); console.warn('Tactus: a drum-head render came back broken; that note plays on the CPU voice', key); return; }
     const g = 0.6 / Math.max(1e-9, pk);
     for (let L = 0; L < MEM_LAYERS; L++) {
       const buf = S.ctx.createBuffer(2, n, sr), o = L * n * 2;
