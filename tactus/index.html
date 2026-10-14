@@ -131,6 +131,7 @@ html[lang=ko] body { word-break: keep-all; }
 
 /* verbs */
 .verbs { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--line); margin-top: 64px; }
+.verbs.more { margin-top: 0; }
 .verb { padding: 30px 24px 34px 0; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
 .verb + .verb { padding-left: 24px; border-left: 1px solid var(--line); }
 .verb h2 { margin: 0; font-family: var(--f-display); font-weight: 700; font-stretch: 80%; font-size: 30px; line-height: 1.05; letter-spacing: .01em; }
@@ -176,7 +177,7 @@ html[lang=ko] body { word-break: keep-all; }
 .end small { display: block; color: var(--faint); font-size: 13px; margin-top: 6px; font-weight: 400; }
 
 
-/* built live */
+/* under the hood */
 .built { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 48px; padding-block: 84px 20px; align-items: start; }
 .built h2 { margin: 0 0 18px; font-size: clamp(28px, 3.4vw, 44px); line-height: 1.2; letter-spacing: -.01em; text-wrap: balance; }
 .built p { margin: 0 0 14px; color: var(--dim); max-width: 36em; }
@@ -190,10 +191,9 @@ html[lang=ko] body { word-break: keep-all; }
 .bench i { display: block; height: 12px; width: var(--w); border-radius: 3px; background: var(--line); }
 .bench .rust i { background: var(--k-orange); }
 .bench b { font: 600 13px/1 var(--f-code); color: var(--fg); text-align: right; font-variant-numeric: tabular-nums; }
-.steps { list-style: none; margin: 0; padding: 0; counter-reset: s; border-left: 2px solid var(--line); }
-.steps li { counter-increment: s; position: relative; padding: 0 0 18px 26px; }
-.steps li::before { content: counter(s); position: absolute; left: -13px; top: 1px; width: 24px; height: 24px; border-radius: 50%; background: var(--body); border: 2px solid var(--line); font: 600 11px/20px var(--f-code); text-align: center; color: var(--dim); }
-.steps li:last-child::before { border-color: var(--k-orange); color: var(--k-orange); }
+.steps { list-style: none; margin: 0; padding: 0; border-left: 2px solid var(--line); }
+.steps li { position: relative; padding: 0 0 18px 26px; }
+.steps li::before { content: ''; position: absolute; left: -7px; top: 6px; width: 12px; height: 12px; border-radius: 50%; background: var(--body); border: 2px solid var(--line); }
 .steps b { display: block; font-size: 15px; }
 .steps span { display: block; color: var(--dim); font-size: 14px; line-height: 1.5; }
 
@@ -350,7 +350,7 @@ html[lang=ko] body { word-break: keep-all; }
     <div class="lede">
       <div>
         <h2 data-ko="느낌이 오는 속도로, 코드로 연주하는 음악" data-en="Music you play in code, as fast as you feel it">느낌이 오는 속도로, 코드로 연주하는 음악</h2>
-        <p data-ko="Tactus는 브라우저에서 바로 여는 라이브 코딩 악기예요. 한 줄이 한 트랙이고, 고치면 다음 마디에 바로 들려요. 패드로 연주하고, 시드 하나로 곡 전체를 만들고, 카메라 앞에서 손으로 지휘해요. 데모를 틀면 위의 글자 여섯 개가 각자 한 트랙씩 맡아 박자에 맞춰 숨을 쉬어요." data-en="Tactus is a live-coding instrument that opens right in your browser. One line is one track, and every edit is heard on the next bar. Play it with pads, write a whole piece from one seed, and conduct it with your hands in front of a camera. Start the demo and each of the six letters above takes a track and breathes with it.">Tactus는 브라우저에서 바로 여는 라이브 코딩 악기예요. 한 줄이 한 트랙이고, 고치면 다음 마디에 바로 들려요. 패드로 연주하고, 시드 하나로 곡 전체를 만들고, 카메라 앞에서 손으로 지휘해요. 데모를 틀면 위의 글자 여섯 개가 각자 한 트랙씩 맡아 박자에 맞춰 숨을 쉬어요.</p>
+        <p data-ko="Tactus는 브라우저에서 바로 여는 라이브 코딩 악기예요. 한 줄이 한 트랙이고, 고치면 다음 마디에 바로 들려요. 코드가 낯설면 블록을 눌러 만들고, 신스 소리를 손으로 빚고, 기타나 마이크를 꽂아 이펙터로 쓰고, 카메라 앞에서 손으로 지휘해요. 설치할 것 없이 폰에서도 열려요. 데모를 틀면 위의 글자 여섯 개가 각자 한 트랙씩 맡아 박자에 맞춰 숨을 쉬어요." data-en="Tactus is a live-coding instrument that opens right in your browser. One line is one track, and every edit is heard on the next bar. If code is not your thing, tap blocks instead; shape synth sounds by hand, plug in a guitar or a mic and use it as an effects box, or conduct with your hands in front of a camera. Nothing to install, and it opens on a phone too. Start the demo and each of the six letters above takes a track and breathes with it.">Tactus는 브라우저에서 바로 여는 라이브 코딩 악기예요. 한 줄이 한 트랙이고, 고치면 다음 마디에 바로 들려요. 코드가 낯설면 블록을 눌러 만들고, 신스 소리를 손으로 빚고, 기타나 마이크를 꽂아 이펙터로 쓰고, 카메라 앞에서 손으로 지휘해요. 설치할 것 없이 폰에서도 열려요. 데모를 틀면 위의 글자 여섯 개가 각자 한 트랙씩 맡아 박자에 맞춰 숨을 쉬어요.</p>
         <div class="ctas">
           <button class="btn key playbtn" id="play" type="button"><i class="ico"></i><span data-ko="데모 듣기" data-en="Play the demo">데모 듣기</span></button>
           <a class="btn ext" href="./play/" data-ko="Tactus 열기" data-en="Open Tactus">Tactus 열기</a>
@@ -400,45 +400,74 @@ html[lang=ko] body { word-break: keep-all; }
     </article>
   </section>
 
+  <section class="verbs more" aria-label="Tactus">
+    <article class="verb">
+      <h2>Tap <span class="ko" data-ko="· 블록으로" data-en="">· 블록으로</span></h2>
+      <p data-ko="같은 곡이 카드로도 보여요. 드럼은 칸을 누르고, 멜로디는 곡의 음계로 된 피아노 롤에 그려요. 코드 진행, 장면, 곡 순서까지 블록으로 바꾸고, 바꾼 것은 그대로 코드에 써져요. 폰에서는 트랙이 한 줄씩 접혀 작은 스텝 시퀀서처럼 보여요." data-en="The same piece also shows as cards. Tap drum steps, draw melodies on a piano roll in the song's scale, and change chords, scenes and the song order as blocks; every change is written back into the code. On a phone the tracks fold into rows that read like a small step sequencer.">같은 곡이 카드로도 보여요. 드럼은 칸을 누르고, 멜로디는 곡의 음계로 된 피아노 롤에 그려요. 코드 진행, 장면, 곡 순서까지 블록으로 바꾸고, 바꾼 것은 그대로 코드에 써져요. 폰에서는 트랙이 한 줄씩 접혀 작은 스텝 시퀀서처럼 보여요.</p>
+      <pre class="snip"><span class="k">kick</span>  x . . . x . . .
+<span class="k">lead</span>  <span class="n">[0 _ 2 _ 4 _ _ 2]</span>
+<span class="k">prog</span>  <span class="n">&lt;0 5 3 4&gt;</span></pre>
+    </article>
+    <article class="verb">
+      <h2>Shape <span class="ko" data-ko="· 소리를 빚어요" data-en="">· 소리를 빚어요</span></h2>
+      <p data-ko="아날로그, 웨이브테이블, FM 신스가 함께 들어 있어요. 유니즌, 필터 여섯 가지, 모음 필터, 엔벨로프와 곡 박자에 맞춘 LFO까지 한 줄로 써요. 엔벨로프와 필터 곡선은 끌어서 바꾸고, 한 음을 들려주면 가장 비슷한 소리를 찾아 줘요." data-en="Analog, wavetable and FM synths are built in: unison, six filter types, a vowel filter, envelopes and LFOs in time with the song, all on one line. Drag the envelope and the filter curve, or play one note and it finds the closest sound.">아날로그, 웨이브테이블, FM 신스가 함께 들어 있어요. 유니즌, 필터 여섯 가지, 모음 필터, 엔벨로프와 곡 박자에 맞춘 LFO까지 한 줄로 써요. 엔벨로프와 필터 곡선은 끌어서 바꾸고, 한 음을 들려주면 가장 비슷한 소리를 찾아 줘요.</p>
+      <pre class="snip"><span class="k">bass</span> <span class="c">|</span> <span class="i">analog</span> voices <span class="n">5</span>
+<span class="k">lead</span> <span class="c">|</span> <span class="i">wt</span> table growl
+<span class="k">keys</span> <span class="c">|</span> <span class="i">fmsynth</span> ratio <span class="n">3.5</span></pre>
+    </article>
+    <article class="verb">
+      <h2>Plug in <span class="ko" data-ko="· 이펙터로" data-en="">· 이펙터로</span></h2>
+      <p data-ko="마이크나 오디오 인터페이스에 꽂은 기타를 실시간으로 처리해요. 게이트, 컴프, 앰프와 캐비닛, 와우, 코러스, 플랜저, 페이저, 트레몰로, 딜레이, 리버브, 옥타버, 곡의 키를 따라가는 하모나이저, 튜너. 미리 보는 처리가 없어 지연을 더하지 않고, 딜레이와 트레몰로는 곡의 박자에 맞아요." data-en="Play a mic, or a guitar through an audio interface, through it live: gate, compressor, amp and cabinet, wah, chorus, flanger, phaser, tremolo, delay, reverb, an octaver, a harmonizer that follows the song's key, and a tuner. Nothing looks ahead, so it adds no delay, and the delay and tremolo lock to the song's beat.">마이크나 오디오 인터페이스에 꽂은 기타를 실시간으로 처리해요. 게이트, 컴프, 앰프와 캐비닛, 와우, 코러스, 플랜저, 페이저, 트레몰로, 딜레이, 리버브, 옥타버, 곡의 키를 따라가는 하모나이저, 튜너. 미리 보는 처리가 없어 지연을 더하지 않고, 딜레이와 트레몰로는 곡의 박자에 맞아요.</p>
+      <pre class="snip"><span class="k">input</span> <span class="c">|</span> drive <span class="n">.45</span> amp <span class="i">crunch</span>
+  delay <span class="n">.3 3/16</span> <span class="i">pingpong</span>
+  harm <span class="n">2 .5</span> verb <span class="n">.3</span></pre>
+    </article>
+    <article class="verb">
+      <h2>Sing <span class="ko" data-ko="· 목소리로" data-en="">· 목소리로</span></h2>
+      <p data-ko="“둠 츠 칙 츠” 비트박스는 kick, snare, hat 줄이 되고, 흥얼거린 멜로디는 곡의 키에 맞춘 음표가 돼요. 루프 스테이션은 마디에 맞춰 녹음하고, 왕복 지연은 스스로 재서 맞춰요." data-en="Beatbox “boom ts chik ts” and it becomes kick, snare and hat lines; hum a tune and it becomes notes in the song's key. The loop station records in time with the bar and measures its own round-trip delay.">“둠 츠 칙 츠” 비트박스는 kick, snare, hat 줄이 되고, 흥얼거린 멜로디는 곡의 키에 맞춘 음표가 돼요. 루프 스테이션은 마디에 맞춰 녹음하고, 왕복 지연은 스스로 재서 맞춰요.</p>
+      <pre class="snip"><span class="k">kick</span>  x . . . x . x .
+<span class="k">snare</span> . . x . . . x .
+<span class="k">hum</span>   <span class="n">a4 _ c5 . e5 _ d5 .</span></pre>
+    </article>
+  </section>
+
   <section class="facts" aria-label="Facts">
     <div class="fact"><b>30</b><span data-ko="CC0 녹음 악기. 피아노는 세기별 3단 레이어" data-en="CC0 sampled instruments, piano in three velocity layers">CC0 녹음 악기. 피아노는 세기별 3단 레이어</span></div>
     <div class="fact"><b>39</b><span data-ko="예제 곡. 트랜스부터 굿거리, 바흐, 8비트 게임 음악까지" data-en="example songs, from trance to gutgeori, Bach and 8-bit game music">예제 곡. 트랜스부터 굿거리, 바흐, 8비트 게임 음악까지</span></div>
-    <div class="fact"><b>8</b><span data-ko="자동 작곡 스타일" data-en="composing styles">자동 작곡 스타일</span></div>
+    <div class="fact"><b>3</b><span data-ko="신스 엔진: 아날로그, 웨이브테이블, FM" data-en="synth engines: analog, wavetable, FM">신스 엔진: 아날로그, 웨이브테이블, FM</span></div>
     <div class="fact"><b>16</b><span data-ko="연주 패드, 모두 코드로 수정" data-en="performance pads, all editable as code">연주 패드, 모두 코드로 수정</span></div>
-    <div class="fact"><b>4</b><span data-ko="루프 슬롯, 지연 자동 보정" data-en="loop slots with automatic latency calibration">루프 슬롯, 지연 자동 보정</span></div>
+    <div class="fact"><b>14</b><span data-ko="이펙터 페달. 지연은 하나도 더하지 않아요" data-en="effect pedals that add no delay">이펙터 페달. 지연은 하나도 더하지 않아요</span></div>
     <div class="fact"><b>0</b><span data-ko="설치할 것. 브라우저 하나면 돼요" data-en="things to install. A browser is enough">설치할 것. 브라우저 하나면 돼요</span></div>
   </section>
 
   <section class="built" id="built">
     <div>
-      <h2 data-ko="대화 하나로, 라이브로 만든 악기" data-en="An instrument built live, in one conversation">대화 하나로, 라이브로 만든 악기</h2>
-      <p data-ko="얼마 전 ArtCraft 프로젝트는 Claude Code 에이전트로 Photoshop, Premiere, Lightroom 같은 Adobe 앱을 Rust로 다시 만들었어요. PhotoCraft는 wgpu로 GPU에서 그림을 그려요. Tactus는 같은 질문을 오디오에 던져 봤어요. 한 순간도 박을 놓치면 안 되는 음악 소프트웨어도 에이전트와 대화하며 만들 수 있을까요?" data-en="ArtCraft recently rebuilt Adobe apps like Photoshop, Premiere and Lightroom in Rust with Claude Code agents, and PhotoCraft draws on the GPU through wgpu. Tactus asks the same question of audio: can music software, which can never miss a beat, be built by talking with an agent?">얼마 전 ArtCraft 프로젝트는 Claude Code 에이전트로 Photoshop, Premiere, Lightroom 같은 Adobe 앱을 Rust로 다시 만들었어요. PhotoCraft는 wgpu로 GPU에서 그림을 그려요. Tactus는 같은 질문을 오디오에 던져 봤어요. 한 순간도 박을 놓치면 안 되는 음악 소프트웨어도 에이전트와 대화하며 만들 수 있을까요?</p>
-      <p data-ko="Strudel의 불편함을 분석하는 데서 시작해 스물다섯 번 남짓한 요청으로 지금 모습이 됐어요. 사람은 원하는 것을 말하고 귀로 판단했고, Claude가 설계와 구현을 하고 헤드리스 브라우저에서 곡을 렌더링해 음량과 스펙트럼을 재며 A/B를 비교했어요. 결과물은 약 5,200줄의 JavaScript와 HTML, 그리고 오디오 스레드를 맡은 Rust 코드예요." data-en="It started from a critique of Strudel and reached this shape in about twenty-five requests. A person said what they wanted and judged by ear; Claude designed and wrote the code, rendered songs in a headless browser and measured loudness and spectrum for A/B comparisons. The result is about 5,200 lines of JavaScript and HTML, plus the Rust code that runs on the audio thread.">Strudel의 불편함을 분석하는 데서 시작해 스물다섯 번 남짓한 요청으로 지금 모습이 됐어요. 사람은 원하는 것을 말하고 귀로 판단했고, Claude가 설계와 구현을 하고 헤드리스 브라우저에서 곡을 렌더링해 음량과 스펙트럼을 재며 A/B를 비교했어요. 결과물은 약 5,200줄의 JavaScript와 HTML이에요.</p>
-      <p><a href="https://www.phoronix.com/news/Photocraft-Filmcraft-AI" target="_blank" rel="noopener" data-ko="ArtCraft 소개 기사 (Phoronix)" data-en="ArtCraft coverage (Phoronix)">ArtCraft 소개 기사 (Phoronix)</a></p>
+      <h2 data-ko="박을 놓치지 않게, 오디오 스레드는 Rust로" data-en="Rust on the audio thread, so it never drops a beat">박을 놓치지 않게, 오디오 스레드는 Rust로</h2>
+      <p data-ko="악기에서 가장 중요한 건 박이에요. Tactus는 120ms 앞을 내다보며 음을 예약하고, 소리를 만드는 보이스와 라이브 이펙터는 할당이 전혀 없는 no_std Rust로 써서 WebAssembly로 AudioWorklet 안에서 돌려요. 오디오 스레드에서 가비지 컬렉션이 일어나지 않아요." data-en="An instrument lives or dies by its timing. Tactus schedules notes 120 ms ahead, and the voices and the live effects are written in no_std Rust that never allocates, running as WebAssembly inside the AudioWorklet, so the audio thread never waits on garbage collection.">악기에서 가장 중요한 건 박이에요. Tactus는 120ms 앞을 내다보며 음을 예약하고, 소리를 만드는 보이스와 라이브 이펙터는 할당이 전혀 없는 no_std Rust로 써서 WebAssembly로 AudioWorklet 안에서 돌려요. 오디오 스레드에서 가비지 컬렉션이 일어나지 않아요.</p>
+      <p data-ko="WebAssembly를 쓸 수 없는 곳에서는 같은 계산을 하는 JavaScript가 대신 돌아요. 두 쪽은 샘플 단위로 맞춰 두었고, 신스 엔진과 이펙터는 출력이 똑같아요." data-en="Where WebAssembly is unavailable, JavaScript doing the same arithmetic takes over. The two are kept sample for sample: the synth engine and the effects produce identical output.">WebAssembly를 쓸 수 없는 곳에서는 같은 계산을 하는 JavaScript가 대신 돌아요. 두 쪽은 샘플 단위로 맞춰 두었고, 신스 엔진과 이펙터는 출력이 똑같아요.</p>
       <div class="next">
-        <p data-ko="Rust로 옮긴 부분: 현을 튕기는 Karplus-Strong 16음과 303 애시드 보이스를 Rust로 다시 써서, 11.6KB짜리 WebAssembly로 AudioWorklet 안에서 돌려요. 할당이 전혀 없는 no_std 코드라 오디오 스레드에서 가비지 컬렉션이 일어나지 않아요. 같은 부하에서 이전 JavaScript 보이스보다 약 1.6배 빠르고, 애시드 출력은 JS 버전과 피크의 0.2% 안에서 같아요." data-en="What moved to Rust: the 16-voice Karplus-Strong strings and the 303 acid voice, rewritten in Rust and running as an 11.6 KB WebAssembly module inside the AudioWorklet. It is no_std code that never allocates, so the audio thread never waits on garbage collection. On the same load it runs about 1.6× faster than the previous JavaScript voices, and the acid output matches the JS version within 0.2% of peak.">Rust로 옮긴 부분: 현을 튕기는 Karplus-Strong 16음과 303 애시드 보이스를 Rust로 다시 써서, 11.6KB짜리 WebAssembly로 AudioWorklet 안에서 돌려요. 할당이 전혀 없는 no_std 코드라 오디오 스레드에서 가비지 컬렉션이 일어나지 않아요. 같은 부하에서 이전 JavaScript 보이스보다 약 1.6배 빠르고, 애시드 출력은 JS 버전과 피크의 0.2% 안에서 같아요.</p>
-        <div class="bench" role="img" aria-label="JavaScript 30x realtime, Rust WebAssembly 47x realtime">
-          <div class="br"><span>JavaScript</span><i style="--w:63.8%"></i><b>30×</b></div>
-          <div class="br rust"><span>Rust → WASM</span><i style="--w:100%"></i><b>47×</b></div>
+        <p data-ko="현 16음, 애시드 라인, 모노 베이스, 신스 엔진 화음을 함께 30초 렌더링하면 Rust가 JavaScript보다 약 1.85배 빨라요. 모든 이펙터를 동시에 켠 라이브 체인은 실시간의 약 15배 속도로 돌아요." data-en="Rendering 16 strings, an acid line, a mono bass and synth-engine chords together for 30 seconds, Rust is about 1.85× faster than JavaScript. The live chain with every effect on at once runs at about 15× realtime.">현 16음, 애시드 라인, 모노 베이스, 신스 엔진 화음을 함께 30초 렌더링하면 Rust가 JavaScript보다 약 1.85배 빨라요. 모든 이펙터를 동시에 켠 라이브 체인은 실시간의 약 15배 속도로 돌아요.</p>
+        <div class="bench" role="img" aria-label="JavaScript 13x realtime, Rust WebAssembly 25x realtime">
+          <div class="br"><span>JavaScript</span><i style="--w:52%"></i><b>13×</b></div>
+          <div class="br rust"><span>Rust → WASM</span><i style="--w:100%"></i><b>25×</b></div>
         </div>
-        <small data-ko="실시간 대비 처리 속도. 현 16음과 16분음표 애시드 라인 30초를 128샘플 블록으로 렌더링 (Node 22, 3회 중 최고)." data-en="Speed relative to realtime: 16 strings and a 16th-note acid line, 30 s rendered in 128-sample blocks (Node 22, best of three).">실시간 대비 처리 속도. 현 16음과 16분음표 애시드 라인 30초를 128샘플 블록으로 렌더링 (Node 22, 3회 중 최고).</small>
+        <small data-ko="실시간 대비 처리 속도. 128샘플 블록, 48kHz, Node 22." data-en="Speed relative to realtime, 128-sample blocks at 48 kHz, Node 22.">실시간 대비 처리 속도. 128샘플 블록, 48kHz, Node 22.</small>
         <a href="https://github.com/nakosung/tactus/tree/main/dsp" target="_blank" rel="noopener" data-ko="Rust 소스와 벤치마크 보기" data-en="Rust source and benchmark">Rust 소스와 벤치마크 보기</a>
       </div>
     </div>
-    <ol class="steps">
-        <li><b data-ko="엔진" data-en="Engine">엔진</b><span data-ko="Strudel의 불편함을 분석하고, 한 줄이 한 트랙인 문법과 마디 단위 반영을 만들었어요" data-en="Took apart Strudel's pain points, then built a one-line-per-track language with bar-quantized edits">Strudel의 불편함을 분석하고, 한 줄이 한 트랙인 문법과 마디 단위 반영을 만들었어요</span></li>
-        <li><b data-ko="루프 스테이션" data-en="Loop station">루프 스테이션</b><span data-ko="녹음, 소리를 끄고 녹음하는 스피커 모드, 지연 자동 보정" data-en="Recording, a speaker mode that mutes while recording, automatic latency calibration">녹음, 소리를 끄고 녹음하는 스피커 모드, 지연 자동 보정</span></li>
-        <li><b data-ko="곡 구조" data-en="Song structure">곡 구조</b><span data-ko="씬과 곡 구성, maj7 같은 코드 이름과 스케일" data-en="Scenes and arrangements, chord names like maj7, scales">씬과 곡 구성, maj7 같은 코드 이름과 스케일</span></li>
-        <li><b data-ko="손 컨트롤" data-en="Hand control">손 컨트롤</b><span data-ko="카메라로 두 손을 따라가 노브와 제스처를 조작" data-en="The camera follows both hands to turn knobs and fire gestures">카메라로 두 손을 따라가 노브와 제스처를 조작</span></li>
-        <li><b data-ko="편집기" data-en="Editor">편집기</b><span data-ko="자동 완성, 곡 위치 추적, 피아노 롤과 시각화" data-en="Autocomplete, live song position, piano roll and visualizations">자동 완성, 곡 위치 추적, 피아노 롤과 시각화</span></li>
-        <li><b data-ko="소리" data-en="Sound">소리</b><span data-ko="AudioWorklet 신스, 홀 리버브, CC0 녹음 악기 30종" data-en="AudioWorklet synths, a hall reverb, 30 CC0 sampled instruments">AudioWorklet 신스, 홀 리버브, CC0 녹음 악기 30종</span></li>
-        <li><b data-ko="음악성" data-en="Musicianship">음악성</b><span data-ko="보이스 리딩, 필인과 전환, 드럼 버스, 폴리미터, 세기별 샘플" data-en="Voice leading, fills and transitions, a drum bus, polymeter, velocity layers">보이스 리딩, 필인과 전환, 드럼 버스, 폴리미터, 세기별 샘플</span></li>
-        <li><b data-ko="연주와 작곡" data-en="Perform and compose">연주와 작곡</b><span data-ko="패드를 코드로, 시드 생성기와 자동 작곡, 새 디자인" data-en="Pads as code, seeded generators and one-click composing, a new design">패드를 코드로, 시드 생성기와 자동 작곡, 새 디자인</span></li>
-        <li><b data-ko="이름과 이 페이지" data-en="A name and this page">이름과 이 페이지</b><span data-ko="Tactus라는 이름과 지금 보고 있는 소개 페이지" data-en="The name Tactus and the page you are reading">Tactus라는 이름과 지금 보고 있는 소개 페이지</span></li>
-        <li><b data-ko="Rust DSP" data-en="Rust DSP">Rust DSP</b><span data-ko="오디오 스레드의 보이스를 Rust로 옮겨 WebAssembly로 실행" data-en="The audio-thread voices rewritten in Rust and run as WebAssembly">오디오 스레드의 보이스를 Rust로 옮겨 WebAssembly로 실행</span></li>
-        <li><b data-ko="WebGPU" data-en="WebGPU">WebGPU</b><span data-ko="사인파 수천 개 악기, 모달 리버브, 파동 방정식 북, 신경망 색소폰, 셰이더 라이브 코딩" data-en="Instruments of thousands of sines, modal reverb, a wave-equation drum, a neural sax, live-coded shaders">사인파 수천 개 악기, 모달 리버브, 파동 방정식 북, 신경망 색소폰, 셰이더 라이브 코딩</span></li>
+    <ul class="steps">
+        <li><b data-ko="언어" data-en="Language">언어</b><span data-ko="한 줄이 한 트랙, 마디 단위 반영, 씬과 곡 구성, maj7 같은 코드 이름과 스케일, 패턴과 LFO로 움직이는 값" data-en="One line per track, edits on the bar, scenes and arrangements, chord names like maj7 and scales, values that move with patterns and LFOs">한 줄이 한 트랙, 마디 단위 반영, 씬과 곡 구성, maj7 같은 코드 이름과 스케일, 패턴과 LFO로 움직이는 값</span></li>
+        <li><b data-ko="블록 보기" data-en="Block view">블록 보기</b><span data-ko="드럼 스텝, 음계 피아노 롤, 세기 레인, 코드 진행, 장면과 곡 순서, 이펙터 보드" data-en="Drum steps, a piano roll in the scale, a velocity lane, chord progressions, scenes and song order, an effects board">드럼 스텝, 음계 피아노 롤, 세기 레인, 코드 진행, 장면과 곡 순서, 이펙터 보드</span></li>
+        <li><b data-ko="신스" data-en="Synths">신스</b><span data-ko="아날로그·웨이브테이블·FM 엔진, 애시드와 모노 베이스, 튕기는 현, CC0 녹음 악기 30종" data-en="Analog, wavetable and FM engines, acid and mono bass, plucked strings, 30 CC0 sampled instruments">아날로그·웨이브테이블·FM 엔진, 애시드와 모노 베이스, 튕기는 현, CC0 녹음 악기 30종</span></li>
+        <li><b data-ko="소리 따라 만들기" data-en="Sound match">소리 따라 만들기</b><span data-ko="한 음을 들려주면 웨이브테이블 프레임, 필터, 엔벨로프를 찾아 한 줄로 써 줘요" data-en="Play one note and it finds the wavetable frame, filter and envelopes, written as one line">한 음을 들려주면 웨이브테이블 프레임, 필터, 엔벨로프를 찾아 한 줄로 써 줘요</span></li>
+        <li><b data-ko="라이브 이펙터" data-en="Live effects">라이브 이펙터</b><span data-ko="앰프·모듈레이션·공간계·피치 페달 14개, 튜너, 기기의 지연 측정" data-en="Fourteen amp, modulation, space and pitch pedals, a tuner, and a delay meter for your device">앰프·모듈레이션·공간계·피치 페달 14개, 튜너, 기기의 지연 측정</span></li>
+        <li><b data-ko="연주" data-en="Performance">연주</b><span data-ko="DJ 동작 패드 16개(모두 코드로 고침), 매크로 노브, 카메라로 손 지휘" data-en="Sixteen DJ-move pads (all editable as code), macro knobs, conducting with your hands on camera">DJ 동작 패드 16개(모두 코드로 고침), 매크로 노브, 카메라로 손 지휘</span></li>
+        <li><b data-ko="작곡" data-en="Composing">작곡</b><span data-ko="스타일과 시드로 코드 진행·비트·베이스·멜로디를 한 번에, 보이스 리딩과 필인" data-en="A style and a seed write chords, beat, bass and melody at once, with voice leading and fills">스타일과 시드로 코드 진행·비트·베이스·멜로디를 한 번에, 보이스 리딩과 필인</span></li>
+        <li><b data-ko="녹음" data-en="Recording">녹음</b><span data-ko="루프 스테이션, 비트박스와 허밍을 코드로, 지연 자동 보정" data-en="A loop station, beatbox and humming turned into code, automatic latency calibration">루프 스테이션, 비트박스와 허밍을 코드로, 지연 자동 보정</span></li>
         <li><b data-ko="믹스" data-en="Mix">믹스</b><span data-ko="버스와 센드, 트랙마다 EQ·코러스·페이저·디스토션·컴프레서, 마스터 체인까지 코드로" data-en="Buses and sends, EQ, chorus, phaser, distortion and compression on every track, and the master chain, all in code">버스와 센드, 트랙마다 EQ·코러스·페이저·디스토션·컴프레서, 마스터 체인까지 코드로</span></li>
-    </ol>
+        <li><b data-ko="WebGPU" data-en="WebGPU">WebGPU</b><span data-ko="사인파 수천 개 악기, 모달 리버브, 파동 방정식 북, 신경망 색소폰, 셰이더 라이브 코딩" data-en="Instruments of thousands of sines, modal reverb, a wave-equation drum, a neural sax, live-coded shaders">사인파 수천 개 악기, 모달 리버브, 파동 방정식 북, 신경망 색소폰, 셰이더 라이브 코딩</span></li>
+        <li><b data-ko="어디서나" data-en="Anywhere">어디서나</b><span data-ko="폰에서는 모듈 하나씩 크게, 앱으로 설치, 오프라인에서도, 곡은 링크 하나로 공유" data-en="One module at a time on a phone, installable as an app, works offline, songs shared as a link">폰에서는 모듈 하나씩 크게, 앱으로 설치, 오프라인에서도, 곡은 링크 하나로 공유</span></li>
+    </ul>
   </section>
 
   <section class="gpu" id="gpu">
@@ -558,6 +587,13 @@ const I18N = {
     inputFmt: 'input 줄에서 "{w}"는 알 수 없어요. 쓸 수 있는 이펙터: {list}', inputMany: '{k} 뒤에는 숫자를 {n}개까지 써요',
     lvNoCode: '이펙터 없음. 아래에서 하나를 고르거나 코드에 input | … 줄을 쓰세요.', lvBypass: '끄기', lvPatches: '준비된 소리', lvp_clean: '맑게', lvp_crunch: '크런치', lvp_lead: '리드', lvp_fuzz: '퍼즈', lvp_wah: '와우', lvp_space: '공간', lvp_vocal: '보컬', lvp_octave: '옥타브', lvp_harmony: '화음(키 따라)',
     h64d: '라이브 입력(녹음 탭)의 이펙터: gate 문턱dB · comp 양 · wah 양 [주기] · drive 양 · amp clean/crunch/lead/fuzz · low/mid/high dB · cab on/off · chorus/flanger/phaser 양 [주기] · trem 양 [주기] · delay 양 [시간] [되먹임] [pingpong/tape] · verb 양 [크기] · pitch 반음 [양] · oct 양 · harm 음계칸 [양] · level dB. 주기와 시간은 곡의 마디 단위(3/16 = 16분음표 3개)',
+    pdTitle: '이펙터 보드 (라이브 입력)', pdHint: '녹음 탭에서 입력을 켜면 마이크나 악기 소리가 이 순서대로 지나가요. 손잡이를 돌리면 코드의 input 줄이 바뀌어요. 페달 아래 발판을 누르면 잠깐 꺼요.', pdNone: '이 곡에는 이펙터 보드가 없어요.', pdNew: '+ 이펙터 보드 만들기', pdAdd: '+ 페달', pdDel: '빼기', pdBypassOne: '잠깐 끄기', pdOff: '꺼짐 · 발판을 누르면 다시 켜요', pdOn: '다시 켜기', pdIn: '입력', pdOut: '출력',
+    pd_gate: '게이트', pd_comp: '컴프레서', pd_pitch: '피치', pd_oct: '옥타브', pd_harm: '화음', pd_wah: '와우', pd_amp: '앰프', pd_chorus: '코러스', pd_flanger: '플랜저', pd_phaser: '페이저', pd_trem: '트레몰로', pd_delay: '딜레이', pd_verb: '리버브', pd_level: '볼륨',
+    pdc_thr: '문턱', pdc_amt: '양', pdc_mix: '섞기', pdc_semi: '반음', pdc_steps: '음정', pdc_rate: '주기', pdc_drive: '드라이브', pdc_low: '저음', pdc_mid: '중음', pdc_high: '고음', pdc_cab: '캐비닛', pdc_time: '시간', pdc_fb: '반복', pdc_size: '크기', pdc_level: '크기',
+    pdw_clean: '맑게', pdw_crunch: '크런치', pdw_lead: '리드', pdw_fuzz: '퍼즈', pdw_on: '캐비닛', pdw_off: '없이', pdw_normal: '보통', pdw_pingpong: '핑퐁', pdw_tape: '테이프',
+    pdt_1_16: '16분', pdt_1_8: '8분', pdt_3_16: '점8분', pdt_1_4: '4분', pdt_3_8: '점4분', pdt_1_2: '2분', pdt_3_4: '점2분', pdBars: '{n}마디', pdHarmUp: '{n}도 위', pdHarmDown: '{n}도 아래', pdWahLevel: '소리 따라',
+    lvDemo: '데모 기타로 듣기', lvDemoStop: '데모 끄기', lvDemoOn: '데모 기타 소리가 이펙터를 지나가요. 준비된 소리나 페달을 바꿔 보세요.',
+    pdEmpty: '페달 없음', pdOpen: '블록 보기에서 손잡이 돌리기',
     vxTitle: '목소리로 쓰기', vxIntro: '"둠 츠 칙 츠" 비트박스나 흥얼거린 멜로디를 마디에 맞춰 녹음하면 코드 줄로 바꿔요. 한 마디 동안 박자 소리로 준비를 세고 시작해요. 스피커로 들을 때는 녹음하는 동안 음악을 잠시 끄고 박자 소리만 들려줘요.', vxBeat: '비트박스', vxHum: '허밍', vxModeLbl: '무엇을 녹음할지', vxBarsLbl: '마디', vxRec: '녹음', vxCancel: '녹음 취소', vxCount: '{m} 준비… 박자에 맞춰 들어오세요', vxRecBanner: '{m} 녹음 {bar}/{bars}마디', vxBusy: '루프 녹음이 끝난 뒤에 해 주세요.', vxQuiet: '소리가 거의 들리지 않았어요. 마이크에 조금 더 가까이 대고 다시 해 보세요.', vxNothing: '알아들을 만한 소리를 찾지 못했어요. 조금 더 또렷하게 해 보세요.', vxBeatDone: '{n}번 친 소리를 찾았어요. 낮은 소리는 kick, 중간은 snare, 높고 짧은 소리는 hat이에요.', vxHumDone: '{k} 음계에 맞췄어요.', vxShift: '{n}옥타브 올렸어요.', vxInsert: '코드에 넣기', vxUndo: '되돌리기', vxInserted: '넣었어요. 다음 마디부터 들려요.', vxUndone: '넣기 전으로 돌렸어요.',
     share: '공유', shareTitle: '이 곡을 링크나 녹음으로 보내요', shareTitle2: '이 곡 공유하기', shareLink: '링크로 보내기', shareLinkD: '코드 전체가 링크 안에 들어가요. 받는 사람이 열면 이 곡이 그대로 열리고, 고쳐서 다시 보낼 수도 있어요.', shareSend: '보내기…', shareCopy: '링크 복사', shareCopied: '링크를 복사했어요', shareChars: '자', shareAudio: '소리로 보내기', shareAudioD: '다음 마디부터 연주를 그대로 녹음해 오디오 파일로 만들어요. 멈춰 있으면 처음부터 틀면서 녹음해요.', shareB4: '4마디', shareB8: '8마디', shareB16: '16마디', shareWhole: '곡 전체', shareStop: '녹음 끝내기', shareWaiting: '다음 마디에서 녹음을 시작해요…', shareRecording: '녹음 중 {a}/{b}마디', shareReady: '{s}초 녹음했어요 ({kb} KB)', shareSendFile: '파일 보내기…', shareSave: '저장', shareSaved: '{n} 파일로 저장했어요', shareHint: '휴대폰에서 "보내기"를 누르면 공유 창이 열려 카카오톡, 메시지, 메일 등으로 바로 보낼 수 있어요.', shareNoRec: '이 브라우저는 녹음을 지원하지 않아요.', shareText: 'Tactus로 만든 곡: {n}', shareMine: '내 곡', shareOpened: '공유받은 곡을 열었어요. 원래 코드는 보관해 뒀어요.', shareUndo: '내 코드로 되돌리기', shareBad: '링크가 잘려서 곡을 열 수 없어요. 링크 전체를 받았는지 확인해 주세요.',
     install: '앱으로 설치', installTitle: 'Tactus를 앱으로 설치해 바탕화면이나 홈 화면에서 바로 열어요', installDone: '설치했어요. 이제 앱 목록이나 홈 화면에서 Tactus를 열 수 있어요.', installIos: 'Safari 아래쪽의 공유 버튼을 누르고 "홈 화면에 추가"를 고르세요.', installMenu: '브라우저 메뉴(⋮)에서 "앱 설치" 또는 "홈 화면에 추가"를 고르세요.',
@@ -795,6 +831,13 @@ const I18N = {
     inputFmt: 'The input line does not know "{w}". Effects: {list}', inputMany: '{k} takes up to {n} numbers',
     lvNoCode: 'No effects. Pick one below, or write an input | … line in the code.', lvBypass: 'Bypass', lvPatches: 'Ready-made sounds', lvp_clean: 'Clean', lvp_crunch: 'Crunch', lvp_lead: 'Lead', lvp_fuzz: 'Fuzz', lvp_wah: 'Wah', lvp_space: 'Space', lvp_vocal: 'Vocal', lvp_octave: 'Octave', lvp_harmony: 'Harmony (in key)',
     h64d: 'Live input effects (Record tab): gate threshold dB · comp amount · wah amount [period] · drive amount · amp clean/crunch/lead/fuzz · low/mid/high dB · cab on/off · chorus/flanger/phaser amount [period] · trem amount [period] · delay amount [time] [feedback] [pingpong/tape] · verb amount [size] · pitch semitones [amount] · oct amount · harm scale steps [amount] · level dB. Periods and times are in bars of the song (3/16 = three sixteenths)',
+    pdTitle: 'Effects board (live input)', pdHint: 'Turn the input on in the Record tab and the mic or instrument goes through these, in this order. Turning a knob changes the input line in the code. The footswitch under a pedal bypasses it.', pdNone: 'This piece has no effects board.', pdNew: '+ Make an effects board', pdAdd: '+ Pedal', pdDel: 'Remove', pdBypassOne: 'Bypass', pdOff: 'Bypassed · press the footswitch to bring it back', pdOn: 'Turn back on', pdIn: 'in', pdOut: 'out',
+    pd_gate: 'Gate', pd_comp: 'Compressor', pd_pitch: 'Pitch', pd_oct: 'Octave', pd_harm: 'Harmony', pd_wah: 'Wah', pd_amp: 'Amp', pd_chorus: 'Chorus', pd_flanger: 'Flanger', pd_phaser: 'Phaser', pd_trem: 'Tremolo', pd_delay: 'Delay', pd_verb: 'Reverb', pd_level: 'Volume',
+    pdc_thr: 'threshold', pdc_amt: 'amount', pdc_mix: 'mix', pdc_semi: 'semitones', pdc_steps: 'interval', pdc_rate: 'rate', pdc_drive: 'drive', pdc_low: 'low', pdc_mid: 'mid', pdc_high: 'high', pdc_cab: 'cabinet', pdc_time: 'time', pdc_fb: 'repeats', pdc_size: 'size', pdc_level: 'level',
+    pdw_clean: 'Clean', pdw_crunch: 'Crunch', pdw_lead: 'Lead', pdw_fuzz: 'Fuzz', pdw_on: 'Cabinet', pdw_off: 'None', pdw_normal: 'Normal', pdw_pingpong: 'Ping-pong', pdw_tape: 'Tape',
+    pdt_1_16: '1/16', pdt_1_8: '1/8', pdt_3_16: 'dotted 1/8', pdt_1_4: '1/4', pdt_3_8: 'dotted 1/4', pdt_1_2: '1/2', pdt_3_4: 'dotted 1/2', pdBars: '{n} bar(s)', pdHarmUp: 'a {o} up', pdHarmDown: 'a {o} down', pdWahLevel: 'by level',
+    lvDemo: 'Hear it on a demo guitar', lvDemoStop: 'Stop the demo', lvDemoOn: 'A demo guitar is going through the effects. Try the ready-made sounds or change the pedals.',
+    pdEmpty: 'No pedals', pdOpen: 'Turn the knobs in the block view',
     vxTitle: 'Sing it in', vxIntro: 'Beatbox ("boom ts chik ts") or hum a tune in time with the bar and it becomes code. A bar of clicks counts you in. On speakers the music is muted while you record, and only the clicks play.', vxBeat: 'Beatbox', vxHum: 'Hum', vxModeLbl: 'What to record', vxBarsLbl: 'bars', vxRec: 'Record', vxCancel: 'Cancel', vxCount: '{m}: get ready… come in on the beat', vxRecBanner: '{m}: recording bar {bar} of {bars}', vxBusy: 'Wait until the loop recording is done.', vxQuiet: 'Almost nothing came through. Get a little closer to the mic and try again.', vxNothing: 'Nothing clear enough was heard. Try again a little more crisply.', vxBeatDone: 'Found {n} hits. Low sounds became kick, middle ones snare, high short ones hat.', vxHumDone: 'Fitted to {k}.', vxShift: 'Moved up {n} octave(s).', vxInsert: 'Put in the code', vxUndo: 'Undo', vxInserted: 'Added. You will hear it from the next bar.', vxUndone: 'Back to how it was.',
     share: 'Share', shareTitle: 'Send this song as a link or a recording', shareTitle2: 'Share this song', shareLink: 'Send a link', shareLinkD: 'The whole code goes inside the link. Whoever opens it gets this song as it is, and can change it and send it back.', shareSend: 'Send…', shareCopy: 'Copy link', shareCopied: 'Link copied', shareChars: ' characters', shareAudio: 'Send the sound', shareAudioD: 'Records the music from the next bar into an audio file. If it is stopped, it starts playing from the top.', shareB4: '4 bars', shareB8: '8 bars', shareB16: '16 bars', shareWhole: 'Whole song', shareStop: 'Stop recording', shareWaiting: 'Recording starts on the next bar…', shareRecording: 'Recording bar {a} of {b}', shareReady: 'Recorded {s} s ({kb} KB)', shareSendFile: 'Send file…', shareSave: 'Save', shareSaved: 'Saved as {n}', shareHint: 'On a phone, Send opens the share sheet, so it goes straight to KakaoTalk, Messages, mail and the rest.', shareNoRec: 'This browser cannot record.', shareText: 'A song made in Tactus: {n}', shareMine: 'my song', shareOpened: 'Opened a shared song. Your own code is kept.', shareUndo: 'Back to my code', shareBad: 'This link is cut short, so the song cannot open. Check that the whole link came through.',
     install: 'Install app', installTitle: 'Install Tactus as an app and open it from your desktop or home screen', installDone: 'Installed. Open Tactus from your apps or home screen.', installIos: 'Tap Share at the bottom of Safari, then choose "Add to Home Screen".', installMenu: 'Open the browser menu (⋮) and choose "Install app" or "Add to Home screen".',

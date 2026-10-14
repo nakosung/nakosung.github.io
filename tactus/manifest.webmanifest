@@ -3,7 +3,7 @@
  "short_name": "Tactus",
  "lang": "ko",
  "dir": "ltr",
- "description": "코드로 연주하는 라이브 코딩 악기. A live-coding music instrument.",
+ "description": "코드와 블록으로 연주하는 브라우저 악기: 신스, 이펙터, 루프까지. A live-coding instrument in the browser, with synths, live effects and loops.",
  "id": "./play/",
  "start_url": "./play/",
  "scope": "./",
