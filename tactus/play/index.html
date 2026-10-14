@@ -636,6 +636,22 @@ body.recording .editor { border-color: var(--c-err); }
 .bk-more:hover { color: var(--fg); border-color: var(--fg); }
 /* ---- voice to code ---- */
 .vxbox { display: grid; gap: 8px; }
+.lvbox { padding-bottom: 12px; border-bottom: 1px dashed var(--line); }
+.lvdev { flex: 1 1 160px; min-width: 0; font: inherit; font-size: 12.5px; padding: 6px 8px; border-radius: var(--r-s); border: 1px solid var(--line); background: var(--raised); color: var(--fg); }
+.vxrec.lvon::before { background: var(--k-green); }
+.vxrec.lvon.on { background: var(--k-green); border-color: var(--k-green); color: var(--on-key); }
+.vxrec.lvon.on::before { background: var(--on-key); border-radius: 2px; }
+.lvgain { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+.lvgain input { flex: 1; accent-color: var(--k-green); }
+.lvgain code, .lvlat code { font: 11px/1 var(--f-code); color: var(--dim); min-width: 6ch; text-align: right; }
+.lvmeters { display: grid; grid-template-columns: auto 1fr; align-items: center; gap: 4px 8px; font-size: 11px; color: var(--dim); }
+.lvm { height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--fg) 10%, transparent); overflow: hidden; }
+.lvm i { display: block; height: 100%; background: var(--k-green); transform-origin: left; transform: scaleX(0); }
+.lvm.hot i { background: var(--k-pink); }
+.lvlat { display: grid; gap: 4px; font-size: 12.5px; }
+.lvlat #lvMeas b { font-family: var(--f-code); font-size: 15px; }
+.lvlat #lvMeas span { color: var(--dim); }
+
 .smbox { margin-bottom: 14px; padding-bottom: 12px; border-bottom: 1px dashed var(--line); }
 .smbox.drop { outline: 2px dashed var(--k-blue); outline-offset: 4px; border-radius: var(--r-m); }
 .smfile { cursor: pointer; }
@@ -932,7 +948,7 @@ body.mob.mland .pad { min-height: 60px; }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.14 03:37<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.14 10:24<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -1043,6 +1059,22 @@ body.mob.mland .pad { min-height: 60px; }
             <button class="calbtn" id="calClap" data-i18n="calClap" data-i18n-title="calClapTitle"></button>
             <span class="calinfo" id="calInfo"></span>
           </div>
+        </div>
+        <div class="vxbox lvbox" id="lvBox">
+          <h2 class="sec-h"><span data-i18n="lvTitle"></span></h2>
+          <p class="note" data-i18n="lvIntro"></p>
+          <div class="vxrow">
+            <select class="lvdev" id="lvDev" data-i18n-aria="lvDev"><option value="" data-i18n="lvDevDefault"></option></select>
+            <span class="seg" id="lvCh" role="group" data-i18n-aria="lvCh"><button data-ch="0">L+R</button><button data-ch="1">1</button><button data-ch="2">2</button></span>
+            <button class="btn vxrec lvon" id="lvOn" aria-pressed="false"></button>
+          </div>
+          <label class="lvgain"><span data-i18n="lvGain"></span><input type="range" id="lvGain" min="0" max="4" step="0.01"><code id="lvGainV"></code></label>
+          <div class="lvmeters" aria-hidden="true"><span data-i18n="lvIn"></span><span class="lvm"><i id="lvMi"></i></span><span data-i18n="lvOut"></span><span class="lvm"><i id="lvMo"></i></span></div>
+          <div class="lvlat">
+            <div><b data-i18n="lvMeasLbl"></b> <span id="lvMeas"></span> <button class="calbtn" id="lvMeasBtn" data-i18n="lvMeasBtn" data-i18n-title="calAutoTitle"></button></div>
+            <div class="calinfo" id="lvRep"></div>
+          </div>
+          <p class="note vxmsg" id="lvMsg" aria-live="polite"></p>
         </div>
         <div class="vxbox" id="vxBox">
           <h2 class="sec-h"><span data-i18n="vxTitle"></span></h2>
@@ -1305,6 +1337,7 @@ const I18N = {
     smTitle: '소리 따라 만들기', smIntro: '한 음을 길게 연주하거나 불러서 들려주거나, 짧은 소리 파일을 끌어다 놓으면 가장 비슷한 웨이브테이블 신스 줄을 만들어요. 화음이 아닌 한 음, 1~3초가 가장 잘 맞아요.', smRec: '한 음 들려주기', smRecOn: '그만 듣기', smFile: '파일 고르기', smHear: '들어 보기', smInsert: '코드에 넣기', smListen: '듣고 있어요. 한 음을 길게 내 주세요 (최대 3초).', smWorking: '맞추는 중…', smDone: '{note} 음 · {table} 테이블 {scan} 위치 · 배음 차이 평균 {err} dB', smShort: '소리가 너무 짧아요. 한 음을 조금 더 길게 내 주세요.', smPitch: '음높이를 찾지 못했어요. 북소리나 잡음 말고 음이 있는 소리 하나를 들려주세요.', smBad: '이 파일은 읽지 못했어요. wav, mp3, ogg 같은 소리 파일을 써 주세요.',
     bkSyn: '소리 모양', bkSynHint: '왼쪽: 소리가 커졌다 작아지는 모양. 점을 끌어 atk(올라가는 시간), dec와 sus(줄어드는 시간과 머무는 크기), rel(손 뗀 뒤 남는 시간)을 바꿔요. 가운데: 필터. 좌우로 cut, 위아래로 res. 오른쪽: 이 트랙의 지금 파형.', bkSynFt: '필터 종류', bkSynTable: '테이블', bkSynScope: '파형',
     mtSong: '곡', mMore: '메뉴 더 보기', mNoSong: '이 곡에는 장면이 없어요. 코드에 scene 줄을 쓰면 여기서 장면을 바꿀 수 있어요.', maxOn: '크게 보기', maxOff: '원래대로 (Esc)', bkFold: '접기', bkUnfold: '펼치기',
+    lvTitle: '라이브 입력', lvIntro: '마이크나 오디오 인터페이스에 꽂은 악기 소리를 바로 내보내요. 다음 단계에서 이펙터가 이 길 위에 올라가요. 헤드폰을 쓰세요: 스피커로 들으면 마이크가 그 소리를 다시 받아 울릴 수 있어요. 블루투스 이어폰은 지연이 커서 맞지 않아요.', lvStart: '입력 켜기', lvStop: '입력 끄기', lvDev: '입력 장치', lvDevDefault: '기본 입력', lvDevN: '입력 {n}', lvCh: '입력 채널', lvGain: '입력 크기', lvIn: '입력', lvOut: '출력', lvMeasLbl: '실측 지연', lvMeasBtn: '재기', lvMeasNone: '아직 안 쟀어요. 헤드폰을 빼고 재기를 누르면 스피커 클릭을 마이크로 받아 왕복 시간을 재요.', lvRep: '브라우저 보고: 입력 {inp} + 처리 블록 {blk} + 출력 {out} = {sum} ms · {sr} kHz', lvRepNone: '입력을 켜면 브라우저가 알려준 지연을 보여 줘요.', lvFeelTight: '바로 치는 느낌이에요 (기타·드럼 패드도 괜찮아요)', lvFeelOk: '연주할 만해요 (빠른 리듬은 약간 밀리는 느낌)', lvFeelSpace: '리버브·딜레이 같은 공간계에 알맞아요', lvFeelSlow: '직접 모니터링하기엔 느려요. 오디오 인터페이스나 다른 기기에서 해 보세요', lvOn: '입력이 켜졌어요.', lvSpeakerWarn: '스피커 모드예요. 울림(하울링)이 나면 입력 크기를 줄이거나 헤드폰을 쓰세요.', lvNoWorklet: '이 브라우저에서는 오디오 처리 스레드를 쓸 수 없어요.',
     vxTitle: '목소리로 쓰기', vxIntro: '"둠 츠 칙 츠" 비트박스나 흥얼거린 멜로디를 마디에 맞춰 녹음하면 코드 줄로 바꿔요. 한 마디 동안 박자 소리로 준비를 세고 시작해요. 스피커로 들을 때는 녹음하는 동안 음악을 잠시 끄고 박자 소리만 들려줘요.', vxBeat: '비트박스', vxHum: '허밍', vxModeLbl: '무엇을 녹음할지', vxBarsLbl: '마디', vxRec: '녹음', vxCancel: '녹음 취소', vxCount: '{m} 준비… 박자에 맞춰 들어오세요', vxRecBanner: '{m} 녹음 {bar}/{bars}마디', vxBusy: '루프 녹음이 끝난 뒤에 해 주세요.', vxQuiet: '소리가 거의 들리지 않았어요. 마이크에 조금 더 가까이 대고 다시 해 보세요.', vxNothing: '알아들을 만한 소리를 찾지 못했어요. 조금 더 또렷하게 해 보세요.', vxBeatDone: '{n}번 친 소리를 찾았어요. 낮은 소리는 kick, 중간은 snare, 높고 짧은 소리는 hat이에요.', vxHumDone: '{k} 음계에 맞췄어요.', vxShift: '{n}옥타브 올렸어요.', vxInsert: '코드에 넣기', vxUndo: '되돌리기', vxInserted: '넣었어요. 다음 마디부터 들려요.', vxUndone: '넣기 전으로 돌렸어요.',
     share: '공유', shareTitle: '이 곡을 링크나 녹음으로 보내요', shareTitle2: '이 곡 공유하기', shareLink: '링크로 보내기', shareLinkD: '코드 전체가 링크 안에 들어가요. 받는 사람이 열면 이 곡이 그대로 열리고, 고쳐서 다시 보낼 수도 있어요.', shareSend: '보내기…', shareCopy: '링크 복사', shareCopied: '링크를 복사했어요', shareChars: '자', shareAudio: '소리로 보내기', shareAudioD: '다음 마디부터 연주를 그대로 녹음해 오디오 파일로 만들어요. 멈춰 있으면 처음부터 틀면서 녹음해요.', shareB4: '4마디', shareB8: '8마디', shareB16: '16마디', shareWhole: '곡 전체', shareStop: '녹음 끝내기', shareWaiting: '다음 마디에서 녹음을 시작해요…', shareRecording: '녹음 중 {a}/{b}마디', shareReady: '{s}초 녹음했어요 ({kb} KB)', shareSendFile: '파일 보내기…', shareSave: '저장', shareSaved: '{n} 파일로 저장했어요', shareHint: '휴대폰에서 "보내기"를 누르면 공유 창이 열려 카카오톡, 메시지, 메일 등으로 바로 보낼 수 있어요.', shareNoRec: '이 브라우저는 녹음을 지원하지 않아요.', shareText: 'Tactus로 만든 곡: {n}', shareMine: '내 곡', shareOpened: '공유받은 곡을 열었어요. 원래 코드는 보관해 뒀어요.', shareUndo: '내 코드로 되돌리기', shareBad: '링크가 잘려서 곡을 열 수 없어요. 링크 전체를 받았는지 확인해 주세요.',
     install: '앱으로 설치', installTitle: 'Tactus를 앱으로 설치해 바탕화면이나 홈 화면에서 바로 열어요', installDone: '설치했어요. 이제 앱 목록이나 홈 화면에서 Tactus를 열 수 있어요.', installIos: 'Safari 아래쪽의 공유 버튼을 누르고 "홈 화면에 추가"를 고르세요.', installMenu: '브라우저 메뉴(⋮)에서 "앱 설치" 또는 "홈 화면에 추가"를 고르세요.',
@@ -1538,6 +1571,7 @@ const I18N = {
     smTitle: 'Match a sound', smIntro: 'Play or sing one held note, or drop in a short sound file, and get the closest wavetable synth line. One note (not a chord), 1 to 3 seconds long, works best.', smRec: 'Play a note', smRecOn: 'Stop listening', smFile: 'Choose a file', smHear: 'Listen', smInsert: 'Put in the code', smListen: 'Listening. Hold one note (up to 3 seconds).', smWorking: 'Matching…', smDone: 'Note {note} · {table} table at {scan} · harmonics off by {err} dB on average', smShort: 'Too short. Hold the note a little longer.', smPitch: 'No pitch found. Use a sound with a note in it, not a drum or noise.', smBad: 'Could not read this file. Use a sound file such as wav, mp3 or ogg.',
     bkSyn: 'Sound shape', bkSynHint: 'Left: how the sound rises and falls. Drag the points for atk (rise), dec and sus (fall and the level it holds), rel (what is left after the note). Middle: the filter, cut across and res up and down. Right: this track as it plays.', bkSynFt: 'Filter type', bkSynTable: 'Table', bkSynScope: 'scope',
     mtSong: 'Song', mMore: 'More', mNoSong: 'This piece has no scenes. Write scene lines in the code to switch them here.', maxOn: 'Fill the window', maxOff: 'Back (Esc)', bkFold: 'Fold', bkUnfold: 'Open',
+    lvTitle: 'Live input', lvIntro: 'A mic, or an instrument plugged into an audio interface, goes straight out. Effects will sit on this path in the next step. Use headphones: on speakers the mic hears itself and can howl. Bluetooth headphones add too much delay.', lvStart: 'Turn input on', lvStop: 'Turn input off', lvDev: 'Input device', lvDevDefault: 'Default input', lvDevN: 'Input {n}', lvCh: 'Input channel', lvGain: 'Input level', lvIn: 'in', lvOut: 'out', lvMeasLbl: 'Measured delay', lvMeasBtn: 'Measure', lvMeasNone: 'Not measured yet. Unplug headphones and press Measure: the mic hears clicks from the speakers and times the round trip.', lvRep: 'Browser reports: input {inp} + processing block {blk} + output {out} = {sum} ms · {sr} kHz', lvRepNone: 'Turn the input on to see the delay the browser reports.', lvFeelTight: 'feels immediate (fine for guitar and drum pads)', lvFeelOk: 'playable (fast rhythms feel a little behind)', lvFeelSpace: 'right for reverb, delay and other space effects', lvFeelSlow: 'too slow to monitor through. Try an audio interface or another device', lvOn: 'Input is on.', lvSpeakerWarn: 'Speaker mode. If it howls, lower the input level or use headphones.', lvNoWorklet: 'This browser cannot run the audio thread.',
     vxTitle: 'Sing it in', vxIntro: 'Beatbox ("boom ts chik ts") or hum a tune in time with the bar and it becomes code. A bar of clicks counts you in. On speakers the music is muted while you record, and only the clicks play.', vxBeat: 'Beatbox', vxHum: 'Hum', vxModeLbl: 'What to record', vxBarsLbl: 'bars', vxRec: 'Record', vxCancel: 'Cancel', vxCount: '{m}: get ready… come in on the beat', vxRecBanner: '{m}: recording bar {bar} of {bars}', vxBusy: 'Wait until the loop recording is done.', vxQuiet: 'Almost nothing came through. Get a little closer to the mic and try again.', vxNothing: 'Nothing clear enough was heard. Try again a little more crisply.', vxBeatDone: 'Found {n} hits. Low sounds became kick, middle ones snare, high short ones hat.', vxHumDone: 'Fitted to {k}.', vxShift: 'Moved up {n} octave(s).', vxInsert: 'Put in the code', vxUndo: 'Undo', vxInserted: 'Added. You will hear it from the next bar.', vxUndone: 'Back to how it was.',
     share: 'Share', shareTitle: 'Send this song as a link or a recording', shareTitle2: 'Share this song', shareLink: 'Send a link', shareLinkD: 'The whole code goes inside the link. Whoever opens it gets this song as it is, and can change it and send it back.', shareSend: 'Send…', shareCopy: 'Copy link', shareCopied: 'Link copied', shareChars: ' characters', shareAudio: 'Send the sound', shareAudioD: 'Records the music from the next bar into an audio file. If it is stopped, it starts playing from the top.', shareB4: '4 bars', shareB8: '8 bars', shareB16: '16 bars', shareWhole: 'Whole song', shareStop: 'Stop recording', shareWaiting: 'Recording starts on the next bar…', shareRecording: 'Recording bar {a} of {b}', shareReady: 'Recorded {s} s ({kb} KB)', shareSendFile: 'Send file…', shareSave: 'Save', shareSaved: 'Saved as {n}', shareHint: 'On a phone, Send opens the share sheet, so it goes straight to KakaoTalk, Messages, mail and the rest.', shareNoRec: 'This browser cannot record.', shareText: 'A song made in Tactus: {n}', shareMine: 'my song', shareOpened: 'Opened a shared song. Your own code is kept.', shareUndo: 'Back to my code', shareBad: 'This link is cut short, so the song cannot open. Check that the whole link came through.',
     install: 'Install app', installTitle: 'Install Tactus as an app and open it from your desktop or home screen', installDone: 'Installed. Open Tactus from your apps or home screen.', installIos: 'Tap Share at the bottom of Safari, then choose "Add to Home Screen".', installMenu: 'Open the browser menu (⋮) and choose "Install app" or "Add to Home screen".',
@@ -5865,6 +5899,33 @@ class Guard extends AudioWorkletProcessor {
   }
 }
 registerProcessor('tactus-guard', Guard);
+// live input: the mic or an instrument through the audio thread and straight out, inside the same 128-sample block it
+// came in (so it adds no delay of its own). Picks a channel (an interface's input 1 or 2), sets the level, and keeps
+// what goes out under 0 dBFS with a soft curve. Sends the peaks in and out about 40 times a second for the meters.
+class Live extends AudioWorkletProcessor {
+  constructor() {
+    super(); this.ch = 0; this.gain = 1; this.g = 1; this.on = true; this.pi = 0; this.po = 0; this.n = 0;
+    this.port.onmessage = e => { const d = e.data; if (d.ch != null) this.ch = d.ch; if (d.gain != null) this.gain = d.gain; if (d.on != null) this.on = d.on; };
+  }
+  process(ins, outs) {
+    const i = ins[0], o = outs[0];
+    if (!o || !o.length) return true;
+    const n = o[0].length, L = i && i[0], R = i && (i[1] || i[0]);
+    for (let k = 0; k < n; k++) {
+      // the level glides, so a slider never clicks
+      this.g += ((this.on ? this.gain : 0) - this.g) * 0.002;
+      const a = L ? L[k] : 0, b = R ? R[k] : 0, x = this.ch === 1 ? a : this.ch === 2 ? b : (L && R && L !== R ? (a + b) * 0.5 : a);
+      const ax = x < 0 ? -x : x; if (ax > this.pi) this.pi = ax;
+      let y = x * this.g; if (y - y !== 0) y = 0;
+      y = y > 1.5 ? 1 : y < -1.5 ? -1 : y - (4 / 27) * y * y * y;
+      const ay = y < 0 ? -y : y; if (ay > this.po) this.po = ay;
+      for (let c = 0; c < o.length; c++) o[c][k] = y;
+    }
+    if ((this.n += n) >= 1152) { this.port.postMessage({ i: this.pi, o: this.po }); this.pi = this.po = 0; this.n = 0; }
+    return true;
+  }
+}
+registerProcessor('tactus-live', Live);
 `;
 const WK = { ok: null, loading: null, mod: null, dsp: 'js' };
 // decode the Rust DSP once; each worklet node compiles its own instance from these bytes
@@ -7541,11 +7602,18 @@ function micAllowedByPage() {
   const pp = document.permissionsPolicy || document.featurePolicy;
   try { return pp && pp.allowsFeature ? pp.allowsFeature('microphone') : true; } catch (e) { return true; }
 }
+// no voice processing (each adds delay and changes the sound), the lowest latency the device offers, and the input the
+// live panel picked (an audio interface rather than the built-in mic)
+function micConstraints() {
+  const c = { echoCancellation: false, noiseSuppression: false, autoGainControl: false, latency: 0, channelCount: { ideal: 2 } };
+  if (LS.dev) c.deviceId = { exact: LS.dev };
+  return c;
+}
 async function ensureMic() {
   if (LS.micNode) return 'ok';
   if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || !micAllowedByPage()) return 'blocked';
   try {
-    LS.mic = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+    LS.mic = await navigator.mediaDevices.getUserMedia({ audio: micConstraints() });
   } catch (e) {
     return e && (e.name === 'SecurityError' || /policy|not allowed by/i.test(e.message || '')) ? 'blocked' : 'denied';
   }
@@ -10602,6 +10670,110 @@ function smInit() {
   smRender();
 }
 smInit();
+
+// ===================== Live input: the page as an effects box =====================
+// A mic or an instrument (through an audio interface) runs through the audio thread and straight to the speakers or
+// headphones. This first step has no effects yet: it is the path the effects will sit on, and a way to see how long
+// the trip takes on this device, which decides whether playing through it feels live.
+// The path skips the track strips and the master chain: their compressors look ahead (about 6 ms each), and that
+// would add to every note.
+// How long it takes: what the browser reports (the input's latency, the 128-sample block, the output's), and what was
+// measured, a click from the speakers heard on the mic. A click going out and coming back passes the same buffers as
+// a note coming in and going out, so the measured round trip is the delay a player hears (less a millisecond for
+// each 34 cm of air between speaker and mic).
+
+const LV = { on: false, node: null, out: null, gain: 0.8, ch: 0, devs: [], lvl: { i: 0, o: 0 } };
+try { Object.assign(LV, JSON.parse(localStorage.getItem('tactus-live') || '{}'), { on: false, node: null, out: null }); LS.dev = LV.dev || null; } catch (e) { }
+function lvSave() { try { localStorage.setItem('tactus-live', JSON.stringify({ gain: LV.gain, ch: LV.ch, dev: LS.dev || null })); } catch (e) { } }
+const lvEl = id => document.getElementById(id);
+
+async function lvStart() {
+  initAudio(); await S.ctx.resume();
+  const r = await ensureMic();
+  if (r !== 'ok') { lvSay(t(r === 'blocked' ? 'micBlocked' : 'micDenied'), 'bad'); return; }
+  if (!(await ensureSynthWorklet())) { lvSay(t('lvNoWorklet'), 'bad'); return; }
+  if (!LV.node) {
+    LV.node = new AudioWorkletNode(S.ctx, 'tactus-live', { numberOfInputs: 1, numberOfOutputs: 1, outputChannelCount: [2], channelCount: 2, channelCountMode: 'explicit', channelInterpretation: 'discrete' });
+    LV.node.port.onmessage = e => { LV.lvl = e.data; lvMeter(); };
+    // straight to the output: no strip, no master (see the top)
+    LV.out = S.ctx.createGain(); LV.node.connect(LV.out); LV.out.connect(S.ctx.destination);
+  }
+  LS.micNode.connect(LV.node); LV.src = LS.micNode;
+  LV.node.port.postMessage({ ch: LV.ch, gain: LV.gain, on: true });
+  LV.on = true; lvDevices(); lvRender();
+  // on speakers the mic hears what it plays, and it can howl: say so
+  lvSay(t(LS.speaker ? 'lvSpeakerWarn' : 'lvOn'), LS.speaker ? 'bad' : 'ok');
+}
+function lvStop() {
+  if (LV.node) { LV.node.port.postMessage({ on: false }); if (LV.src) { try { LV.src.disconnect(LV.node); } catch (e) { } } }
+  LV.on = false; LV.src = null; lvRender(); lvSay('', '');
+}
+// another input (an audio interface): reopen the mic on it, and move whatever was listening to the old one
+async function lvDevice(id) {
+  LS.dev = id || null; lvSave();
+  const was = LV.on, cap = LS.capInput === LS.micNode;
+  if (LV.on) lvStop();
+  if (LS.mic) { LS.mic.getTracks().forEach(tr => tr.stop()); LS.mic = null; }
+  if (LS.micNode) { try { LS.micNode.disconnect(); } catch (e) { } LS.micNode = null; }
+  if (was) await lvStart();
+  else { const r = await ensureMic(); if (r !== 'ok') return; }
+  if (cap && LS.cap) connectCapture('mic');
+  lvRender();
+}
+async function lvDevices() {
+  try {
+    const all = await navigator.mediaDevices.enumerateDevices();
+    LV.devs = all.filter(d => d.kind === 'audioinput');
+  } catch (e) { LV.devs = []; }
+  lvRender();
+}
+// the delay as the browser reports it, in ms: the input's, one block, the output's
+function lvReported() {
+  if (!S.ctx) return null;
+  const tr = LS.mic && LS.mic.getAudioTracks()[0], st = tr && tr.getSettings ? tr.getSettings() : {};
+  const inp = typeof st.latency === 'number' ? st.latency : null, blk = 128 / S.ctx.sampleRate, out = (S.ctx.outputLatency || 0) + (S.ctx.baseLatency || 0);
+  return { inp, blk, out, sum: (inp || 0) + blk + out, sr: S.ctx.sampleRate };
+}
+async function lvMeasure() {
+  if (LV.on) lvStop();
+  await calibrateAuto();
+  lvRender();
+}
+
+// ---------- the panel ----------
+function lvSay(m, cls) { const el = lvEl('lvMsg'); if (el) { el.textContent = m; el.className = 'note vxmsg ' + (cls || ''); } }
+function lvMeter() {
+  const a = lvEl('lvMi'), b = lvEl('lvMo'); if (!a) return;
+  const w = v => Math.max(0, Math.min(1, 1 + (20 * Math.log10(v + 1e-6)) / 60));   // -60..0 dBFS
+  a.style.transform = `scaleX(${w(LV.lvl.i)})`; b.style.transform = `scaleX(${w(LV.lvl.o)})`;
+  a.parentElement.classList.toggle('hot', LV.lvl.i > 0.9); b.parentElement.classList.toggle('hot', LV.lvl.o > 0.98);
+}
+function lvRender() {
+  const btn = lvEl('lvOn'); if (!btn) return;
+  btn.textContent = t(LV.on ? 'lvStop' : 'lvStart'); btn.classList.toggle('on', LV.on); btn.setAttribute('aria-pressed', LV.on);
+  lvEl('lvGain').value = LV.gain; lvEl('lvGainV').textContent = `${(20 * Math.log10(Math.max(1e-4, LV.gain))).toFixed(1)} dB`;
+  document.querySelectorAll('#lvCh button').forEach(b => b.setAttribute('aria-pressed', +b.dataset.ch === LV.ch));
+  const sel = lvEl('lvDev');
+  if (LV.devs.length) sel.innerHTML = `<option value="">${esc(t('lvDevDefault'))}</option>` + LV.devs.map((d, k) => `<option value="${esc(d.deviceId)}"${d.deviceId === LS.dev ? ' selected' : ''}>${esc(d.label || t('lvDevN', { n: k + 1 }))}</option>`).join('');
+  // the delay: reported and measured
+  const r = lvReported(), ms = v => (v * 1000).toFixed(1);
+  lvEl('lvRep').textContent = r ? t('lvRep', { inp: r.inp == null ? '?' : ms(r.inp), blk: ms(r.blk), out: ms(r.out), sum: ms(r.sum), sr: r.sr / 1000 }) : t('lvRepNone');
+  const m = LS.rtt;
+  lvEl('lvMeas').innerHTML = m != null ? `<b>${Math.round(m * 1000)} ms</b> <span>${esc(t(m < 0.012 ? 'lvFeelTight' : m < 0.022 ? 'lvFeelOk' : m < 0.04 ? 'lvFeelSpace' : 'lvFeelSlow'))}</span>` : esc(t('lvMeasNone'));
+  lvEl('lvMeasBtn').disabled = !!LS.cal;
+}
+function lvInit() {
+  if (!lvEl('lvBox')) return;
+  lvEl('lvOn').addEventListener('click', () => LV.on ? lvStop() : lvStart());
+  lvEl('lvGain').addEventListener('input', e => { LV.gain = +e.target.value; if (LV.node) LV.node.port.postMessage({ gain: LV.gain }); lvSave(); lvRender(); });
+  lvEl('lvCh').addEventListener('click', e => { const b = e.target.closest('[data-ch]'); if (!b) return; LV.ch = +b.dataset.ch; if (LV.node) LV.node.port.postMessage({ ch: LV.ch }); lvSave(); lvRender(); });
+  lvEl('lvDev').addEventListener('focus', lvDevices);
+  lvEl('lvDev').addEventListener('change', e => lvDevice(e.target.value));
+  lvEl('lvMeasBtn').addEventListener('click', lvMeasure);
+  if (navigator.mediaDevices && navigator.mediaDevices.addEventListener) navigator.mediaDevices.addEventListener('devicechange', lvDevices);
+  lvRender();
+}
+lvInit();
 
 // ===================== Block view =====================
 // The same song as cards, for people who would rather tap than type (and children first of all). The code stays the
