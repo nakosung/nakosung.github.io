@@ -1006,7 +1006,7 @@ body.mob.mland .pad { min-height: 60px; }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.14 14:43<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.14 14:59<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -1416,6 +1416,7 @@ const I18N = {
     pdEmpty: '페달 없음', pdOpen: '블록 보기에서 손잡이 돌리기',
     sepSplit: '✂ 드럼 분리', sepSplitTitle: '이 루프를 드럼과 나머지로 나눠요. 둘을 같이 틀면 원래 루프와 같아요', sepBusy: '드럼을 나누는 중…', sepWorking: '{name}에서 드럼을 나누는 중…', sepDone: '{name}을 드럼과 나머지로 나눴어요. 찾은 드럼: {kinds}', sepStems: '무엇을 들을지', sep_all: '전부', sep_drums: '드럼만', sep_nodrums: '드럼 빼기', sepCode: '드럼을 코드로', sepCodeTitle: '분리한 드럼을 kick·snare·hat 줄로 쓰고, 루프의 드럼은 꺼요. 내 킷으로 같은 비트를 쳐요', sepCoded: '드럼 줄 {n}개를 넣고 {name}의 드럼은 껐어요.', sepNoBeat: '코드로 쓸 만한 드럼을 찾지 못했어요.',
     p_drums: '루프의 드럼 크기 (드럼 분리 뒤) 0–1', p_rest: '루프에서 드럼을 뺀 나머지의 크기 (드럼 분리 뒤) 0–1',
+    sampleLoopFmt: '{n} 에는 주소 하나만 써요 (예: sample {n} github:사용자/저장소/main/loop.wav)', loopFetching: '{name} 루프를 불러오는 중…',
     vxTitle: '목소리로 쓰기', vxIntro: '"둠 츠 칙 츠" 비트박스나 흥얼거린 멜로디를 마디에 맞춰 녹음하면 코드 줄로 바꿔요. 한 마디 동안 박자 소리로 준비를 세고 시작해요. 스피커로 들을 때는 녹음하는 동안 음악을 잠시 끄고 박자 소리만 들려줘요.', vxBeat: '비트박스', vxHum: '허밍', vxModeLbl: '무엇을 녹음할지', vxBarsLbl: '마디', vxRec: '녹음', vxCancel: '녹음 취소', vxCount: '{m} 준비… 박자에 맞춰 들어오세요', vxRecBanner: '{m} 녹음 {bar}/{bars}마디', vxBusy: '루프 녹음이 끝난 뒤에 해 주세요.', vxQuiet: '소리가 거의 들리지 않았어요. 마이크에 조금 더 가까이 대고 다시 해 보세요.', vxNothing: '알아들을 만한 소리를 찾지 못했어요. 조금 더 또렷하게 해 보세요.', vxBeatDone: '{n}번 친 소리를 찾았어요. 낮은 소리는 kick, 중간은 snare, 높고 짧은 소리는 hat이에요.', vxHumDone: '{k} 음계에 맞췄어요.', vxShift: '{n}옥타브 올렸어요.', vxInsert: '코드에 넣기', vxUndo: '되돌리기', vxInserted: '넣었어요. 다음 마디부터 들려요.', vxUndone: '넣기 전으로 돌렸어요.',
     share: '공유', shareTitle: '이 곡을 링크나 녹음으로 보내요', shareTitle2: '이 곡 공유하기', shareLink: '링크로 보내기', shareLinkD: '코드 전체가 링크 안에 들어가요. 받는 사람이 열면 이 곡이 그대로 열리고, 고쳐서 다시 보낼 수도 있어요.', shareSend: '보내기…', shareCopy: '링크 복사', shareCopied: '링크를 복사했어요', shareChars: '자', shareAudio: '소리로 보내기', shareAudioD: '다음 마디부터 연주를 그대로 녹음해 오디오 파일로 만들어요. 멈춰 있으면 처음부터 틀면서 녹음해요.', shareB4: '4마디', shareB8: '8마디', shareB16: '16마디', shareWhole: '곡 전체', shareStop: '녹음 끝내기', shareWaiting: '다음 마디에서 녹음을 시작해요…', shareRecording: '녹음 중 {a}/{b}마디', shareReady: '{s}초 녹음했어요 ({kb} KB)', shareSendFile: '파일 보내기…', shareSave: '저장', shareSaved: '{n} 파일로 저장했어요', shareHint: '휴대폰에서 "보내기"를 누르면 공유 창이 열려 카카오톡, 메시지, 메일 등으로 바로 보낼 수 있어요.', shareNoRec: '이 브라우저는 녹음을 지원하지 않아요.', shareText: 'Tactus로 만든 곡: {n}', shareMine: '내 곡', shareOpened: '공유받은 곡을 열었어요. 원래 코드는 보관해 뒀어요.', shareUndo: '내 코드로 되돌리기', shareBad: '링크가 잘려서 곡을 열 수 없어요. 링크 전체를 받았는지 확인해 주세요.',
     install: '앱으로 설치', installTitle: 'Tactus를 앱으로 설치해 바탕화면이나 홈 화면에서 바로 열어요', installDone: '설치했어요. 이제 앱 목록이나 홈 화면에서 Tactus를 열 수 있어요.', installIos: 'Safari 아래쪽의 공유 버튼을 누르고 "홈 화면에 추가"를 고르세요.', installMenu: '브라우저 메뉴(⋮)에서 "앱 설치" 또는 "홈 화면에 추가"를 고르세요.',
@@ -1662,6 +1663,7 @@ const I18N = {
     pdEmpty: 'No pedals', pdOpen: 'Turn the knobs in the block view',
     sepSplit: '✂ Separate drums', sepSplitTitle: 'Split this loop into its drums and the rest. Played together they are the loop as it was', sepBusy: 'Separating the drums…', sepWorking: 'Separating the drums in {name}…', sepDone: '{name} is split into drums and the rest. Drums found: {kinds}', sepStems: 'What to hear', sep_all: 'All', sep_drums: 'Drums only', sep_nodrums: 'No drums', sepCode: 'Drums to code', sepCodeTitle: 'Write the separated drums as kick, snare and hat lines and turn the loop\'s own drums off, so your kit plays the same beat', sepCoded: 'Added {n} drum lines and turned off the drums in {name}.', sepNoBeat: 'No drums clear enough to write down.',
     p_drums: 'level of the loop\'s drums (after separating) 0–1', p_rest: 'level of the loop without its drums (after separating) 0–1',
+    sampleLoopFmt: 'Give {n} just an address (e.g. sample {n} github:user/repo/main/loop.wav)', loopFetching: 'Loading the loop for {name}…',
     vxTitle: 'Sing it in', vxIntro: 'Beatbox ("boom ts chik ts") or hum a tune in time with the bar and it becomes code. A bar of clicks counts you in. On speakers the music is muted while you record, and only the clicks play.', vxBeat: 'Beatbox', vxHum: 'Hum', vxModeLbl: 'What to record', vxBarsLbl: 'bars', vxRec: 'Record', vxCancel: 'Cancel', vxCount: '{m}: get ready… come in on the beat', vxRecBanner: '{m}: recording bar {bar} of {bars}', vxBusy: 'Wait until the loop recording is done.', vxQuiet: 'Almost nothing came through. Get a little closer to the mic and try again.', vxNothing: 'Nothing clear enough was heard. Try again a little more crisply.', vxBeatDone: 'Found {n} hits. Low sounds became kick, middle ones snare, high short ones hat.', vxHumDone: 'Fitted to {k}.', vxShift: 'Moved up {n} octave(s).', vxInsert: 'Put in the code', vxUndo: 'Undo', vxInserted: 'Added. You will hear it from the next bar.', vxUndone: 'Back to how it was.',
     share: 'Share', shareTitle: 'Send this song as a link or a recording', shareTitle2: 'Share this song', shareLink: 'Send a link', shareLinkD: 'The whole code goes inside the link. Whoever opens it gets this song as it is, and can change it and send it back.', shareSend: 'Send…', shareCopy: 'Copy link', shareCopied: 'Link copied', shareChars: ' characters', shareAudio: 'Send the sound', shareAudioD: 'Records the music from the next bar into an audio file. If it is stopped, it starts playing from the top.', shareB4: '4 bars', shareB8: '8 bars', shareB16: '16 bars', shareWhole: 'Whole song', shareStop: 'Stop recording', shareWaiting: 'Recording starts on the next bar…', shareRecording: 'Recording bar {a} of {b}', shareReady: 'Recorded {s} s ({kb} KB)', shareSendFile: 'Send file…', shareSave: 'Save', shareSaved: 'Saved as {n}', shareHint: 'On a phone, Send opens the share sheet, so it goes straight to KakaoTalk, Messages, mail and the rest.', shareNoRec: 'This browser cannot record.', shareText: 'A song made in Tactus: {n}', shareMine: 'my song', shareOpened: 'Opened a shared song. Your own code is kept.', shareUndo: 'Back to my code', shareBad: 'This link is cut short, so the song cannot open. Check that the whole link came through.',
     install: 'Install app', installTitle: 'Install Tactus as an app and open it from your desktop or home screen', installDone: 'Installed. Open Tactus from your apps or home screen.', installIos: 'Tap Share at the bottom of Safari, then choose "Add to Home Screen".', installMenu: 'Open the browser menu (⋮) and choose "Install app" or "Add to Home screen".',
@@ -2750,6 +2752,11 @@ function parseSample(rest, restBase) {
   const ch = splitChunks(rest, restBase);
   if (!ch.length || !/^[a-zA-Z]\w*$/.test(ch[0].s)) throw new PErr(t('sampleFmt'), restBase);
   const name = ch[0].s;
+  // sample loop1 github:… : a loop slot filled from an address (the bars come from the length and the song's tempo)
+  if (LOOPS.includes(name)) {
+    const u = ch.slice(1).find(c => URL_RE.test(c.s)); if (!u || ch.length !== 2) throw new PErr(t('sampleLoopFmt', { n: name }), ch[0].c0);
+    return { type: 'sample', name, loop: true, url: u.s.startsWith('github:') ? 'https://raw.githubusercontent.com/' + u.s.slice(7) : u.s };
+  }
   if (RESERVED().has(name)) throw new PErr(t('sampleName', { n: name }), ch[0].c0);
   const out = { type: 'sample', name, mode: null, root: null, url: null };
   for (const c of ch.slice(1)) {
@@ -2812,13 +2819,13 @@ const DEFAULT_PADS = DEFAULT_PAD_SRC.map(l => { const r = parseLine(l); r.pad.bu
 function compile(text) {
   { const sm = /^\s*seed\s+(-?\d+)\s*(?:\/\/.*)?$/m.exec(text); GEN_SEED = sm ? +sm[1] : 0; }
   const lines = text.split('\n');
-  const out = { pads: new Map(), autos: new Map(), samples: new Map(), seed: GEN_SEED, master: null, bpm: null, key: null, scale: null, swing: null, prog: null, progSrc: '', scenes: new Map(), song: null, arrSrc: '', tracks: new Map(), order: [], errors: new Map(), lineNames: new Map(), space: null, viz: null, shaders: new Map(), buses: new Map(), masterParams: {}, input: null };
+  const out = { pads: new Map(), autos: new Map(), samples: new Map(), seed: GEN_SEED, master: null, bpm: null, key: null, scale: null, swing: null, prog: null, progSrc: '', scenes: new Map(), song: null, arrSrc: '', tracks: new Map(), order: [], errors: new Map(), lineNames: new Map(), space: null, viz: null, shaders: new Map(), buses: new Map(), masterParams: {}, input: null, loopFiles: new Map() };
   // bus names first, so track lines anywhere in the code can send to them
   BUS_NAMES = new Set();
   VARS = new Map();
   // sample lines first too, so a track above one can already play it
   CODE_SOUNDS = new Map();
-  lines.forEach(ln => { if (!/^\s*sample\s/.test(stripComment(ln))) return; try { const r = parseLine(ln); const u = USER_SOUNDS.get(r.name); CODE_SOUNDS.set(r.name, { mode: r.mode || (u ? u.mode : 'hit'), root: r.root ?? (u ? u.root : 60), url: r.url }); } catch (e) { } });
+  lines.forEach(ln => { if (!/^\s*sample\s/.test(stripComment(ln))) return; try { const r = parseLine(ln); if (r.loop) return; const u = USER_SOUNDS.get(r.name); CODE_SOUNDS.set(r.name, { mode: r.mode || (u ? u.mode : 'hit'), root: r.root ?? (u ? u.root : 60), url: r.url }); } catch (e) { } });
   lines.forEach((ln, i) => { const m = /^(\s*let\s+([a-zA-Z_]\w*)\s*=\s*)(.*)$/.exec(stripComment(ln)); if (m && !VARS.has(m[2]) && m[3].trim()) VARS.set(m[2], { src: m[3], base: m[1].length, line: i }); });
   for (const ln of lines) { const m = /^\s*bus\s+([a-zA-Z]\w*)/.exec(stripComment(ln)); if (m && m[1] !== 'verb' && m[1] !== 'delay' && !PARAMS.includes(m[1]) && !TF_WORDS.includes(m[1])) BUS_NAMES.add(m[1]); }
   const sceneLines = [];
@@ -2838,6 +2845,7 @@ function compile(text) {
       else if (r.type === 'shader') { if (out.shaders.has(r.name)) throw new PErr(t('dup', { n: r.name }), 0); r.line = i; out.shaders.set(r.name, r); }
       else if (r.type === 'seed') out.seed = r.v;
       else if (r.type === 'pad') { r.pad.line = i; if (out.pads.has(r.pad.name)) throw new PErr(t('dup', { n: r.pad.name }), 0); out.pads.set(r.pad.name, r.pad); }
+      else if (r.type === 'sample' && r.loop) { if (out.loopFiles.has(r.name)) throw new PErr(t('dup', { n: r.name }), 0); out.loopFiles.set(r.name, { url: r.url, line: i }); }
       else if (r.type === 'sample') { if (out.samples.has(r.name)) throw new PErr(t('dup', { n: r.name }), 0); out.samples.set(r.name, { ...CODE_SOUNDS.get(r.name), line: i }); }
       else if (r.type === 'let') { if (VARS.get(r.name).line !== i) throw new PErr(t('dup', { n: r.name }), 0); }
       else if (r.type === 'auto') { if (out.autos.has(r.name)) throw new PErr(t('dup', { n: r.name }), 0); r.line = i; r.cache = new Map(); out.autos.set(r.name, r); }
@@ -3573,6 +3581,35 @@ scene night  pwm bass
 scene run    pwm bass kick hat
 scene chase  all
 song night:8 run:8 chase:16 run:8 chase:16
+`,
+  },
+  {
+    id: 'calmstreets', name: 'Calm Streets (a CC0 loop, taken apart)',
+    head: {
+      ko: '// Calm Streets — 75 BPM 로파이. 퍼블릭 도메인(CC0) 루프 한 개를 불러와 드럼과 나머지로 나눠 가지고 노는 곡이에요\n// 루프: Ben Burnes (Abstraction), 2 Hour Track Challenge Samples Vol 4 의 "Streets of Calm - I Love This Loop", CC0\n// sample loop1 줄이 GitHub 에서 루프를 받아 loop1 칸에 넣고 드럼을 바로 나눠요 (녹음 탭에서 보여요)\n// loop1 의 drums 와 rest 가 마디마다 바뀌어요: 처음엔 드럼 없이, 다음엔 원래대로, 그다음엔 루프 드럼 대신 Tactus 킷이 같은 비트를 치고, 마지막엔 루프 드럼 위에 새 화음과 베이스가 올라가요',
+      en: '// Calm Streets — 75 BPM lo-fi, built around one public-domain (CC0) loop, split into its drums and the rest\n// Loop: "Streets of Calm - I Love This Loop" from 2 Hour Track Challenge Samples Vol 4 by Ben Burnes (Abstraction), CC0\n// The sample loop1 line fetches the loop from GitHub into slot loop1 and separates its drums right away (see the Record tab)\n// loop1\'s drums and rest change by the bar: first without its drums, then as it is, then with the Tactus kit playing its beat instead, and last its drums alone under new chords and bass',
+    },
+    body: `bpm 75
+key D minor
+prog <0 5 3 4>          // Dm Bb Gm A
+master warm
+space room
+
+sample loop1 github:nakosung/tactus/main/assets/loops/streets-of-calm.wav
+loop1  | drums <0 0 0 0 1 1 1 1 0 0 0 0 1 1 1 1> rest <1 1 1 1 1 1 1 1 1 1 1 1 0 0 0 0> gain 1.15
+
+kick   <[x . . . . . x . . . . . . . . .] [x . . x . . x . . . . . . . . .]> | gain .85 tune .9
+snare  . . . . x . . . . . . . x . . .   | asnare gain .6 human .2
+hat    [. . x .]*4                       | ahat gain .35 human .3
+vibes  <[4' . . 2' . . 0' .] . [. . 5 . 4 . 2 .] .> | oct 5 gain .3 delay .3 verb .3
+keys   [0^7 _ _ _ . . . .]               | epiano gain .28 verb .3
+bass   [0 _ _ . . 0 4 .]                 | sine oct 2 gain .5
+
+scene street loop1 vibes
+scene groove loop1
+scene kit    loop1 kick snare hat
+scene dub    loop1 keys bass vibes
+song street:4 groove:4 kit:4 dub:4
 `,
   },
   {
@@ -8308,12 +8345,12 @@ function sepSlot(i) {
   const slot = LS.slots[i]; if (!slot.bufs || !slot.bufs.every(Boolean) || slot.sepBusy) return;
   const fr = slot.bufs[0].length, n = fr * slot.bufs.length, L = new Float32Array(n), R = new Float32Array(n);
   slot.bufs.forEach((b, k) => { L.set(b.getChannelData(0), k * fr); R.set(b.getChannelData(b.numberOfChannels > 1 ? 1 : 0), k * fr); });
-  const msg = { L, R, sr: S.ctx.sampleRate, bars: slot.bars, barSec: 1 / slot.cps }, of = slot.bufs.slice();
+  const msg = { L, R, sr: slot.bufs[0].sampleRate, bars: slot.bars, barSec: 1 / slot.cps }, of = slot.bufs.slice();
   slot.sepBusy = true; loopMsg(t('sepWorking', { name: slot.name }), '', 60000); renderLoops();
   const done = d => {
     slot.sepBusy = false;
     if (slot.bufs.length !== of.length || !of.every((b, k) => b === slot.bufs[k])) { renderLoops(); return; }
-    const cut = (ch, k) => ch.subarray(k * fr, (k + 1) * fr), mk = arr => of.map((_, k) => makeBuf(cut(arr[0], k), cut(arr[1] || arr[0], k), 0, fr));
+    const cut = (ch, k) => ch.subarray(k * fr, (k + 1) * fr), mk = arr => of.map((_, k) => { const b = new AudioBuffer({ length: fr, numberOfChannels: 2, sampleRate: msg.sr }); b.copyToChannel(cut(arr[0], k), 0); b.copyToChannel(cut(arr[1] || arr[0], k), 1); return b; });
     slot.stems = { of, drums: mk(d.drums), rest: mk(d.rest), lines: d.lines, peaks: null };
     const nk = Object.keys(d.lines).length;
     loopMsg(t('sepDone', { name: slot.name, kinds: nk ? Object.keys(d.lines).join(', ') : '—' }), 'ok', 6000); renderLoops();
@@ -8352,19 +8389,45 @@ function sepUndo() { if (LS.sepUndo == null) return; srcEl.value = LS.sepUndo; L
 // ---------- import ----------
 async function loadIntoSlot(i, file) {
   initAudio();
-  const slot = LS.slots[i];
   let buf;
   try { buf = await S.ctx.decodeAudioData(await file.arrayBuffer()); } catch (e) { loopMsg(t('decodeFail'), 'bad'); return; }
-  const dur = buf.duration, bars = Math.max(1, Math.round(dur * S.cps));
+  bufIntoSlot(i, buf, S.cps);
+  LS.slots[i].url = null;
+}
+// a decoded file into a slot, cut into bars at the given tempo (bars per second)
+function bufIntoSlot(i, buf, cps) {
+  const slot = LS.slots[i], dur = buf.duration, bars = Math.max(1, Math.round(dur * cps));
   const fr = Math.floor(buf.length / bars), L = buf.getChannelData(0), R = buf.getChannelData(buf.numberOfChannels > 1 ? 1 : 0);
   if (LS.take && LS.take.slot === slot) cancelTake();
   if (slot.bufs) slot.prev = { bufs: slot.bufs, startC: slot.startC, bars: slot.bars, cps: slot.cps };
-  slot.bufs = []; for (let k = 0; k < bars; k++) slot.bufs.push(makeBuf(L, R, k * fr, fr));
+  // made without the audio context, so a song can load its loops before anything is played
+  const mk = off => { const b = new AudioBuffer({ length: fr, numberOfChannels: 2, sampleRate: buf.sampleRate }); b.copyToChannel(L.subarray(off, off + fr), 0); b.copyToChannel(R.subarray(off, off + fr), 1); return b; };
+  slot.bufs = []; for (let k = 0; k < bars; k++) slot.bufs.push(mk(k * fr));
   slot.bars = bars; slot.cps = buf.sampleRate / fr; slot.startC = 0; slot.peaks = null;
-  stopSlotSources(slot, S.ctx.currentTime);
+  if (S.ctx) stopSlotSources(slot, S.ctx.currentTime);
   slot.cover = S.playing ? Math.ceil(S.lastC - 1e-6) : -Infinity;
   loopMsg(t('loaded', { name: slot.name, bars }), 'ok');
   renderLoops();
+}
+// sample loop1 github:… lines: fetch each loop once, cut it at the song's tempo, and split its drums right away,
+// so the line's drums and rest work from the start
+function loopApplyCode(files, bpm) {
+  if (!files) return;
+  for (const [name, f] of files) {
+    const i = +name.slice(4) - 1, slot = LS.slots[i];
+    if (!slot || slot.url === f.url || (LS.loopFetch && LS.loopFetch.has(f.url))) continue;
+    (LS.loopFetch = LS.loopFetch || new Set()).add(f.url);
+    loopMsg(t('loopFetching', { name }), '', 20000);
+    (async () => {
+      try {
+        const res = await fetch(f.url); if (!res.ok) throw new Error('HTTP ' + res.status);
+        const buf = await sndDecoder().decodeAudioData(await res.arrayBuffer());
+        bufIntoSlot(i, buf, (bpm || S.bpm || 120) / 240); slot.url = f.url; slot.prev = null;
+        sepSlot(i);
+      } catch (e) { loopMsg(t('sampleLoadFail', { n: name, e: e.message || e }), 'bad', 6000); }
+      finally { LS.loopFetch.delete(f.url); }
+    })();
+  }
 }
 
 // ---------- export (.zip of WAVs + code) ----------
@@ -9147,6 +9210,7 @@ const onSharedLang = switchLang;
 function evaluate(mode = 'bar', opts = {}) {
   const r = compile(srcEl.value);
   sndApplyCode(r.samples);
+  loopApplyCode(r.loopFiles, r.bpm);
   lvApplyCode(r);
   S.errors = r.errors; S.lineNames = r.lineNames;
   S.progGen = r.progGen;
