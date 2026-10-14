@@ -713,6 +713,8 @@ const I18N = {
     codeLabel: '패턴 코드',
     // v2: control surface, pads in code, procedural composition
     keyLbl: 'KEY', barLbl: 'BAR', composeBtn: '자동 작곡', tabPerform: '연주', tabCompose: '작곡', tabLoops: '루프', tabGuide: '가이드',
+    tabMaster: '마스터', mstTitle: '마스터링', mstSub: '곡 전체의 마지막 단계: 크기, 다이내믹, 피크', mstShort: '최근 3초', mstMom: '순간', mstInt: '통합', mstTp: '트루 피크', mstGr: '리미터', mstCorr: '위상', mstB_low: '저음', mstB_mid: '중음', mstB_high: '고음', mstAuto: '목표 맞춤 게인', mstTarget: '목표 크기', mstOff: '끔', mstOffT: '마스터링 끄기: 원래 리미터만 걸려요', mstT16: '-16 LUFS: 애플 뮤직, 팟캐스트', mstT14: '-14 LUFS: 유튜브, 스포티파이', mstT11: '-11 LUFS: 크게, 그래도 숨 쉬게', mstT9: '-9 LUFS: 클럽처럼 아주 크게', mstHintOff: '마스터링이 꺼져 있어요. 그래도 크기와 피크는 재요. 목표를 고르면 마스터 줄에 target 이 써지고 멀티밴드 압축과 트루 피크 리미터가 켜져요.', mstHintOn: '마스터링이 켜져 있어요. 목표 크기 없이 압축과 리미터만 걸려요.', mstHintT: '가장 큰 부분이 {v} LUFS가 되도록 크기를 천천히 맞춰요. 조용한 부분은 조용한 대로 둬요.', mst_bands: '멀티밴드', mst_monobass: '베이스 모노', mst_ceil: '천장', mstMoving: '코드에서 움직여요', mstNone: '끔', mstReset: '다시 재기', mstCode: '마스터 줄 보기', spkTitle: '다른 스피커로 들어보기', spkSub: '듣는 소리에만 걸려요. 녹음과 내보내기에는 들어가지 않아요', spk_off: '원래대로', spk_phone: '폰 스피커', spk_laptop: '노트북', spk_earbuds: '이어폰', spk_speaker: '블루투스 스피커', spk_car: '자동차', spk_tv: 'TV', spk_cube: '믹스 큐브', spk_club: '클럽', spk_radio: 'AM 라디오', spkLbl: '스피커', spkCellTitle: '다른 스피커로 듣는 중이에요. 누르면 원래 소리로 돌아가요', lufsTitle: '지금 크기 (최근 3초, LUFS)',
+    p_target: '목표 크기 LUFS (-14 스트리밍)', p_bands: '멀티밴드 압축 0~1', p_ceil: '트루 피크 천장 dBTP', p_monobass: '이 주파수 아래는 모노 (Hz)',
     padCode: '패드를 코드로 꺼내기', padCodeTitle: '기본 패드 정의를 코드 맨 아래에 써 넣어요. 고치면 바로 패드가 바뀌어요',
     padCodeHave: '기본 패드가 이미 모두 코드에 있어요', padCodeHead: '// 패드: fx 이름 키 | 동작 … (고치면 바로 반영, 새 줄을 쓰면 패드가 늘어요)', padCodeDone: '코드 맨 아래에 패드 정의를 넣었어요', latch: '토글',
     gWash: '워시', gWashD: '로우컷을 올리며 리버브로 씻어내요', gGate: '게이트', gGateD: '16분음표로 소리를 썰어요', gCrush: '크러시', gCrushD: '비트를 깎아 거칠게',
@@ -749,7 +751,7 @@ const I18N = {
     hm4d: '트랙에서 버스 이름을 파라미터처럼 쓰면 그만큼 보내요. 여러 트랙이 같은 효과를 함께 써요',
     hm5d: '기본 딜레이: 시간(16분음표 단위), 피드백, 필터, 덕킹',
     hm6d: '기본 리버브: 프리딜레이 ms, 필터, 레벨, 덕킹',
-    hm7d: '마스터: 글루 컴프레서, 3밴드 EQ, 스테레오 폭, 테이프 드라이브, 리미터 천장, 리미터 입력 게인 dB',
+    hm7d: '마스터: 글루 컴프레서, 3밴드 EQ, 스테레오 폭, 테이프 드라이브, 리미터 천장, 리미터 입력 게인 dB', hm9d: '마스터링: 가장 큰 부분을 목표 크기(LUFS)에 맞추고, 세 대역을 따로 누르고(0~1), 샘플 사이 피크까지 천장(dBTP) 아래로 막고, 이 주파수 아래 베이스를 모노로. 마스터 탭에서 재고 바꿀 수 있어요',
     hm8d: '모든 값은 0~1/4, 300>6000, k1(…), <…> 처럼 움직일 수 있어요. 16분음표마다 다시 읽어요',
     vizSono: '소노그램', vizSonoTitle: '곡 전체의 스펙트럼. 곡이 흐르는 동안 마디 위치마다 채워져요',
     spaceFmt: 'space 는 {list} 중 하나예요', vizFmt: 'viz 다음에 배경 이름을 써요 (예: viz <terrain dots sono>/4)', vizUnknown: '"{n}" 배경이 없어요. {list} 또는 shader 줄의 이름을 써요',
@@ -957,6 +959,8 @@ const I18N = {
     codeLabel: 'Pattern code',
     // v2: control surface, pads in code, procedural composition
     keyLbl: 'KEY', barLbl: 'BAR', composeBtn: 'Compose', tabPerform: 'Perform', tabCompose: 'Compose', tabLoops: 'Loops', tabGuide: 'Guide',
+    tabMaster: 'Master', mstTitle: 'Mastering', mstSub: 'The last step for the whole song: loudness, dynamics, peaks', mstShort: 'last 3 s', mstMom: 'Momentary', mstInt: 'Integrated', mstTp: 'True peak', mstGr: 'Limiter', mstCorr: 'Phase', mstB_low: 'Low', mstB_mid: 'Mid', mstB_high: 'High', mstAuto: 'Gain to target', mstTarget: 'Target', mstOff: 'Off', mstOffT: 'Mastering off: only the classic limiter', mstT16: '-16 LUFS: Apple Music, podcasts', mstT14: '-14 LUFS: YouTube, Spotify', mstT11: '-11 LUFS: loud, still breathing', mstT9: '-9 LUFS: club loud', mstHintOff: 'Mastering is off, but the loudness and peaks are still measured. Pick a target: target goes on the master line and the band compressor and true-peak limiter come on.', mstHintOn: 'Mastering is on, with compression and the limiter but no loudness target.', mstHintT: 'The level moves slowly until the loudest part sits at {v} LUFS. Quiet parts stay quiet.', mst_bands: 'Bands', mst_monobass: 'Mono bass', mst_ceil: 'Ceiling', mstMoving: 'moves in the code', mstNone: 'off', mstReset: 'Measure again', mstCode: 'See the master line', spkTitle: 'Hear it on other speakers', spkSub: 'Only what you hear changes. Takes and exports stay as they are', spk_off: 'As is', spk_phone: 'Phone', spk_laptop: 'Laptop', spk_earbuds: 'Earbuds', spk_speaker: 'Bluetooth speaker', spk_car: 'Car', spk_tv: 'TV', spk_cube: 'Mix cube', spk_club: 'Club', spk_radio: 'AM radio', spkLbl: 'SPEAKER', spkCellTitle: 'Listening as another speaker. Tap for the real sound', lufsTitle: 'Loudness now (last 3 s, LUFS)',
+    p_target: 'loudness target in LUFS (-14 for streaming)', p_bands: 'three-band compression 0-1', p_ceil: 'true-peak ceiling dBTP', p_monobass: 'mono below this frequency (Hz)',
     padCode: 'Show pads as code', padCodeTitle: 'Writes the built-in pad definitions at the end of your code. Edit them and the pads change',
     padCodeHave: 'All built-in pads are already in your code', padCodeHead: '// pads: fx name key | actions … (edits apply right away, new lines add pads)', padCodeDone: 'Added the pad definitions at the end of the code', latch: 'toggle',
     gWash: 'Wash', gWashD: 'Raises the low cut and washes into reverb', gGate: 'Gate', gGateD: 'Chops the mix in sixteenths', gCrush: 'Crush', gCrushD: 'Bit-crushes the master',
@@ -993,7 +997,7 @@ const I18N = {
     hm4d: 'Use the bus name like a parameter on a track to send that much. Several tracks can share one effect',
     hm5d: 'The built-in delay: time in 16ths, feedback, filters, ducking',
     hm6d: 'The built-in reverb: pre-delay ms, filters, level, ducking',
-    hm7d: 'The master: glue compressor, 3-band EQ, stereo width, tape drive, limiter ceiling, gain into the limiter (dB)',
+    hm7d: 'The master: glue compressor, 3-band EQ, stereo width, tape drive, limiter ceiling, gain into the limiter (dB)', hm9d: 'Mastering: bring the loudest part to a loudness target (LUFS), compress three bands apart (0-1), keep even the peaks between samples under a ceiling (dBTP), and make the bass mono below a frequency. The Master tab measures it and changes it',
     hm8d: 'Every value can move: 0~1/4, 300>6000, k1(…), <…>. It is re-read every 16th',
     vizSono: 'Sonogram', vizSonoTitle: 'The whole song\'s spectrum, filled in at each bar as the song plays',
     spaceFmt: 'space is one of {list}', vizFmt: 'Write backdrop names after viz (e.g. viz <terrain dots sono>/4)', vizUnknown: 'No backdrop "{n}". Use {list} or a shader line\'s name',
@@ -1598,7 +1602,7 @@ const STRIP_PARAMS = ['gain', 'pan', 'hpf', 'lpf', 'low', 'mid', 'midf', 'high',
 const BUS_PARAMS = [...STRIP_PARAMS, 'delay', 'verb'];
 const VERB_PARAMS = ['gain', 'pre', 'hpf', 'lpf', 'duck'];
 const DELAY_PARAMS = ['gain', 'time', 'fb', 'hpf', 'lpf', 'duck'];
-const MASTER_PARAMS = ['thr', 'ratio', 'catk', 'crel', 'low', 'mid', 'midf', 'high', 'width', 'drive', 'limit', 'gain'];
+const MASTER_PARAMS = ['thr', 'ratio', 'catk', 'crel', 'low', 'mid', 'midf', 'high', 'width', 'drive', 'limit', 'gain', 'target', 'bands', 'ceil', 'monobass'];
 function mixParams(src, base, allowed) {
   const chunks = splitChunks(src, base), params = {};
   for (let i = 0; i < chunks.length; i++) {
