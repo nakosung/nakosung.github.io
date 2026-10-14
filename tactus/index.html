@@ -25,7 +25,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wdth,wght@75..100,400..700&family=Spline+Sans+Mono:wght@400;500;700&family=IBM+Plex+Sans+KR:wght@400;500;600;700&family=Archivo:wdth,wght@62..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&family=Nunito:wght@500..900&family=Gowun+Dodum&display=swap">
-<script>try { document.documentElement.dataset.skin = localStorage.getItem('tactus-skin') || 'field'; } catch (e) { document.documentElement.dataset.skin = 'field'; }</script>
+<script>/* the welcome page always opens in Field, the aluminium sampler; a skin picked here still carries to the instrument */ document.documentElement.dataset.skin = 'field';</script>
 <style>
 /* Layout: the wordmark is the instrument. Six letters, six tracks: while the demo plays each letter swells when its track hits.
    Under it, the real code of the song lights up note by note; below, four verbs (write, perform, compose, conduct) in one row, then the facts and the way in. */
@@ -140,7 +140,12 @@ html[lang=ko] body { word-break: keep-all; }
 .snip { font: 12px/1.6 var(--f-code); background: var(--scr); color: var(--scr-fg); border: 1px solid var(--scr-line); border-radius: 10px; padding: 10px 12px; margin: 0; white-space: pre-wrap; overflow-wrap: anywhere; }
 .snip .k { color: var(--c-name); font-weight: 700; } .snip .n { color: var(--c-num); } .snip .i { color: var(--c-inst); } .snip .g { color: var(--c-gen); font-weight: 700; } .snip .c { color: var(--scr-faint); }
 .minipads { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 5px; }
-.mp { --kc: var(--k-blue); position: relative; border: 1px solid var(--line); background: var(--raised); border-radius: 8px; padding: 6px 6px 5px; font: 600 11.5px/1.2 var(--f-body); text-align: left; cursor: pointer; color: var(--fg); box-shadow: var(--shadow); min-height: 44px; display: grid; align-content: space-between; }
+.heropads { margin-top: 14px; display: grid; gap: 6px; }
+.heropads > span { font-size: 12.5px; color: var(--dim); }
+#heropads { grid-template-columns: repeat(8, minmax(0, 1fr)); }
+#heropads .mp { min-height: 40px; }
+@media (max-width: 600px) { #heropads { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.mp { --kc: var(--k-blue); position: relative; touch-action: none; user-select: none; -webkit-user-select: none; border: 1px solid var(--line); background: var(--raised); border-radius: 8px; padding: 6px 6px 5px; font: 600 11.5px/1.2 var(--f-body); text-align: left; cursor: pointer; color: var(--fg); box-shadow: var(--shadow); min-height: 44px; display: grid; align-content: space-between; }
 .mp kbd { font: 500 10px/1 var(--f-code); color: var(--faint); }
 .mp[data-cat="rhythm"] { --kc: var(--k-yellow); } .mp[data-cat="struct"] { --kc: var(--k-orange); } .mp[data-cat="space"] { --kc: var(--k-green); } .mp[data-cat="mod"] { --kc: var(--k-violet); }
 .mp[aria-pressed="true"], .mp.flash { background: var(--kc); border-color: var(--kc); color: var(--on-key); }
@@ -356,6 +361,7 @@ html[lang=ko] body { word-break: keep-all; }
           <a class="btn ext" href="./play/" data-ko="Tactus 열기" data-en="Open Tactus">Tactus 열기</a>
         </div>
         <div class="tracks" id="tracks" role="group" aria-label="Demo"></div>
+        <div class="heropads"><span data-ko="누르고 있는 동안 데모에 걸려요" data-en="Hold to play them on the demo">누르고 있는 동안 데모에 걸려요</span><div class="minipads" id="heropads" role="group" aria-label="Pads"></div></div>
       </div>
       <div class="screen">
         <div class="scr-top"><i class="dot" id="dot"></i><span id="fname">trance</span><span class="sp"></span><span><output id="bpm">138</output> BPM</span><span>BAR <output id="bar">1.1</output></span></div>
@@ -376,7 +382,7 @@ html[lang=ko] body { word-break: keep-all; }
     </article>
     <article class="verb">
       <h2>Perform <span class="ko" data-ko="· 패드도 코드" data-en="">· 패드도 코드</span></h2>
-      <p data-ko="빌드업, 비트 리피트, 게이트, 에코 아웃 같은 DJ 동작 12개가 키보드에 붙어 있어요. 패드를 눌러 보면 그 패드를 만든 한 줄이 보여요. 고치거나 새로 쓰면 그대로 패드가 돼요." data-en="Twelve DJ moves sit on your keyboard: build-up, beat repeat, gate, echo out and more. Press a pad to see the one line that defines it. Edit it or write your own and it becomes a pad.">빌드업, 비트 리피트, 게이트, 에코 아웃 같은 DJ 동작 12개가 키보드에 붙어 있어요. 패드를 눌러 보면 그 패드를 만든 한 줄이 보여요. 고치거나 새로 쓰면 그대로 패드가 돼요.</p>
+      <p data-ko="빌드업, 비트 리피트, 게이트, 에코 아웃 같은 DJ 동작 16개가 키보드에 붙어 있어요. 여기서도 눌러 보세요: 누르고 있는 동안 위의 데모 곡에 바로 걸리고, 그 패드를 만든 한 줄이 보여요. 고치거나 새로 쓰면 그대로 패드가 돼요." data-en="Sixteen DJ moves sit on your keyboard: build-up, beat repeat, gate, echo out and more. Try them here: hold a pad (or its key) and it plays on the demo above, with the one line that defines it. Edit it or write your own and it becomes a pad.">빌드업, 비트 리피트, 게이트, 에코 아웃 같은 DJ 동작 16개가 키보드에 붙어 있어요. 여기서도 눌러 보세요: 누르고 있는 동안 위의 데모 곡에 바로 걸리고, 그 패드를 만든 한 줄이 보여요. 고치거나 새로 쓰면 그대로 패드가 돼요.</p>
       <div class="minipads" id="minipads"></div>
       <pre class="snip" id="padline"></pre>
     </article>
@@ -3631,7 +3637,8 @@ function ensureAudio() {
   if (ctx) return;
   ctx = new (window.AudioContext || window.webkitAudioContext)();
   an = ctx.createAnalyser(); an.fftSize = 1024; an.smoothingTimeConstant = 0.78; an.connect(ctx.destination);
-  for (const d of DEMO_LIST) { try { ctx.createMediaElementSource(d.audio).connect(an); } catch (e) { } }
+  fxBuild();
+  for (const d of DEMO_LIST) { try { ctx.createMediaElementSource(d.audio).connect(FX.n.in); } catch (e) { } }
 }
 async function start() {
   ensureAudio(); if (ctx.state !== 'running') await ctx.resume();
@@ -3761,8 +3768,101 @@ function showPad(n) {
   $('#padline').innerHTML = m ? `<span class="i">fx</span> <span class="k">${m[1]}</span> <span class="n">${esc(m[2])}</span> <span class="c">|</span> ${esc(m[3]).replace(/(-?\.?\d[\d.>]*)/g, '<span class="n">$1</span>')}` : '';
   document.querySelectorAll('.mp').forEach(b => b.setAttribute('aria-pressed', b.dataset.n === n));
 }
-$('#minipads').addEventListener('click', e => { const b = e.target.closest('.mp'); if (b) showPad(b.dataset.n); });
 showPad('gate');
+// the most hands-on pads, again under the demo player
+const HERO_PADS = ['filter', 'build', 'rep4', 'rep16', 'gate', 'throw', 'wash', 'crush'];
+$('#heropads').innerHTML = HERO_PADS.map(n => DEFAULT_PADS.find(p => p.name === n)).map(p => `<button class="mp" type="button" data-cat="${CAT[p.acts[0].op] || 'tone'}" data-n="${p.name}" aria-pressed="false"><span>${p.name}</span><kbd>${esc(p.key)}</kbd></button>`).join('');
+
+// ---- the pads, playable on the demo: held down, each one changes the music as it does in the instrument ----
+// The demos are finished recordings, so the pads work on the whole mix with Web Audio nodes: filters, a beat-repeat
+// loop, a delay throw, a reverb wash, a gate, a crusher. Timing comes from the demo's own bar position, so repeats and
+// gates land on the grid.
+const FX = { n: null, held: new Map() };
+function fxBuild() {
+  const c = ctx, bq = (type, f, q = 0.7) => { const b = c.createBiquadFilter(); b.type = type; b.frequency.value = f; b.Q.value = q; return b; }, g = v => { const n = c.createGain(); n.gain.value = v; return n; };
+  const n = FX.n = { in: g(1), src: g(1), lp: bq('lowpass', 20000), hp: bq('highpass', 10), ls: bq('lowshelf', 250), crush: c.createWaveShaper(), gate: g(1), dry: g(1) };
+  n.chain = [n.in, n.src, n.lp, n.hp, n.ls, n.crush, n.gate, n.dry]; for (let i = 0; i < n.chain.length - 1; i++) n.chain[i].connect(n.chain[i + 1]);
+  n.dry.connect(an);
+  // beat repeat: what comes in for one step is caught in a delay that feeds itself; it joins the chain after src, so
+  // the music can be muted under it
+  n.cap = g(0); n.loop = c.createDelay(4); n.lfb = g(0); n.lout = g(0);
+  n.in.connect(n.cap); n.cap.connect(n.loop); n.loop.connect(n.lfb); n.lfb.connect(n.loop); n.loop.connect(n.lout); n.lout.connect(n.lp);
+  // delay throw and reverb wash, after the gate
+  n.ts = g(0); n.td = c.createDelay(4); n.tf = g(0.5); n.tl = bq('lowpass', 3500);
+  n.gate.connect(n.ts); n.ts.connect(n.td); n.td.connect(n.tl); n.tl.connect(n.tf); n.tf.connect(n.td); n.tl.connect(an);
+  n.vs = g(0); n.cv = c.createConvolver(); n.vo = g(0.8);
+  const len = Math.round(c.sampleRate * 2.6), ir = c.createBuffer(2, len, c.sampleRate);
+  for (let ch = 0; ch < 2; ch++) { const d = ir.getChannelData(ch); for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3); }
+  n.cv.buffer = ir; n.gate.connect(n.vs); n.vs.connect(n.cv); n.cv.connect(n.vo); n.vo.connect(an);
+}
+const fxBar = () => 1 / cur.meta.cps;
+const fxPos = () => cur.meta.pos0 + cur.audio.currentTime * cur.meta.cps;
+// the context time of the next step of this length (in bars)
+function fxNext(step) { const p = fxPos(), q = Math.ceil(p / step - 1e-3) * step; return ctx.currentTime + (q - p) / cur.meta.cps; }
+const fxSet = (param, v, at, tc = 0.02) => { param.cancelScheduledValues(at); param.setTargetAtTime(v, at, tc); };
+function crushCurve(bits) { const n = 2048, k = Math.pow(2, bits - 1), a = new Float32Array(n); for (let i = 0; i < n; i++) { const x = i / (n - 1) * 2 - 1; a[i] = Math.round(x * k) / k; } return a; }
+function fxRepeat(step, lp) {
+  const n = FX.n, t0 = fxNext(step), L = step * fxBar();
+  n.loop.delayTime.setValueAtTime(L, ctx.currentTime);
+  n.lfb.gain.cancelScheduledValues(0); n.lfb.gain.setValueAtTime(0, ctx.currentTime); n.lfb.gain.setValueAtTime(1, t0);
+  n.cap.gain.cancelScheduledValues(0); n.cap.gain.setValueAtTime(1, t0); n.cap.gain.setValueAtTime(0, t0 + L);
+  fxSet(n.lout.gain, 1, t0 + L, 0.003); fxSet(n.src.gain, 0, t0 + L, 0.003);
+  if (lp) fxSet(n.lp.frequency, lp, t0 + L, 0.05);
+}
+function fxRepeatOff() { const n = FX.n, now = ctx.currentTime; fxSet(n.lout.gain, 0, now, 0.005); fxSet(n.src.gain, 1, now, 0.005); n.cap.gain.cancelScheduledValues(0); n.cap.gain.setValueAtTime(0, now); n.lfb.gain.cancelScheduledValues(0); n.lfb.gain.setValueAtTime(0, now + 0.05); }
+function fxImpact(at) {
+  const o = ctx.createOscillator(), og = ctx.createGain(); o.frequency.setValueAtTime(110, at); o.frequency.exponentialRampToValueAtTime(32, at + 0.9);
+  og.gain.setValueAtTime(0.9, at); og.gain.exponentialRampToValueAtTime(0.001, at + 1.1); o.connect(og); og.connect(an); o.start(at); o.stop(at + 1.2);
+  const nb = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate), d = nb.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / d.length, 4);
+  const ns = ctx.createBufferSource(), ng = ctx.createGain(), hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 3000; ng.gain.value = 0.35;
+  ns.buffer = nb; ns.connect(hp); hp.connect(ng); ng.connect(an); ns.start(at);
+}
+const FX_ACT = {
+  filter: { on: n => { fxSet(n.lp.frequency, 320, ctx.currentTime, 0.08); fxSet(n.lp.Q, 7, ctx.currentTime, 0.05); }, off: n => { fxSet(n.lp.frequency, 20000, ctx.currentTime, 0.15); fxSet(n.lp.Q, 0.7, ctx.currentTime, 0.05); } },
+  build: { on: n => {
+      const now = ctx.currentTime, b = fxBar(); n.hp.frequency.cancelScheduledValues(now); n.hp.frequency.setValueAtTime(n.hp.frequency.value, now); n.hp.frequency.exponentialRampToValueAtTime(1800, now + b * 2);
+      const nb = ctx.createBuffer(1, ctx.sampleRate * 4, ctx.sampleRate), d = nb.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      const src = ctx.createBufferSource(), bp = ctx.createBiquadFilter(), rg = ctx.createGain(); src.buffer = nb; src.loop = true; bp.type = 'bandpass'; bp.Q.value = 3;
+      bp.frequency.setValueAtTime(400, now); bp.frequency.exponentialRampToValueAtTime(8000, now + b * 2); rg.gain.setValueAtTime(0.0001, now); rg.gain.exponentialRampToValueAtTime(0.35, now + b * 2);
+      src.connect(bp); bp.connect(rg); rg.connect(an); src.start(now); FX.riser = { src, rg };
+    }, off: n => { const now = ctx.currentTime; fxSet(n.hp.frequency, 10, now, 0.02); if (FX.riser) { FX.riser.rg.gain.cancelScheduledValues(now); FX.riser.rg.gain.setTargetAtTime(0, now, 0.01); FX.riser.src.stop(now + 0.1); FX.riser = null; } fxImpact(now + 0.01); } },
+  rep4: { on: () => fxRepeat(1 / 4), off: fxRepeatOff }, rep8: { on: () => fxRepeat(1 / 8), off: fxRepeatOff }, rep16: { on: () => fxRepeat(1 / 16), off: fxRepeatOff },
+  fill: { on: () => fxRepeat(1 / 16), off: fxRepeatOff }, freeze: { on: () => fxRepeat(1 / 32, 3500), off: n => { fxRepeatOff(); fxSet(n.lp.frequency, 20000, ctx.currentTime, 0.1); } },
+  break: { on: n => { fxSet(n.hp.frequency, 380, ctx.currentTime, 0.05); fxSet(n.lp.frequency, 2600, ctx.currentTime, 0.05); }, off: n => { fxSet(n.hp.frequency, 10, ctx.currentTime, 0.05); fxSet(n.lp.frequency, 20000, ctx.currentTime, 0.05); } },
+  throw: { on: n => { n.td.delayTime.value = fxBar() * 3 / 16; n.tf.gain.value = 0.55; fxSet(n.ts.gain, 0.5, ctx.currentTime, 0.01); }, off: n => fxSet(n.ts.gain, 0, ctx.currentTime, 0.01) },
+  echo: { on: n => { n.td.delayTime.value = fxBar() * 3 / 16; n.tf.gain.value = 0.72; fxSet(n.ts.gain, 1, ctx.currentTime, 0.01); fxSet(n.src.gain, 0, ctx.currentTime, fxBar() / 3); }, off: n => { fxSet(n.ts.gain, 0, ctx.currentTime, 0.01); fxSet(n.src.gain, 1, ctx.currentTime, 0.02); } },
+  wash: { on: n => { const now = ctx.currentTime; n.hp.frequency.cancelScheduledValues(now); n.hp.frequency.setValueAtTime(200, now); n.hp.frequency.exponentialRampToValueAtTime(2400, now + fxBar() * 2); fxSet(n.vs.gain, 0.8, now, 0.05); }, off: n => { fxSet(n.hp.frequency, 10, ctx.currentTime, 0.05); fxSet(n.vs.gain, 0, ctx.currentTime, 0.2); } },
+  gate: { on: n => { const g = n.gate.gain, st = fxBar() / 16, t0 = fxNext(1 / 16); g.cancelScheduledValues(0); for (let k = 0; k < 256; k++) g.setValueAtTime(k % 2 ? 0 : 1, t0 + k * st); }, off: n => { n.gate.gain.cancelScheduledValues(0); n.gate.gain.setValueAtTime(1, ctx.currentTime); } },
+  crush: { on: n => { n.crush.curve = crushCurve(5); fxSet(n.lp.frequency, 7000, ctx.currentTime, 0.02); }, off: n => { n.crush.curve = null; fxSet(n.lp.frequency, 20000, ctx.currentTime, 0.02); } },
+  kill: { on: n => fxSet(n.ls.gain, -30, ctx.currentTime, 0.02), off: n => fxSet(n.ls.gain, 0, ctx.currentTime, 0.02) },
+  up: { on: () => { cur.audio.preservesPitch = false; cur.audio.playbackRate = 2; }, off: () => { cur.audio.playbackRate = 1; } },
+  drop: { on: () => fxImpact(fxNext(1 / 4)), off: () => { } },
+};
+async function padDown(name) {
+  if (FX.held.has(name)) return;
+  showPad(name);
+  if (!playing) await start();
+  if (!playing || !FX.n) return;
+  const a = FX_ACT[name]; if (!a) return;
+  FX.held.set(name, true); a.on(FX.n);
+  document.querySelectorAll(`.mp[data-n="${name}"]`).forEach(b => b.classList.add('flash'));
+}
+function padUp(name) {
+  if (!FX.held.has(name)) return;
+  FX.held.delete(name); FX_ACT[name].off(FX.n);
+  document.querySelectorAll(`.mp[data-n="${name}"]`).forEach(b => b.classList.remove('flash'));
+}
+for (const mp of [$('#minipads'), $('#heropads')]) {
+mp.addEventListener('pointerdown', e => { const b = e.target.closest('.mp'); if (!b) return; e.preventDefault(); try { b.setPointerCapture(e.pointerId); } catch (err) { } padDown(b.dataset.n); });
+mp.addEventListener('pointerup', e => { const b = e.target.closest('.mp'); if (b) padUp(b.dataset.n); });
+mp.addEventListener('pointercancel', e => { const b = e.target.closest('.mp'); if (b) padUp(b.dataset.n); });
+mp.addEventListener('keydown', e => { if ((e.key === ' ' || e.key === 'Enter') && e.target.closest('.mp') && !e.repeat) { e.preventDefault(); padDown(e.target.closest('.mp').dataset.n); } });
+mp.addEventListener('keyup', e => { if ((e.key === ' ' || e.key === 'Enter') && e.target.closest('.mp')) padUp(e.target.closest('.mp').dataset.n); });
+}
+// the instrument's keys work here too
+addEventListener('keydown', e => { if (e.repeat || e.metaKey || e.ctrlKey || e.altKey || /input|textarea|select/i.test(e.target.tagName)) return; const p = DEFAULT_PADS.find(p => p.key.toLowerCase() === e.key.toLowerCase()); if (p) { e.preventDefault(); padDown(p.name); } });
+addEventListener('keyup', e => { const p = DEFAULT_PADS.find(p => p.key.toLowerCase() === e.key.toLowerCase()); if (p) padUp(p.name); });
+addEventListener('blur', () => { for (const n of [...FX.held.keys()]) padUp(n); });
 
 // ---- compose: the real generator, run right here ----
 const SN = { house: 'House', techno: 'Techno', dnb: 'DnB', lofi: 'Lo-fi', trance: 'Trance', synthwave: 'Synthwave', ambient: 'Ambient', jazz: 'Jazz' };

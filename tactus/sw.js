@@ -2,7 +2,7 @@
 // Pages come from the network first, so an update is seen on the next launch, and from the cache when offline.
 // Fonts and the hand-tracking model come from other sites; they are kept after the first use (and refreshed in the
 // background), so hands and skins still work offline once they have been used once.
-const VERSION = '20261014051535';
+const VERSION = '20261014052824';
 const CORE = 'tactus-core-' + VERSION, EXTRA = 'tactus-extra';
 const PRECACHE = ['./', './play/', './manifest.webmanifest', './favicon.svg', './favicon-32.png', './apple-touch-icon.png', './icon-192.png', './icon-512.png', './icon-maskable-512.png'];
 const EXTRA_HOSTS = ['fonts.googleapis.com', 'fonts.gstatic.com', 'cdn.jsdelivr.net', 'storage.googleapis.com'];
