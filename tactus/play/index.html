@@ -280,6 +280,10 @@ body.recording .editor { border-color: var(--c-err); }
 .slots { display: grid; gap: 6px; }
 .slot { display: grid; grid-template-columns: 32px minmax(0, 1fr) auto auto auto auto; align-items: center; gap: 5px; padding: 6px; border-radius: var(--r-l); background: var(--panel); border: 1px solid var(--line); }
 .slot.drop { border-color: var(--k-blue); }
+.sl-stems { grid-column: 2 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+.sl-stems[hidden] { display: none; }
+.sl-stems .seg button { font-size: 11.5px; padding: 4px 8px; }
+.sl-sep { font-size: 11.5px; color: var(--dim); }
 .slot .rec { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--line); background: var(--raised); cursor: pointer; display: grid; place-items: center; padding: 0; box-shadow: var(--shadow); }
 .slot .rec i { width: 11px; height: 11px; border-radius: 50%; background: var(--k-pink); }
 .slot.armed .rec { animation: blink .5s steps(2) infinite; }
@@ -1002,7 +1006,7 @@ body.mob.mland .pad { min-height: 60px; }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.14 14:28<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.14 14:43<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -1410,6 +1414,8 @@ const I18N = {
     pdt_1_16: '16분', pdt_1_8: '8분', pdt_3_16: '점8분', pdt_1_4: '4분', pdt_3_8: '점4분', pdt_1_2: '2분', pdt_3_4: '점2분', pdBars: '{n}마디', pdHarmUp: '{n}도 위', pdHarmDown: '{n}도 아래', pdWahLevel: '소리 따라',
     lvDemo: '데모 기타로 듣기', lvDemoStop: '데모 끄기', lvDemoOn: '데모 기타 소리가 이펙터를 지나가요. 준비된 소리나 페달을 바꿔 보세요.',
     pdEmpty: '페달 없음', pdOpen: '블록 보기에서 손잡이 돌리기',
+    sepSplit: '✂ 드럼 분리', sepSplitTitle: '이 루프를 드럼과 나머지로 나눠요. 둘을 같이 틀면 원래 루프와 같아요', sepBusy: '드럼을 나누는 중…', sepWorking: '{name}에서 드럼을 나누는 중…', sepDone: '{name}을 드럼과 나머지로 나눴어요. 찾은 드럼: {kinds}', sepStems: '무엇을 들을지', sep_all: '전부', sep_drums: '드럼만', sep_nodrums: '드럼 빼기', sepCode: '드럼을 코드로', sepCodeTitle: '분리한 드럼을 kick·snare·hat 줄로 쓰고, 루프의 드럼은 꺼요. 내 킷으로 같은 비트를 쳐요', sepCoded: '드럼 줄 {n}개를 넣고 {name}의 드럼은 껐어요.', sepNoBeat: '코드로 쓸 만한 드럼을 찾지 못했어요.',
+    p_drums: '루프의 드럼 크기 (드럼 분리 뒤) 0–1', p_rest: '루프에서 드럼을 뺀 나머지의 크기 (드럼 분리 뒤) 0–1',
     vxTitle: '목소리로 쓰기', vxIntro: '"둠 츠 칙 츠" 비트박스나 흥얼거린 멜로디를 마디에 맞춰 녹음하면 코드 줄로 바꿔요. 한 마디 동안 박자 소리로 준비를 세고 시작해요. 스피커로 들을 때는 녹음하는 동안 음악을 잠시 끄고 박자 소리만 들려줘요.', vxBeat: '비트박스', vxHum: '허밍', vxModeLbl: '무엇을 녹음할지', vxBarsLbl: '마디', vxRec: '녹음', vxCancel: '녹음 취소', vxCount: '{m} 준비… 박자에 맞춰 들어오세요', vxRecBanner: '{m} 녹음 {bar}/{bars}마디', vxBusy: '루프 녹음이 끝난 뒤에 해 주세요.', vxQuiet: '소리가 거의 들리지 않았어요. 마이크에 조금 더 가까이 대고 다시 해 보세요.', vxNothing: '알아들을 만한 소리를 찾지 못했어요. 조금 더 또렷하게 해 보세요.', vxBeatDone: '{n}번 친 소리를 찾았어요. 낮은 소리는 kick, 중간은 snare, 높고 짧은 소리는 hat이에요.', vxHumDone: '{k} 음계에 맞췄어요.', vxShift: '{n}옥타브 올렸어요.', vxInsert: '코드에 넣기', vxUndo: '되돌리기', vxInserted: '넣었어요. 다음 마디부터 들려요.', vxUndone: '넣기 전으로 돌렸어요.',
     share: '공유', shareTitle: '이 곡을 링크나 녹음으로 보내요', shareTitle2: '이 곡 공유하기', shareLink: '링크로 보내기', shareLinkD: '코드 전체가 링크 안에 들어가요. 받는 사람이 열면 이 곡이 그대로 열리고, 고쳐서 다시 보낼 수도 있어요.', shareSend: '보내기…', shareCopy: '링크 복사', shareCopied: '링크를 복사했어요', shareChars: '자', shareAudio: '소리로 보내기', shareAudioD: '다음 마디부터 연주를 그대로 녹음해 오디오 파일로 만들어요. 멈춰 있으면 처음부터 틀면서 녹음해요.', shareB4: '4마디', shareB8: '8마디', shareB16: '16마디', shareWhole: '곡 전체', shareStop: '녹음 끝내기', shareWaiting: '다음 마디에서 녹음을 시작해요…', shareRecording: '녹음 중 {a}/{b}마디', shareReady: '{s}초 녹음했어요 ({kb} KB)', shareSendFile: '파일 보내기…', shareSave: '저장', shareSaved: '{n} 파일로 저장했어요', shareHint: '휴대폰에서 "보내기"를 누르면 공유 창이 열려 카카오톡, 메시지, 메일 등으로 바로 보낼 수 있어요.', shareNoRec: '이 브라우저는 녹음을 지원하지 않아요.', shareText: 'Tactus로 만든 곡: {n}', shareMine: '내 곡', shareOpened: '공유받은 곡을 열었어요. 원래 코드는 보관해 뒀어요.', shareUndo: '내 코드로 되돌리기', shareBad: '링크가 잘려서 곡을 열 수 없어요. 링크 전체를 받았는지 확인해 주세요.',
     install: '앱으로 설치', installTitle: 'Tactus를 앱으로 설치해 바탕화면이나 홈 화면에서 바로 열어요', installDone: '설치했어요. 이제 앱 목록이나 홈 화면에서 Tactus를 열 수 있어요.', installIos: 'Safari 아래쪽의 공유 버튼을 누르고 "홈 화면에 추가"를 고르세요.', installMenu: '브라우저 메뉴(⋮)에서 "앱 설치" 또는 "홈 화면에 추가"를 고르세요.',
@@ -1654,6 +1660,8 @@ const I18N = {
     pdt_1_16: '1/16', pdt_1_8: '1/8', pdt_3_16: 'dotted 1/8', pdt_1_4: '1/4', pdt_3_8: 'dotted 1/4', pdt_1_2: '1/2', pdt_3_4: 'dotted 1/2', pdBars: '{n} bar(s)', pdHarmUp: 'a {o} up', pdHarmDown: 'a {o} down', pdWahLevel: 'by level',
     lvDemo: 'Hear it on a demo guitar', lvDemoStop: 'Stop the demo', lvDemoOn: 'A demo guitar is going through the effects. Try the ready-made sounds or change the pedals.',
     pdEmpty: 'No pedals', pdOpen: 'Turn the knobs in the block view',
+    sepSplit: '✂ Separate drums', sepSplitTitle: 'Split this loop into its drums and the rest. Played together they are the loop as it was', sepBusy: 'Separating the drums…', sepWorking: 'Separating the drums in {name}…', sepDone: '{name} is split into drums and the rest. Drums found: {kinds}', sepStems: 'What to hear', sep_all: 'All', sep_drums: 'Drums only', sep_nodrums: 'No drums', sepCode: 'Drums to code', sepCodeTitle: 'Write the separated drums as kick, snare and hat lines and turn the loop\'s own drums off, so your kit plays the same beat', sepCoded: 'Added {n} drum lines and turned off the drums in {name}.', sepNoBeat: 'No drums clear enough to write down.',
+    p_drums: 'level of the loop\'s drums (after separating) 0–1', p_rest: 'level of the loop without its drums (after separating) 0–1',
     vxTitle: 'Sing it in', vxIntro: 'Beatbox ("boom ts chik ts") or hum a tune in time with the bar and it becomes code. A bar of clicks counts you in. On speakers the music is muted while you record, and only the clicks play.', vxBeat: 'Beatbox', vxHum: 'Hum', vxModeLbl: 'What to record', vxBarsLbl: 'bars', vxRec: 'Record', vxCancel: 'Cancel', vxCount: '{m}: get ready… come in on the beat', vxRecBanner: '{m}: recording bar {bar} of {bars}', vxBusy: 'Wait until the loop recording is done.', vxQuiet: 'Almost nothing came through. Get a little closer to the mic and try again.', vxNothing: 'Nothing clear enough was heard. Try again a little more crisply.', vxBeatDone: 'Found {n} hits. Low sounds became kick, middle ones snare, high short ones hat.', vxHumDone: 'Fitted to {k}.', vxShift: 'Moved up {n} octave(s).', vxInsert: 'Put in the code', vxUndo: 'Undo', vxInserted: 'Added. You will hear it from the next bar.', vxUndone: 'Back to how it was.',
     share: 'Share', shareTitle: 'Send this song as a link or a recording', shareTitle2: 'Share this song', shareLink: 'Send a link', shareLinkD: 'The whole code goes inside the link. Whoever opens it gets this song as it is, and can change it and send it back.', shareSend: 'Send…', shareCopy: 'Copy link', shareCopied: 'Link copied', shareChars: ' characters', shareAudio: 'Send the sound', shareAudioD: 'Records the music from the next bar into an audio file. If it is stopped, it starts playing from the top.', shareB4: '4 bars', shareB8: '8 bars', shareB16: '16 bars', shareWhole: 'Whole song', shareStop: 'Stop recording', shareWaiting: 'Recording starts on the next bar…', shareRecording: 'Recording bar {a} of {b}', shareReady: 'Recorded {s} s ({kb} KB)', shareSendFile: 'Send file…', shareSave: 'Save', shareSaved: 'Saved as {n}', shareHint: 'On a phone, Send opens the share sheet, so it goes straight to KakaoTalk, Messages, mail and the rest.', shareNoRec: 'This browser cannot record.', shareText: 'A song made in Tactus: {n}', shareMine: 'my song', shareOpened: 'Opened a shared song. Your own code is kept.', shareUndo: 'Back to my code', shareBad: 'This link is cut short, so the song cannot open. Check that the whole link came through.',
     install: 'Install app', installTitle: 'Install Tactus as an app and open it from your desktop or home screen', installDone: 'Installed. Open Tactus from your apps or home screen.', installIos: 'Tap Share at the bottom of Safari, then choose "Add to Home Screen".', installMenu: 'Open the browser menu (⋮) and choose "Install app" or "Add to Home screen".',
@@ -2287,7 +2295,7 @@ const NAME_INST = [
   ['upright', 'upright'], ['dbass', 'upright'], ['contrabass', 'upright'], ['grand', 'piano'], ['vibe', 'vibes'], ['harpsi', 'harpsi'], ['cembalo', 'harpsi'], ['harp', 'harp'], ['sax', 'sax'], ['marimba', 'marimba'], ['kalimba', 'kalimba'], ['dantranh', 'dantranh'], ['jing', 'jing'],
   ['swarm', 'swarm'], ['choir', 'choir'], ['plate', 'plate'], ['membrane', 'membrane'], ['timp', 'membrane'], ['nsax', 'nsax'], ['daegeum', 'flute'], ['flute', 'flute'], ['haegeum', 'bowed'], ['string', 'bowed'], ['keys', 'epiano'], ['rhodes', 'epiano'], ['piano', 'piano'],
 ];
-const PARAMS = ['gain', 'pan', 'oct', 'cut', 'res', 'env', 'atk', 'dec', 'sus', 'rel', 'len', 'delay', 'verb', 'duck', 'shape', 'detune', 'tune', 'slices', 'hpf', 'low', 'high', 'drive', 'width', 'vib', 'slide', 'acc', 'bright', 'wave', 'sub', 'glide',
+const PARAMS = ['drums', 'rest', 'gain', 'pan', 'oct', 'cut', 'res', 'env', 'atk', 'dec', 'sus', 'rel', 'len', 'delay', 'verb', 'duck', 'shape', 'detune', 'tune', 'slices', 'hpf', 'low', 'high', 'drive', 'width', 'vib', 'slide', 'acc', 'bright', 'wave', 'sub', 'glide',
   // the synth engine: filter envelope and type, pitch envelope, noise, unison, pulse width, sync, ring, wavetable, FM, vowel
   'fatk', 'fdec', 'fsus', 'ftype', 'penv', 'pdec', 'noise', 'voices', 'pw', 'sync', 'ring', 'table', 'scan', 'fm', 'ratio', 'feed', 'fmdec', 'vowel', 'vel', 'nudge', 'human', 'swing', 'sgrid', 'comp', 'rate', 'tr', 'range', 'seed', 'dens', 'evolve', 'bars',
   // channel strip: more EQ, insert effects, compressor detail
@@ -4621,7 +4629,7 @@ function stripAt(r, P, time) {
 }
 
 // ---------- params ----------
-const BASE = { gain: 0.8, pan: 0, delay: 0, verb: 0, duck: 0, len: 1, shape: 0, detune: 18, tune: 1, dec: 1, hpf: 20, low: 0, high: 0, drive: 0, width: 0.7, vib: 0, slide: 0, acc: 0, bright: 0.6, wave: 0, sub: 0, glide: 0,
+const BASE = { drums: 1, rest: 1, gain: 0.8, pan: 0, delay: 0, verb: 0, duck: 0, len: 1, shape: 0, detune: 18, tune: 1, dec: 1, hpf: 20, low: 0, high: 0, drive: 0, width: 0.7, vib: 0, slide: 0, acc: 0, bright: 0.6, wave: 0, sub: 0, glide: 0,
   ftype: -1, fatk: 0, fdec: -1, fsus: 0, penv: 0, pdec: 0.05, noise: 0, voices: 1, pw: 0.5, sync: 1, ring: 0, table: 0, scan: 0, fm: 2, ratio: 2, feed: 0, fmdec: 0, vowel: -1, vel: 1, nudge: 0, human: 0, swing: 0, sgrid: 16, comp: 0, rate: 16, tr: 0, range: 7 };
 // slope: filter steepness in dB/octave. hpf: default track high-pass so pads and leads leave room for kick and bass
 const INST = {
@@ -8224,8 +8232,18 @@ function playRegion(slot, from, to, atC, pdef, fade) {
   nodes.pan.pan.setValueAtTime(Math.max(-1, Math.min(1, P.pan)), time);
   stripAt(r, P, time);
   const rate = S.cps / v.cps, bs = buf.duration;
-  const src = playBuf(nodes.in, buf, time, within * bs, (to - from) * bs, rate, fade);
-  slot.srcs.push({ src, end: timeOf(atC + (to - from)) });
+  // a separated loop plays its two stems, each at its own level (drums, rest); together at 1 they are the loop
+  const st = v === slot && sepValid(slot) ? slot.stems : null, gd = Math.max(0, P.drums), gr = Math.max(0, P.rest);
+  if (st && (gd !== 1 || gr !== 1)) {
+    for (const [bufs, g] of [[st.drums, gd], [st.rest, gr]]) {
+      if (g <= 0) continue;
+      const gn = S.ctx.createGain(); gn.gain.value = g; gn.connect(nodes.in);
+      slot.srcs.push({ src: playBuf(gn, bufs[bi], time, within * bs, (to - from) * bs, rate, fade), end: timeOf(atC + (to - from)) });
+    }
+  } else {
+    const src = playBuf(nodes.in, buf, time, within * bs, (to - from) * bs, rate, fade);
+    slot.srcs.push({ src, end: timeOf(atC + (to - from)) });
+  }
   if (slot.srcs.length > 24) slot.srcs = slot.srcs.filter(s => s.end > now);
   slot.lastPlay = { time, pos: bi + within, bars: v.bars };
   if (pdef) S.vis.push({ time, id: '', line: pdef.line });
@@ -8282,6 +8300,54 @@ function playChop(def, ev, time, dur, P) {
 function resetLoops() {
   for (const s of LS.slots) { stopSlotSources(s, S.ctx ? S.ctx.currentTime : 0); s.cover = -Infinity; s.waiting = null; }
 }
+
+// ---------- drum separation (sep.js) ----------
+// The stems belong to the bars they were made from: a new take, a load, an undo or a clear makes them stale.
+function sepValid(slot) { const st = slot.stems; return !!(st && slot.bufs && st.of.length === slot.bufs.length && st.of.every((b, k) => b === slot.bufs[k])); }
+function sepSlot(i) {
+  const slot = LS.slots[i]; if (!slot.bufs || !slot.bufs.every(Boolean) || slot.sepBusy) return;
+  const fr = slot.bufs[0].length, n = fr * slot.bufs.length, L = new Float32Array(n), R = new Float32Array(n);
+  slot.bufs.forEach((b, k) => { L.set(b.getChannelData(0), k * fr); R.set(b.getChannelData(b.numberOfChannels > 1 ? 1 : 0), k * fr); });
+  const msg = { L, R, sr: S.ctx.sampleRate, bars: slot.bars, barSec: 1 / slot.cps }, of = slot.bufs.slice();
+  slot.sepBusy = true; loopMsg(t('sepWorking', { name: slot.name }), '', 60000); renderLoops();
+  const done = d => {
+    slot.sepBusy = false;
+    if (slot.bufs.length !== of.length || !of.every((b, k) => b === slot.bufs[k])) { renderLoops(); return; }
+    const cut = (ch, k) => ch.subarray(k * fr, (k + 1) * fr), mk = arr => of.map((_, k) => makeBuf(cut(arr[0], k), cut(arr[1] || arr[0], k), 0, fr));
+    slot.stems = { of, drums: mk(d.drums), rest: mk(d.rest), lines: d.lines, peaks: null };
+    const nk = Object.keys(d.lines).length;
+    loopMsg(t('sepDone', { name: slot.name, kinds: nk ? Object.keys(d.lines).join(', ') : '—' }), 'ok', 6000); renderLoops();
+  };
+  try {
+    if (!LS.sepUrl) LS.sepUrl = URL.createObjectURL(new Blob([sepWorkerSrc()], { type: 'text/javascript' }));
+    const w = new Worker(LS.sepUrl);
+    w.onmessage = e => { w.terminate(); done(e.data); };
+    w.onerror = e => { w.terminate(); e.preventDefault(); inline(); };
+    w.postMessage(msg, [L.buffer, R.buffer]);
+  } catch (e) { inline(); }
+  // no workers here: do it on the page after a frame, so the message shows first
+  function inline() { setTimeout(() => { const o = sepSplit(msg.L, msg.R, msg.sr), b = sepBeats(o.spec, msg.bars, msg.barSec); done({ drums: o.drums, rest: o.rest, lines: b.lines }); }, 30); }
+}
+// how the loop's line sets the two stems: all, drums only, no drums
+function sepMode(slot) { const d = S.tracks.get(slot.name), v = k => { const p = d && d.params[k]; return p && p.k === 'num' ? p.v : 1; }; const a = v('drums'), b = v('rest'); return a === 1 && b === 1 ? 'all' : a > 0 && b === 0 ? 'drums' : a === 0 && b > 0 ? 'nodrums' : 'mix'; }
+function sepSetMode(slot, mode) {
+  const [d, r] = { all: [1, 1], drums: [1, 0], nodrums: [0, 1] }[mode];
+  const lines = srcEl.value.split('\n'), i = lines.findIndex(l => new RegExp(`^\\s*${slot.name}\\b`).test(l) && !/^\s*\/\//.test(l));
+  if (i >= 0) { const p = bkSplit(lines[i]); if (p) { p.params = bkSetParam(bkSetParam(p.params, 'drums', d), 'rest', r); lines[i] = bkJoin(p); srcEl.value = lines.join('\n'); } }
+  else codeAddTrack(slot.name, `${slot.name} | drums ${d} rest ${r}`);
+  try { localStorage.setItem('pulse-src', srcEl.value); } catch (e) { }
+  render(); evaluate('bar'); renderLoops();
+}
+// the separated drums as code: kick, snare and hat lines on the loop's grid, and the loop's own drums turned off,
+// so the kit plays the beat the loop had
+function sepToCode(slot) {
+  const st = slot.stems; if (!st) return;
+  const pre = 'l' + (slot.i ? slot.i + 1 : ''), add = Object.entries(st.lines).map(([k, tok]) => ({ name: pre + k, pat: vxPattern(tok, slot.bars, false), params: k + (k === 'hat' ? ' gain .5' : k === 'snare' ? ' gain .7' : ' gain .9') }));
+  if (!add.length) { loopMsg(t('sepNoBeat'), 'bad'); return; }
+  LS.sepUndo = srcEl.value; codeInsertLines(add); sepSetMode(slot, 'nodrums');
+  loopMsg(t('sepCoded', { n: add.length, name: slot.name }), 'ok', 7000);
+}
+function sepUndo() { if (LS.sepUndo == null) return; srcEl.value = LS.sepUndo; LS.sepUndo = null; render(); evaluate('bar'); renderLoops(); loopMsg(t('vxUndone'), 'ok'); }
 
 // ---------- import ----------
 async function loadIntoSlot(i, file) {
@@ -9385,7 +9451,7 @@ srcEl.addEventListener('wheel', e => {
 }, { passive: false });
 
 // ---------- autocomplete ----------
-const AC_RANGES = { lpf: [300, 8000], mid: [-9, 6], midf: [200, 4000], chorus: [0, 1], phaser: [0, 1], dist: [0, .8], crush: [0, .8], thr: [-36, -6], ratio: [1.5, 8], catk: [1, 50], crel: [40, 400], bright: [.2, .9], slide: [0, 1], acc: [0, 1], sub: [0, 1], glide: [0, .3], fatk: [0, .5], fdec: [.05, 1], fsus: [0, 1], penv: [-24, 24], pdec: [.01, .3], noise: [0, .6], voices: [1, 7], pw: [.05, .95], sync: [1, 6], ring: [0, 1], scan: [0, 1], fm: [0, 8], ratio: [.5, 8], feed: [0, .8], fmdec: [.05, 1], vowel: [0, 4], hpf: [20, 800], low: [-12, 6], high: [-12, 6], drive: [0, .8], width: [0, 1], vib: [0, 30], cut: [300, 6000], gain: [0, 1], pan: [-1, 1], res: [1, 15], verb: [0, .8], delay: [0, .6], duck: [0, 1], shape: [0, .8], detune: [0, 40], env: [0, 1], oct: [2, 5], len: [.25, 1], atk: [.005, 1], dec: [.05, 1], sus: [0, 1], rel: [.05, 2], tune: [.7, 1.4], slices: [4, 16], vel: [.5, 1.3], nudge: [-30, 30], human: [0, 1], swing: [0, .6], sgrid: [8, 16], comp: [0, 1], rate: [4, 32], tr: [-7, 7], range: [3, 12] };
+const AC_RANGES = { drums: [0, 1], rest: [0, 1], lpf: [300, 8000], mid: [-9, 6], midf: [200, 4000], chorus: [0, 1], phaser: [0, 1], dist: [0, .8], crush: [0, .8], thr: [-36, -6], ratio: [1.5, 8], catk: [1, 50], crel: [40, 400], bright: [.2, .9], slide: [0, 1], acc: [0, 1], sub: [0, 1], glide: [0, .3], fatk: [0, .5], fdec: [.05, 1], fsus: [0, 1], penv: [-24, 24], pdec: [.01, .3], noise: [0, .6], voices: [1, 7], pw: [.05, .95], sync: [1, 6], ring: [0, 1], scan: [0, 1], fm: [0, 8], ratio: [.5, 8], feed: [0, .8], fmdec: [.05, 1], vowel: [0, 4], hpf: [20, 800], low: [-12, 6], high: [-12, 6], drive: [0, .8], width: [0, 1], vib: [0, 30], cut: [300, 6000], gain: [0, 1], pan: [-1, 1], res: [1, 15], verb: [0, .8], delay: [0, .6], duck: [0, 1], shape: [0, .8], detune: [0, 40], env: [0, 1], oct: [2, 5], len: [.25, 1], atk: [.005, 1], dec: [.05, 1], sus: [0, 1], rel: [.05, 2], tune: [.7, 1.4], slices: [4, 16], vel: [.5, 1.3], nudge: [-30, 30], human: [0, 1], swing: [0, .6], sgrid: [8, 16], comp: [0, 1], rate: [4, 32], tr: [-7, 7], range: [3, 12] };
 const AC_QUAL = ['', 'm', '7', 'maj7', 'm7', '9', 'm9', 'maj9', 'sus2', 'sus4', '7sus4', 'dim', 'dim7', 'm7b5', 'aug', '6', 'm6', 'add9', 'madd9', '11', 'm11', '13', '7b9', '7#9', 'mM7', '5'];
 const AC_TRACKS = ['kick', 'snare', 'clap', 'hat', 'ohat', 'ride', 'crash', 'shaker', 'rim', 'tom', 'bass', 'keys', 'flute', 'strings', 'gayageum', 'piano', 'vibes', 'sax', 'harp', 'harpsi', 'asnare', 'ahat', 'aride', 'acrash', 'conga', 'bongo', 'cajon', 'tamb', 'gong', 'sub', 'acid', 'lead', 'pad', 'arp', 'pluck', 'stab', 'bell', 'chord', 'reese', 'growl', 'fm', 'analog', 'mono', ...LOOPS];
 const acEl = document.createElement('div');
@@ -9765,6 +9831,7 @@ function buildSlots() {
       <button class="sm mute" title="${esc(t('muteTitle'))}">M</button>
       <button class="sm undo" title="${esc(t('undoTitle'))}" aria-label="${esc(t('undoTitle'))}">↶</button>
       <button class="sm clear" title="${esc(t('clearTitle'))}" aria-label="${esc(t('clearTitle'))}">×</button>
+      <div class="sl-stems"></div>
     </div>`).join('');
   renderLoops();
 }
@@ -9775,6 +9842,10 @@ slotsEl.addEventListener('click', e => {
   else if (e.target.closest('.mute')) { toggleSet(S.muted, s.name); syncLoopVols(); render(); }
   else if (e.target.closest('.undo')) undoSlot(i);
   else if (e.target.closest('.clear')) clearSlot(i);
+  else if (e.target.closest('[data-sep]')) {
+    const m = e.target.closest('[data-sep]').dataset.sep;
+    if (m === 'split') sepSlot(i); else if (m === 'code') sepToCode(s); else if (m === 'undo') sepUndo(); else sepSetMode(s, m);
+  }
 });
 slotsEl.addEventListener('change', e => {
   const row = e.target.closest('.slot'); if (row && e.target.matches('.bars')) LS.slots[+row.dataset.i].sel = +e.target.value;
@@ -9836,6 +9907,12 @@ function renderLoops() {
     row.querySelector('.mute').classList.toggle('off', S.muted.has(s.name));
     row.querySelector('.undo').disabled = !s.prev && !(tk && tk.slot === s);
     row.querySelector('.clear').disabled = !s.bufs && !(tk && tk.slot === s);
+    // drums: split the loop, then play all of it, only its drums or all but its drums, or write its beat as code
+    const sb = row.querySelector('.sl-stems'), ok = sepValid(s), mode = ok ? sepMode(s) : '';
+    sb.hidden = !s.bufs || !!tk && tk.slot === s;
+    sb.innerHTML = !s.bufs ? '' : s.sepBusy ? `<span class="sl-sep">${esc(t('sepBusy'))}</span>`
+      : !ok ? `<button class="calbtn" data-sep="split" title="${esc(t('sepSplitTitle'))}">${esc(t('sepSplit'))}</button>`
+      : `<span class="seg" role="group" aria-label="${esc(t('sepStems'))}">${['all', 'drums', 'nodrums'].map(m => `<button data-sep="${m}" aria-pressed="${mode === m}">${esc(t('sep_' + m))}</button>`).join('')}</span><button class="calbtn" data-sep="code" title="${esc(t('sepCodeTitle'))}">${esc(t('sepCode'))}</button>${LS.sepUndo != null ? `<button class="calbtn" data-sep="undo">${esc(t('vxUndo'))}</button>` : ''}`;
     row._dirty = true;
   });
 }
@@ -9864,6 +9941,12 @@ function drawWaves() {
     const pk = slotPeaks(s, cols), cw = w / cols;
     g.fillStyle = cLil; g.globalAlpha = 0.75;
     for (let i = 0; i < cols; i++) { const a = Math.max(1, pk[i] * h * 0.9); g.fillRect(i * cw, (h - a) / 2, Math.max(1, cw - devicePixelRatio), a); }
+    // a separated loop shows its drums over it
+    if (sepValid(s)) {
+      const st = s.stems; if (!st.peaks || st.peaks.length !== cols) st.peaks = slotPeaks({ bufs: st.drums }, cols);
+      g.fillStyle = cAmb; g.globalAlpha = 0.85;
+      for (let i = 0; i < cols; i++) { const a = Math.max(1, st.peaks[i] * h * 0.9); g.fillRect(i * cw, (h - a) / 2, Math.max(1, cw - devicePixelRatio), a); }
+    }
     g.globalAlpha = 1;
     const tk = LS.take;
     if (tk && tk.slot === s && S.playing) {
@@ -10621,6 +10704,133 @@ function vxPattern(tok, bars, melodic) {
   return `<${bs.map(s => `[${s}]`).join(' ')}>`;
 }
 if (false) module.exports = { vxFFT, vxOnsets, vxBeat, vxHum, vxPattern, vxBar, vxCluster, vxNotch, vxNoteName };
+
+// ===================== Drum separation for loops (pure, like engine.js) =====================
+// A loaded loop is split into its drums and the rest by harmonic/percussive separation (Fitzgerald 2010): in a
+// spectrogram, a held note is a horizontal line and a drum hit a vertical one, so a median across time keeps the
+// notes and a median across frequency keeps the hits. Soft masks from the two (Wiener-like, squared) split every
+// bin between drums and the rest, and they add up to one, so the two stems played together give back the loop.
+// Then the drums are written down: onsets in three bands (kick, snare, hat) on the loop's 16th grid.
+// Runs in a worker (sepWorker below) so the page does not stall; tests/sep.test.js runs it in Node.
+
+const SEP_N = 2048, SEP_HOP = 512;
+function sepFft(re, im) {
+  const n = re.length;
+  for (let i = 1, j = 0; i < n; i++) { let bit = n >> 1; for (; j & bit; bit >>= 1) j ^= bit; j ^= bit; if (i < j) { let t = re[i]; re[i] = re[j]; re[j] = t; t = im[i]; im[i] = im[j]; im[j] = t; } }
+  for (let len = 2; len <= n; len <<= 1) {
+    const a = -2 * Math.PI / len, wr = Math.cos(a), wi = Math.sin(a), h = len >> 1;
+    for (let i = 0; i < n; i += len) {
+      let cr = 1, ci = 0;
+      for (let k = 0; k < h; k++) {
+        const p = i + k, q = p + h, tr = re[q] * cr - im[q] * ci, ti = re[q] * ci + im[q] * cr;
+        re[q] = re[p] - tr; im[q] = im[p] - ti; re[p] += tr; im[p] += ti;
+        const nr = cr * wr - ci * wi; ci = cr * wi + ci * wr; cr = nr;
+      }
+    }
+  }
+}
+function sepWinMake() { const w = new Float32Array(SEP_N); for (let i = 0; i < SEP_N; i++) w[i] = 0.5 - 0.5 * Math.cos(2 * Math.PI * i / SEP_N); return w; }
+const sepWin = sepWinMake();
+// the spectrum of x: frames × (N/2+1) bins, real and imaginary parts in flat arrays; x is padded at both ends
+function sepStft(x) {
+  const K = SEP_N / 2 + 1, pad = SEP_N, n = x.length + 2 * pad, F = Math.ceil((n - SEP_N) / SEP_HOP) + 1;
+  const RE = new Float32Array(F * K), IM = new Float32Array(F * K), re = new Float64Array(SEP_N), im = new Float64Array(SEP_N);
+  for (let f = 0; f < F; f++) {
+    const s = f * SEP_HOP - pad;
+    for (let i = 0; i < SEP_N; i++) { const j = s + i; re[i] = j >= 0 && j < x.length ? x[j] * sepWin[i] : 0; im[i] = 0; }
+    sepFft(re, im);
+    for (let k = 0; k < K; k++) { RE[f * K + k] = re[k]; IM[f * K + k] = im[k]; }
+  }
+  return { RE, IM, F, K, len: x.length, pad };
+}
+// back to samples, with each bin scaled by the mask (overlap-add with the same window; Hann² at 75% overlap sums to 1.5)
+function sepIstft(S, M, out) {
+  const { RE, IM, F, K, len, pad } = S, re = new Float64Array(SEP_N), im = new Float64Array(SEP_N), acc = new Float64Array(len + 2 * pad);
+  for (let f = 0; f < F; f++) {
+    for (let k = 0; k < K; k++) { const m = M[f * K + k]; re[k] = RE[f * K + k] * m; im[k] = IM[f * K + k] * m; }
+    for (let k = 1; k < K - 1; k++) { re[SEP_N - k] = re[k]; im[SEP_N - k] = -im[k]; }
+    for (let i = 0; i < SEP_N; i++) im[i] = -im[i];
+    sepFft(re, im);
+    const s = f * SEP_HOP;
+    for (let i = 0; i < SEP_N; i++) acc[s + i] += re[i] / SEP_N * sepWin[i];
+  }
+  for (let i = 0; i < len; i++) out[i] = acc[i + pad] / 1.5;
+  return out;
+}
+// the median of a small window, by insertion sort (windows are 17 long)
+function sepMedian(buf, n) { for (let i = 1; i < n; i++) { const v = buf[i]; let j = i - 1; while (j >= 0 && buf[j] > v) { buf[j + 1] = buf[j]; j--; } buf[j + 1] = v; } return buf[n >> 1]; }
+// split a stereo loop: returns the two stems and the drums' spectrogram (for writing the beat down)
+function sepSplit(L0, R0, sr, opt = {}) {
+  // a loop goes round: its end runs into its start, so it is wrapped by a little at both ends before the medians
+  // (a hit on the first beat is then a hit, not the jump from silence) and cut back afterwards
+  const n0 = L0.length, ext = Math.min(n0, Math.round(0.75 * sr));
+  const wrap = x => { const y = new Float32Array(n0 + 2 * ext); y.set(x.subarray(n0 - ext), 0); y.set(x, ext); y.set(x.subarray(0, ext), ext + n0); return y; };
+  const L = wrap(L0), R = R0 && R0 !== L0 ? wrap(R0) : L;
+  const mono = new Float32Array(L.length); for (let i = 0; i < L.length; i++) mono[i] = 0.5 * (L[i] + R[i]);
+  const S = sepStft(mono), { F, K } = S, mag = new Float32Array(F * K);
+  for (let i = 0; i < F * K; i++) mag[i] = Math.hypot(S.RE[i], S.IM[i]);
+  // window lengths: about half a second across time (longer than a drum's ring, shorter than a held note), about
+  // 500 Hz across frequency
+  const wt = Math.max(7, (Math.round(0.5 * sr / SEP_HOP) | 1)), wf = Math.max(7, (Math.round(500 / (sr / SEP_N)) | 1)), ht = wt >> 1, hf = wf >> 1;
+  const H = new Float32Array(F * K), P = new Float32Array(F * K), buf = new Float32Array(Math.max(wt, wf));
+  for (let k = 0; k < K; k++) for (let f = 0; f < F; f++) {
+    let n = 0; for (let g = f - ht; g <= f + ht; g++) if (g >= 0 && g < F) buf[n++] = mag[g * K + k];
+    H[f * K + k] = sepMedian(buf, n);
+  }
+  for (let f = 0; f < F; f++) for (let k = 0; k < K; k++) {
+    let n = 0; for (let q = k - hf; q <= k + hf; q++) if (q >= 0 && q < K) buf[n++] = mag[f * K + q];
+    P[f * K + k] = sepMedian(buf, n);
+  }
+  // masks: drums get a bin by how much more vertical than horizontal it is. Under 160 Hz a kick is a short low tone,
+  // too narrow to be vertical, so there what rises above the bin's own half-second median counts as the drums
+  const p = opt.power || 2, M = new Float32Array(F * K), Mr = new Float32Array(F * K), kLow = Math.round(160 / (sr / SEP_N));
+  for (let f = 0; f < F; f++) for (let k = 0; k < K; k++) {
+    const i = f * K + k, pv = k <= kLow ? Math.max(P[i], mag[i] - H[i]) : P[i];
+    const a = Math.pow(pv, p), b = Math.pow(H[i], p), m = a + b > 1e-20 ? a / (a + b) : 0.5;
+    M[i] = m; Mr[i] = 1 - m;
+  }
+  const out = { drums: [], rest: [] };
+  for (const ch of R !== L ? [L, R] : [L]) {
+    const C = R === L ? S : sepStft(ch);
+    out.drums.push(sepIstft(C, M, new Float32Array(ch.length)).slice(ext, ext + n0));
+    out.rest.push(sepIstft(C, Mr, new Float32Array(ch.length)).slice(ext, ext + n0));
+  }
+  const dm = new Float32Array(F * K); for (let i = 0; i < F * K; i++) dm[i] = mag[i] * M[i];
+  return { ...out, spec: { mag: dm, F, K, sr, off: ext } };
+}
+// the drums written down: onsets in three bands, on the 16th grid of the loop. A step has a hit when its band rose
+// sharply there and is loud there (a snare's low thump also lifts the kick's band a little, but not to a kick's level).
+// The snare band sits between the kick and the hats (300 Hz to 2 kHz), where the hats have little to give.
+const SEP_BANDS = { kick: { hz: [35, 110], rise: 0.42, min: 0.5, lv: 1.5 }, snare: { hz: [300, 2000], rise: 0.6, min: 0.5, lv: 1.2 }, hat: { hz: [7000, 16000], rise: 0.08, min: 0.8, lv: 4 } };
+function sepBeats(spec, bars, barSec, steps = 16) {
+  const { mag, F, K, sr } = spec, hz = sr / SEP_N, fsec = SEP_HOP / sr, f0 = (SEP_N + (spec.off || 0)) / SEP_HOP;
+  const total = bars * steps, stepSec = barSec / steps, lines = {}, hits = [];
+  for (const [name, B] of Object.entries(SEP_BANDS)) {
+    const a = Math.max(1, Math.round(B.hz[0] / hz)), b = Math.min(K - 1, Math.round(B.hz[1] / hz)), e = new Float32Array(F);
+    for (let f = 0; f < F; f++) { let s = 0; for (let k = a; k <= b; k++) s += mag[f * K + k]; e[f] = Math.log(1e-6 + s); }
+    // onset strength: how much the band rose since a moment ago
+    const on = new Float32Array(F); for (let f = 2; f < F; f++) on[f] = Math.max(0, e[f] - Math.max(e[f - 1], e[f - 2]));
+    // per step: the strongest rise near it, and how loud the band is just after it
+    const st = new Float32Array(total), lv = new Float32Array(total).fill(-99);
+    for (let j = 0; j < total; j++) {
+      const c = j * stepSec / fsec + f0, r = Math.max(1, stepSec / fsec * 0.45);
+      for (let f = Math.max(0, Math.floor(c - r)); f <= Math.min(F - 1, Math.ceil(c + r)); f++) if (on[f] > st[j]) st[j] = on[f];
+      for (let f = Math.max(0, Math.round(c)); f <= Math.min(F - 1, Math.round(c) + 3); f++) if (e[f] > lv[j]) lv[j] = e[f];
+    }
+    const top = Array.from(st).sort((x, y) => x - y)[Math.floor(total * 0.95)] || 0, loud = Math.max(...lv);
+    if (top < B.min) continue;
+    const g = Array(total).fill('.'); let n = 0;
+    for (let j = 0; j < total; j++) if (st[j] >= Math.max(B.min, top * B.rise) && lv[j] >= loud - B.lv) { g[j] = st[j] > top * 0.85 && name !== 'hat' ? 'X' : 'x'; n++; hits.push({ kind: name, step: j, s: st[j] }); }
+    if (n) lines[name] = g;
+  }
+  return { lines, hits };
+}
+// the same functions as a worker's source, so a long loop is split without stalling the page
+function sepWorkerSrc() {
+  return `const SEP_N = ${SEP_N}, SEP_HOP = ${SEP_HOP}, SEP_BANDS = ${JSON.stringify(SEP_BANDS)};\n` + [sepWinMake, sepFft, sepStft, sepIstft, sepMedian, sepSplit, sepBeats].map(String).join('\n') +
+    `\nconst sepWin = sepWinMake();\nonmessage = e => { const d = e.data, o = sepSplit(d.L, d.R, d.sr), b = sepBeats(o.spec, d.bars, d.barSec); postMessage({ drums: o.drums, rest: o.rest, lines: b.lines }, [...o.drums, ...o.rest].map(a => a.buffer)); };`;
+}
+if (false) module.exports = { sepSplit, sepBeats, sepStft, sepIstft };
 
 // ===================== Sound match: one recorded note to a synth line =====================
 // Pure, like vxdsp.js (tests/match.test.js runs it on made-up sounds). smAnalyze measures one note: its pitch,
