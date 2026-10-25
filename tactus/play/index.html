@@ -1084,7 +1084,7 @@ body.mob.mland .pad { min-height: 60px; }
 <body>
 <div class="app">
   <header class="top">
-    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.14 23:19<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
+    <div class="brand"><a href="../" style="color:inherit;text-decoration:none" title="Tactus"><b>TACTUS</b></a><span class="build" id="build" title="build">build 10.25 11:37<span class="dsp" id="dspTag"> · Rust DSP</span></span></div>
     <button id="play" class="play"><i class="tri"></i><span></span></button>
     <div class="lcd">
       <div class="cell" id="bpmbox" data-i18n-title="bpmTitle"><label>BPM</label><div class="row"><output id="bpm">138</output><button class="tap" id="tap">TAP</button></div></div>
@@ -4225,6 +4225,55 @@ sub     <g2 d2 g2 d2 g2 d2 g2 d2 g2 d2 g2 d2 g2 d2 g2 d2 f#2 b1 e2 e2 d2 a1 d2 d
 scene piano mel chords bass
 scene air   all
 song piano:18 air:21
+`,
+  },
+  {
+    id: 'bistro', name: 'Little Forest Bistro (piano waltz)',
+    head: {
+      ko: '// 숲속 작은 식당 — 일본 카페 피아노 감성으로 새로 쓴 왈츠예요 (원곡 없음). F장조, 한 마디가 3/4 (8분음표 6칸)\n// 왼손은 쪼갠 화음(1-5-3-5), 오른손 선율. B단락은 Bb-C-Am-Dm, J-팝에서 많이 쓰는 IV-V-iii-vi 진행이에요\n// 첫 바퀴는 피아노 혼자, 두 번째 바퀴엔 현악기와 업라이트 베이스, 플루트가 한 옥타브 아래로 따라 불러요',
+      en: '// Little Forest Bistro — an original waltz in the spirit of Japanese café piano (not based on any song). F major, each bar 3/4 (six eighths)\n// Broken chords in the left hand (1-5-3-5), the tune in the right. The B part is Bb-C-Am-Dm, the IV-V-iii-vi run J-pop loves\n// The first time round the piano is alone; the second time strings, an upright bass and a flute an octave below join in',
+    },
+    body: `bpm 184
+key F major
+master warm
+space room
+
+let tune  = <[a4 _ _ _ g4 a4] [c5 _ _ _ bb4 a4] [f4 _ a4 _ d5 _] [e5 _ _ _ d5 c5] [d5 _ _ _ c5 bb4] [c5 _ _ _ f5 e5] [d5 _ c5 _ bb4 a4] [g4 _ _ _ . .] [a4 _ _ _ g4 a4] [c5 _ _ _ d5 e5] [f5 _ e5 _ d5 _] [c5 _ _ _ a4 c5] [d5 _ _ _ c5 bb4] [g4 _ _ _ e4 _] [f4 _ _ _ _ _] [. . . . c5 d5] [f5 _ _ _ d5 bb4] [e5 _ _ _ c5 g4] [e5 _ _ _ c5 a4] [d5 _ _ _ e5 f5] [g5 _ _ _ f5 d5] [e5 _ _ _ g5 _] [a5 _ g5 _ e5 _] [f5 _ _ _ e5 d5]>
+let hands = <[f2 c3 a3 c4 a3 c3] [e2 c3 g3 c4 g3 c3] [d2 a2 f3 a3 f3 a2] [a2 e3 a3 c4 a3 e3] [bb1 f2 d3 f3 d3 f2] [a2 f3 a3 c4 a3 f3] [g2 d3 f3 bb3 f3 d3] [c3 g3 bb3 e4 bb3 g3] [f2 c3 a3 c4 a3 c3] [e2 c3 g3 c4 g3 c3] [d2 a2 f3 a3 f3 a2] [a2 e3 a3 c4 a3 e3] [bb1 f2 d3 f3 d3 f2] [c3 g3 c4 e4 c4 g3] [f2 c3 a3 c4 a3 c3] [f2 c3 a3 c4 a3 c3] [bb1 f2 d3 f3 d3 f2] [c3 g3 c4 e4 c4 g3] [a2 e3 a3 c4 a3 e3] [d2 a2 f3 a3 f3 a2] [g2 d3 f3 bb3 f3 d3] [c3 g3 c4 e4 c4 g3] [f2 c3 e3 a3 e3 c3] [c3 g3 bb3 f4 bb3 g3]>
+
+mel     $tune                 | piano gain .8 len 1.6 rel 1.4 verb .3 human .12
+left    $hands                | piano gain .4 len 2.5 rel 1.6 verb .3 human .15 vel [1 .7 .8 .75 .8 .7]
+flute   $tune                 | flute tr -12 gain .2 atk .05 vib .15 verb .4
+strings <[c3,a3,c4] [c3,g3,c4] [a2,f3,a3] [e3,a3,c4] [f2,d3,f3] [f3,a3,c4] [d3,f3,bb3] [g3,bb3,e4] [c3,a3,c4] [c3,g3,c4] [a2,f3,a3] [e3,a3,c4] [f2,d3,f3] [g3,c4,e4] [c3,a3,c4] [c3,a3,c4] [f2,d3,f3] [g3,c4,e4] [e3,a3,c4] [a2,f3,a3] [d3,f3,bb3] [g3,c4,e4] [c3,e3,a3] [g3,bb3,f4]> | bowed tr 12 gain .14 atk .6 rel 1.5 verb .45
+bass    <[f2 . .] [e2 . .] [d2 . .] [a2 . .] [bb1 . .] [a2 . .] [g2 . .] [c3 . .] [f2 . .] [e2 . .] [d2 . .] [a2 . .] [bb1 . .] [c3 . .] [f2 . .] [f2 . .] [bb1 . .] [c3 . .] [a2 . .] [d2 . .] [g2 . .] [c3 . .] [f2 . .] [c3 . .]> | upright gain .55 human .1
+
+scene alone   mel left
+scene friends all
+song alone:24 friends:24
+`,
+  },
+  {
+    id: 'rainwindow', name: 'Rain on the Window (piano ballad)',
+    head: {
+      ko: '// 비 오는 창가 — 일본 힐링 피아노 발라드 감성으로 새로 쓴 곡이에요 (원곡 없음). D장조 72 BPM\n// 왼손은 8분음표로 쪼갠 화음, 화음은 Gmaj7-A-F#m7-Bm7 처럼 maj7·m7 이 많아요. 17마디부터 브리지(Bm7-F#m7-Gmaj7-D/F#)\n// 빗소리는 셰이커를 가끔씩(degrade) 흩뿌린 거예요. 두 번째 바퀴엔 현악기가 화음을 받쳐요',
+      en: '// Rain on the Window — an original in the spirit of Japanese healing piano ballads (not based on any song). D major at 72 BPM\n// Broken eighth-note chords in the left hand; lots of maj7 and m7 (Gmaj7-A-F#m7-Bm7). The bridge starts at bar 17 (Bm7-F#m7-Gmaj7-D/F#)\n// The rain is a shaker scattered now and then (degrade). The second time round strings hold the chords',
+    },
+    body: `bpm 72
+key D major
+master warm
+space hall
+
+let tune  = <[f#5 _ _ _ e5 _ d5 _] [e5 _ _ _ . c#5 d5 e5] [a5 _ _ _ f#5 _ e5 _] [d5 _ _ _ _ _ . .] [. b4 d5 e5 g5 _ f#5 e5] [e5 _ _ d5 _ _ c#5 _] [d5 _ _ _ _ _ a4 b4] [c5 _ _ _ a4 _ f#4 _] [b4 _ _ _ d5 _ f#5 _] [e5 _ _ _ . e5 f#5 g5] [a5 _ _ _ a5 _ f#5 _] [g5 _ _ _ e5 _ . .] [d5 _ e5 _ f#5 _ g5 _] [e5 _ _ _ c#5 _ e5 _] [d5 _ _ _ _ _ _ _] [. . . . a4 b4 d5 e5] [f#5 _ _ _ d5 _ b4 _] [c#5 _ _ _ a4 _ c#5 e5] [d5 _ _ _ b4 _ d5 f#5] [e5 _ _ _ _ _ d5 c#5] [b4 _ _ _ e5 _ g5 _] [a#4 _ _ _ c#5 _ e5 _] [d5 _ _ _ c#5 _ b4 _] [a4 _ _ _ . . . .]>
+let hands = <[g2 d3 b3 d4 f#4 d4 b3 d3] [a2 e3 a3 c#4 e4 c#4 a3 e3] [f#2 c#3 a3 c#4 e4 c#4 a3 c#3] [b1 f#2 d3 a3 b3 a3 d3 f#2] [e2 b2 g3 b3 d4 b3 g3 b2] [a2 e3 g3 d4 a2 e3 g3 c#4] [d2 a2 f#3 a3 c#4 a3 f#3 a2] [d2 a2 c3 f#3 a3 f#3 c3 a2] [g2 d3 b3 d4 f#4 d4 b3 d3] [a2 e3 a3 c#4 e4 c#4 a3 e3] [f#2 c#3 a3 e4 b1 a2 d#3 f#3] [e2 b2 g3 b3 d4 b3 g3 b2] [a2 e3 g3 d4 e4 d4 g3 e3] [a2 e3 g3 c#4 e4 c#4 g3 e3] [d2 a2 d3 f#3 a3 f#3 d3 a2] [d2 a2 d3 f#3 a3 f#3 d3 a2] [b1 f#2 d3 a3 b3 a3 d3 f#2] [f#2 c#3 a3 c#4 e4 c#4 a3 c#3] [g2 d3 b3 d4 f#4 d4 b3 d3] [f#2 a2 d3 f#3 a3 f#3 d3 a2] [e2 b2 g3 b3 d4 b3 g3 b2] [f#2 c#3 e3 a#3 c#4 a#3 e3 c#3] [b1 f#2 d3 a3 b3 a3 d3 f#2] [a2 e3 g3 d4 a2 e3 g3 c#4]>
+
+mel     $tune                 | piano gain .98 len 1.8 rel 1.6 verb .35 human .12
+left    $hands                | piano gain .48 len 3 rel 2 verb .35 human .15 vel [1 .65 .75 .7 .85 .65 .75 .7]
+strings <[d3,b3,d4] [e3,a3,c#4] [c#3,a3,c#4] [f#2,d3,a3] [b2,g3,b3] [e3,g3,c#4] [a2,f#3,a3] [a2,c3,f#3] [d3,b3,d4] [e3,a3,c#4] [a2,d#3,f#3] [b2,g3,b3] [e3,g3,d4] [e3,g3,c#4] [a2,d3,f#3] [a2,d3,f#3] [f#2,d3,a3] [c#3,a3,c#4] [d3,b3,d4] [a2,d3,f#3] [b2,g3,b3] [c#3,e3,a#3] [f#2,d3,a3] [e3,g3,c#4]> | bowed tr 12 gain .16 atk .8 rel 2 verb .5
+rain    x*16                  | shaker gain .06 degrade .55 hpf 4000 pan rand(-.8,.8) human .5
+
+scene alone mel left rain
+scene swell all
+song alone:24 swell:24
 `,
   },
   {
